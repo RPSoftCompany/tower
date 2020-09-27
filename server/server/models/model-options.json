@@ -1,0 +1,22 @@
+{
+  "name": "modelOptions",
+  "base": "Model",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "excludeBaseProperties": [
+    "id"
+  ],
+  "properties": {
+    "hasRestrictions": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

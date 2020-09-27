@@ -1,0 +1,30 @@
+{
+  "name": "tower",
+  "version": "1.8.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "inst": "npm-recursive-install",
+    "dev": "(cd ui && npm run serve) & (cd server; NODE_ENV=development npm start)",
+    "test": "(cd ui && npm run serve) & (cd server; npm run startTest)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RPSoftCompany/tower.git"
+  },
+  "keywords": [
+    "configuration",
+    "configServer",
+    "configurationServer"
+  ],
+  "author": "RPSoft",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/RPSoftCompany/tower/issues"
+  },
+  "homepage": "https://github.com/RPSoftCompany/tower#readme",
+  "devDependencies": {
+    "cypress": "^5.2.0",
+    "recursive-install": "^1.4.0"
+  }
+}

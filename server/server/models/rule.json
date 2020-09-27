@@ -1,0 +1,48 @@
+{
+  "name": "rule",
+  "base": "Model",
+  "idInjection": false,
+  "options": {
+    "validateUpsert": true
+  },
+  "excludeBaseProperties": [
+    "id"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string"
+    },
+    "targetValue": {
+      "type": "string",
+      "required": true
+    },
+    "targetType": {
+      "type": "string",
+      "required": true
+    },
+    "targetRegEx": {
+      "type": "boolean",
+      "required": true
+    },
+    "conditionValue": {
+      "type": "string",
+      "required": true
+    },
+    "conditionType": {
+      "type": "string",
+      "required": true
+    },
+    "conditionRegEx": {
+      "type": "boolean",
+      "required": true
+    },
+    "error": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

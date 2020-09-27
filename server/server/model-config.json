@@ -1,0 +1,148 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models",
+      "../node_modules/loopback-component-passport/lib/models"
+    ],
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../common/mixins",
+      "./mixins",
+      "../node_modules/@aliatech/loopback-mongo-aggregate-mixin/lib"
+    ]
+  },
+  "User": {
+    "dataSource": "mongoDB",
+    "public": false,
+    "options": {
+      "allowEternalTokens": true
+    }
+  },
+  "AccessToken": {
+    "dataSource": "mongoDB",
+    "public": false,
+    "relations": {
+      "user": {
+        "type": "belongsTo",
+        "model": "member",
+        "foreignKey": "id"
+      }
+    }
+  },
+  "ACL": {
+    "dataSource": "mongoDB",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "mongoDB",
+    "public": false
+  },
+  "Role": {
+    "dataSource": "mongoDB",
+    "public": true,
+    "acls": [
+      {
+        "accessType": "*",
+        "principalType": "ROLE",
+        "principalId": "admin",
+        "permission": "ALLOW"
+      },
+      {
+        "accessType": "*",
+        "principalType": "ROLE",
+        "principalId": "groupSolver",
+        "permission": "ALLOW"
+      },
+      {
+        "accessType": "*",
+        "principalType": "ROLE",
+        "principalId": "$everyone",
+        "permission": "DENY"
+      }
+    ]
+  },
+  "memberCredential": {
+    "dataSource": "mongoDB",
+    "public": false
+  },
+  "memberIdentity": {
+    "dataSource": "mongoDB",
+    "public": false
+  },
+  "member": {
+    "dataSource": "mongoDB",
+    "public": true,
+    "options": {
+      "remoting": {
+        "sharedMethods": {
+          "resetPassword": false,
+          "setPassword": false
+        }
+      }
+    }
+  },
+  "group": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "configuration": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "variable": {
+    "dataSource": null,
+    "public": true
+  },
+  "v1": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "promotion": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "hook": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "rule": {
+    "dataSource": null,
+    "public": false
+  },
+  "configurationModel": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "baseConfiguration": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "defaultVariable": {
+    "dataSource": null,
+    "public": false
+  },
+  "modelOptions": {
+    "dataSource": null,
+    "public": false
+  },
+  "restConfiguration": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "hookObject": {
+    "dataSource": null,
+    "public": false
+  },
+  "connection": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
+  "constantVariable": {
+    "dataSource": "mongoDB",
+    "public": true
+  }
+}

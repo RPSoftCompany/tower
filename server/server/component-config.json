@@ -1,0 +1,11 @@
+{
+  "loopback-component-explorer": {
+    "mountPath": "/explorer",
+    "uiDirs": "server/explorer",
+    "apiInfo": {
+      "title": "Tower API",
+      "description": ""
+    },
+    "generateOperationScopedModels": true
+  }
+}

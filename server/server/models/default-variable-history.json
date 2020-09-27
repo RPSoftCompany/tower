@@ -1,0 +1,28 @@
+{
+  "name": "defaultVariableHistory",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "model_id": {
+      "type": "string",
+      "required": true
+    },
+    "variables": {
+      "type": [
+        "variable"
+      ]
+    },
+    "effectiveDate": {
+      "type": "date",
+      "required": true,
+      "default": "$now"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
