@@ -1,0 +1,10 @@
+{
+  "host": "0.0.0.0",
+  "port": 5000,
+  "logLevel": "error",
+  "explorer": true,
+  "nonSafe": false,
+  "tokenHeaders": [],
+  "#privateKey": "./certs/privatekey.pem",
+  "#certificate": "./certs/certificate.pem"
+}

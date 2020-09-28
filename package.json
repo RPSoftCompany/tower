@@ -24,7 +24,6 @@
   },
   "homepage": "https://github.com/RPSoftCompany/tower#readme",
   "devDependencies": {
-    "cypress": "^5.2.0",
     "recursive-install": "^1.4.0"
   }
 }

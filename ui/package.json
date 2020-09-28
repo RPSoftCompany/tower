@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build --mode production --dest ../tower-server/client",
+    "build": "vue-cli-service build --mode production --dest ../server/client",
     "testui": "cypress open",
     "lint": "vue-cli-service lint"
   },

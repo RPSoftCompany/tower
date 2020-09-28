@@ -53,7 +53,7 @@
     "runFullTest": "NODE_ENV=development node .",
     "test": "mocha --growl",
     "testScenarios": "mocha --growl test/scenarios/**/*.js",
-    "package": "pkg --out-path ../tower-dist .",
+    "package": "pkg --out-path ../dist .",
     "start-server": "npm run runFullTest",
     "ci": "start-server-and-test start-server http://localhost:3000 test"
   },
@@ -87,6 +87,7 @@
     "eslint-config-loopback": "^8.0.0",
     "mocha": "^6.2.0",
     "nyc": "^15.0.0",
+    "pkg": "^4.4.9",
     "should": "^13.2.3",
     "start-server-and-test": "^1.11.3"
   },
