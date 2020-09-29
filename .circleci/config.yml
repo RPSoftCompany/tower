@@ -1,0 +1,33 @@
+version: 2.1
+jobs:
+    build_tower:
+        docker:
+            - image: circleci/node:10
+        steps:
+            - checkout
+            - run:
+                name: Install main dependencies
+                command: |
+                    npm install
+            - run:
+                name: Install deep dependencies
+                command: |
+                    npm run inst
+            - run:
+                name: Build UI
+                command: |
+                    cd ui && npm run build
+            - run:
+                name: Build Server
+                command: |
+                    cd server && npm run package
+            - run:
+                name: Zip dist
+                command: |
+                    zip -r tower.zip dist
+            - store_artifacts:
+                path: tower.zip
+workflows:
+    build_tower:
+        jobs:
+            - build_tower
