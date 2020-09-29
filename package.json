@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "inst": "npm-recursive-install",
+    "instProd": "npm-recursive-install --production",
     "dev": "(cd ui && npm run serve) & (cd server; NODE_ENV=development npm start)",
     "test": "(cd ui && npm run serve) & (cd server; npm run startTest)"
   },
