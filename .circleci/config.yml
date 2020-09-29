@@ -16,7 +16,7 @@ jobs:
             - run:
                 name: Install Vue cli service
                 command: |
-                    npm i @vue/cli-service@4.4.6
+                    cd ui && npm i @vue/cli-service@4.4.6
             - run:
                 name: Build UI
                 command: |
