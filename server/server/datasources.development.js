@@ -7,5 +7,6 @@ module.exports = {
         url: 'mongodb://mongo:27017/docker',
         name: 'mongoDB',
         connector: 'mongodb',
+        useUnifiedTopology: true,
     },
 };
