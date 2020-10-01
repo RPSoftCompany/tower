@@ -1,4 +1,6 @@
-# Introduction
+# Tower Configuration Server
+
+### Introduction
 
 ![](.gitbook/assets/tower_github.png)
 

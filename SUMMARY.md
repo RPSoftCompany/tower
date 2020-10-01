@@ -1,4 +1,5 @@
 # Table of contents
 
-* [Introduction](README.md)
+* [Tower Configuration Server](README.md)
+* [Installation](installation.md)
 
