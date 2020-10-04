@@ -39,3 +39,7 @@ workflows:
     build_tower:
         jobs:
             - build_tower
+                filters:
+                    branches:
+                    only:
+                        - master
