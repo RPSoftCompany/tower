@@ -37,6 +37,8 @@ At first, config.json looks like this:
   debug
 ```
 
+As Tower is using Winston library for logging purposes, you can read more about the log levels [here](https://www.npmjs.com/package/winston#logging-levels).
+
 **explorer** \(default: true\) - If this field is set to true, Tower will expose its API explorer \(Swagger\) on /explorer url.
 
 **nonSafe** \(default: true\) - setting nonSafe flag to true allows you to create file called 'secret', where you can store your encryption key for Tower. As it is not safe to store such information in plain text file, please use this option only for testing purposes.
@@ -47,7 +49,29 @@ At first, config.json looks like this:
 
 ## Database-config.json
 
-Database-config.json in a file, where your database connection details are stored. 
+Database-config.json in a file, where your database connection details are stored. There are two ways for providing the required information. First one is by providing full url, like that:
+
+```javascript
+{    
+    "mongoDB": {
+        "url": 'mongodb://<<username>>:<<password>>@<<host>>:<<port>>/<<database_name>>',
+    },
+}
+```
+
+Or by providing all the details in dedicated fields, like this:
+
+```javascript
+{    
+    "mongoDB": {
+        "host": "<<host>>",
+        "port": <<port>>,
+        "database": "<<database_name>>",
+        "username": "<<username>>",
+        "password": "<<password>>"
+    },
+}
+```
 
 
 
