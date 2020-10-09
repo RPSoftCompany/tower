@@ -10,7 +10,5 @@ First of all, you will need to download Tower. To do so, go to [https://github.c
 After the download, unzip the archive.  
 And that is all. You don't need to install it. Tower is a completely standalone product.
 
-Of course you will need to configure it, but you can find details related to it in configuration page.
-
-
+Of course you will need to configure it, but you can find details related to it in [configuration](configuration.md) page.
 

@@ -37,7 +37,7 @@ At first, config.json looks like this:
   debug
 ```
 
-As Tower is using Winston library for logging purposes, you can read more about the log levels [here](https://www.npmjs.com/package/winston#logging-levels).
+As Tower is using Winston library for logging purposes, you can read more about the logging levels [here](https://www.npmjs.com/package/winston#logging-levels).
 
 **explorer** \(default: true\) - If this field is set to true, Tower will expose its API explorer \(Swagger\) on /explorer url.
 
