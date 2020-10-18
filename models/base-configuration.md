@@ -6,12 +6,11 @@ description: BaseConfiguration REST API documentation
 
 {% api-method method="patch" host="http://tower" path="/api/baseConfigurations" %}
 {% api-method-summary %}
-baseConfigurations
+/
 {% endapi-method-summary %}
 
 {% api-method-description %}
-This endpoint allows you patch an existing model instance or insert a new one into the database.   
-If you want to update existing model, just provide the same name as the existing one.
+
 {% endapi-method-description %}
 
 {% api-method-spec %}
@@ -49,7 +48,7 @@ Base Configuration name
 Base Configurations saved successfully.
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "name": "string",
   "sequenceNumber": 0,
@@ -64,15 +63,13 @@ Base Configurations saved successfully.
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
     "name": "Error",
     "message": "Authorization Required",
-    "code": "AUTHORIZATION_REQUIRED"
-  }
-}
+    "code": "AUTHORIZATION_REQUIR
 ```
 {% endapi-method-response-example %}
 {% endapi-method-response %}
@@ -81,7 +78,7 @@ Unauthorized
 
 {% api-method method="get" host="http://tower" path="/api/baseConfigurations" %}
 {% api-method-summary %}
-baseConfigurations
+/
 {% endapi-method-summary %}
 
 {% api-method-description %}
@@ -109,7 +106,7 @@ Where filter. You can read more about it on this page https://loopback.io/doc/en
 Base configurations successfully obtained.
 {% endapi-method-response-example-description %}
 
-```
+```text
 [
   {
     "name": "string",
@@ -126,7 +123,7 @@ Base configurations successfully obtained.
 Unathorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -143,7 +140,7 @@ Unathorized
 
 {% api-method method="put" host="http://tower" path="/api/baseConfigurations" %}
 {% api-method-summary %}
-baseConfigurations
+/
 {% endapi-method-summary %}
 
 {% api-method-description %}
@@ -185,7 +182,7 @@ Base Configuration name
 Base Configurations saved successfully.
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "name": "string",
   "sequenceNumber": 0,
@@ -200,7 +197,7 @@ Base Configurations saved successfully.
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -217,7 +214,7 @@ Unauthorized
 
 {% api-method method="post" host="http://tower" path="/api/baseConfigurations" %}
 {% api-method-summary %}
-baseConfigurations
+/
 {% endapi-method-summary %}
 
 {% api-method-description %}
@@ -259,7 +256,7 @@ Base Configuration name
 Base Configurations saved successfully.
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "name": "string",
   "sequenceNumber": 0,
@@ -274,7 +271,7 @@ Base Configurations saved successfully.
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -291,7 +288,7 @@ Unauthorized
 
 {% api-method method="patch" host="http://tower" path="/api/baseConfigurations/{id}" %}
 {% api-method-summary %}
-baseConfigurations
+/{id}
 {% endapi-method-summary %}
 
 {% api-method-description %}
@@ -300,6 +297,12 @@ This endpoint allows you path attributes for a model instance and persist it int
 
 {% api-method-spec %}
 {% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="id" type="string" required=false %}
+Base Configuration id
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+
 {% api-method-headers %}
 {% api-method-parameter name="Authentication" type="string" required=false %}
 Authentication token.
@@ -333,7 +336,7 @@ Base Configuration name
 Base Configurations saved successfully.
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "name": "string",
   "sequenceNumber": 0,
@@ -348,7 +351,7 @@ Base Configurations saved successfully.
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -365,7 +368,7 @@ Unauthorized
 
 {% api-method method="get" host="http://tower" path="/api/baseConfigurations/{id}" %}
 {% api-method-summary %}
-baseConfigurations
+/{id}
 {% endapi-method-summary %}
 
 {% api-method-description %}
@@ -374,6 +377,12 @@ Find a model instance by {id} from the data source
 
 {% api-method-spec %}
 {% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="id" type="string" required=false %}
+Base Configuration id
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+
 {% api-method-headers %}
 {% api-method-parameter name="Authentication" type="string" required=false %}
 Authentication token.
@@ -404,10 +413,10 @@ Base Configuration name
 {% api-method-response %}
 {% api-method-response-example httpCode=200 %}
 {% api-method-response-example-description %}
-Base Configurations saved successfully.
+Base Configurations successfully obtained.
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "name": "string",
   "sequenceNumber": 0,
@@ -422,7 +431,7 @@ Base Configurations saved successfully.
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -439,7 +448,7 @@ Unauthorized
 
 {% api-method method="head" host="http://tower" path="/api/baseConfigurations/{id}" %}
 {% api-method-summary %}
-baseConfigurations
+/{id}
 {% endapi-method-summary %}
 
 {% api-method-description %}
@@ -448,6 +457,12 @@ Check whether a model instance exists in the data source
 
 {% api-method-spec %}
 {% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="id" type="string" required=false %}
+Base Configuration id
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+
 {% api-method-headers %}
 {% api-method-parameter name="Authentication" type="string" required=false %}
 Authentication token.
@@ -459,29 +474,15 @@ Authentication token.
 Authentication token.
 {% endapi-method-parameter %}
 {% endapi-method-query-parameters %}
-
-{% api-method-body-parameters %}
-{% api-method-parameter name="icon" type="string" required=false %}
-Icon name or svc to show it on user interface.
-{% endapi-method-parameter %}
-
-{% api-method-parameter name="sequenceNumber" type="integer" required=false %}
-Sequence number - will be updated automaticaly
-{% endapi-method-parameter %}
-
-{% api-method-parameter name="name" type="string" required=false %}
-Base Configuration name
-{% endapi-method-parameter %}
-{% endapi-method-body-parameters %}
 {% endapi-method-request %}
 
 {% api-method-response %}
 {% api-method-response-example httpCode=200 %}
 {% api-method-response-example-description %}
-Base Configurations saved successfully.
+Base Configurations exists \(or not\).
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "exists": true
 }
@@ -493,7 +494,7 @@ Base Configurations saved successfully.
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -510,7 +511,7 @@ Unauthorized
 
 {% api-method method="put" host="http://tower" path="/api/baseConfigurations/{id}" %}
 {% api-method-summary %}
-baseConfigurations
+/{id}
 {% endapi-method-summary %}
 
 {% api-method-description %}
@@ -519,6 +520,12 @@ Replace attributes for a model instance and persist it into the data source.
 
 {% api-method-spec %}
 {% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="id" type="string" required=false %}
+Base Configuration id
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+
 {% api-method-headers %}
 {% api-method-parameter name="Authentication" type="string" required=false %}
 Authentication token.
@@ -552,7 +559,7 @@ Base Configuration name
 Base Configurations saved successfully.
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "name": "string",
   "sequenceNumber": 0,
@@ -567,7 +574,7 @@ Base Configurations saved successfully.
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -584,15 +591,21 @@ Unauthorized
 
 {% api-method method="delete" host="http://tower" path="/api/baseConfigurations/{id}" %}
 {% api-method-summary %}
-baseConfigurations
+/{id}
 {% endapi-method-summary %}
 
 {% api-method-description %}
-Delete a model instance by {{id}} from the data source.
+Delete a model instance by  from the data source.
 {% endapi-method-description %}
 
 {% api-method-spec %}
 {% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="id" type="string" required=false %}
+Base Configuration id
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+
 {% api-method-headers %}
 {% api-method-parameter name="Authentication" type="string" required=false %}
 Authentication token.
@@ -604,29 +617,15 @@ Authentication token.
 Authentication token.
 {% endapi-method-parameter %}
 {% endapi-method-query-parameters %}
-
-{% api-method-body-parameters %}
-{% api-method-parameter name="icon" type="string" required=false %}
-Icon name or svc to show it on user interface.
-{% endapi-method-parameter %}
-
-{% api-method-parameter name="sequenceNumber" type="integer" required=false %}
-Sequence number - will be updated automaticaly
-{% endapi-method-parameter %}
-
-{% api-method-parameter name="name" type="string" required=false %}
-Base Configuration name
-{% endapi-method-parameter %}
-{% endapi-method-body-parameters %}
 {% endapi-method-request %}
 
 {% api-method-response %}
 {% api-method-response-example httpCode=200 %}
 {% api-method-response-example-description %}
-Base Configurations saved successfully.
+Base Configurations removed successfully.
 {% endapi-method-response-example-description %}
 
-```
+```text
 OK
 ```
 {% endapi-method-response-example %}
@@ -636,7 +635,7 @@ OK
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -650,3 +649,4 @@ Unauthorized
 {% endapi-method-response %}
 {% endapi-method-spec %}
 {% endapi-method %}
+
