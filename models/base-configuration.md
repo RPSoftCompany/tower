@@ -298,7 +298,7 @@ This endpoint allows you path attributes for a model instance and persist it int
 {% api-method-spec %}
 {% api-method-request %}
 {% api-method-path-parameters %}
-{% api-method-parameter name="id" type="string" required=false %}
+{% api-method-parameter name="id" type="string" required=true %}
 Base Configuration id
 {% endapi-method-parameter %}
 {% endapi-method-path-parameters %}
@@ -378,7 +378,7 @@ Find a model instance by {id} from the data source
 {% api-method-spec %}
 {% api-method-request %}
 {% api-method-path-parameters %}
-{% api-method-parameter name="id" type="string" required=false %}
+{% api-method-parameter name="id" type="string" required=true %}
 Base Configuration id
 {% endapi-method-parameter %}
 {% endapi-method-path-parameters %}
@@ -458,7 +458,7 @@ Check whether a model instance exists in the data source
 {% api-method-spec %}
 {% api-method-request %}
 {% api-method-path-parameters %}
-{% api-method-parameter name="id" type="string" required=false %}
+{% api-method-parameter name="id" type="string" required=true %}
 Base Configuration id
 {% endapi-method-parameter %}
 {% endapi-method-path-parameters %}
@@ -521,7 +521,7 @@ Replace attributes for a model instance and persist it into the data source.
 {% api-method-spec %}
 {% api-method-request %}
 {% api-method-path-parameters %}
-{% api-method-parameter name="id" type="string" required=false %}
+{% api-method-parameter name="id" type="string" required=true %}
 Base Configuration id
 {% endapi-method-parameter %}
 {% endapi-method-path-parameters %}
@@ -601,7 +601,7 @@ Delete a model instance by  from the data source.
 {% api-method-spec %}
 {% api-method-request %}
 {% api-method-path-parameters %}
-{% api-method-parameter name="id" type="string" required=false %}
+{% api-method-parameter name="id" type="string" required=true %}
 Base Configuration id
 {% endapi-method-parameter %}
 {% endapi-method-path-parameters %}
