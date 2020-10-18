@@ -650,3 +650,146 @@ Unauthorized
 {% endapi-method-spec %}
 {% endapi-method %}
 
+
+{% api-method method="get" host="http://tower" path="/api/baseConfigurations/{id}/exists" %}
+{% api-method-summary %}
+/{id}/exists
+{% endapi-method-summary %}
+
+{% api-method-description %}
+Check whether a model instance exists in the data source.
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="id" type="string" required=false %}
+Base Configuration id
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+
+{% api-method-headers %}
+{% api-method-parameter name="Authentication" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% endapi-method-headers %}
+
+{% api-method-query-parameters %}
+{% api-method-parameter name="access\_token" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% endapi-method-query-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+Base Configurations exists \(or not\).
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "exists": true
+}
+```
+{% endapi-method-response-example %}
+
+{% api-method-response-example httpCode=401 %}
+{% api-method-response-example-description %}
+Unauthorized
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "error": {
+    "statusCode": 401,
+    "name": "Error",
+    "message": "Authorization Required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
+
+{% api-method method="post" host="http://tower" path="/api/baseConfigurations/{id}/replace" %}
+{% api-method-summary %}
+/{id}/replace
+{% endapi-method-summary %}
+
+{% api-method-description %}
+Replace attributes for a model instance and persist it into the data source.
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="id" type="string" required=false %}
+Base Configuration id
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+
+{% api-method-headers %}
+{% api-method-parameter name="Authentication" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% endapi-method-headers %}
+
+{% api-method-query-parameters %}
+{% api-method-parameter name="access\_token" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% endapi-method-query-parameters %}
+
+{% api-method-body-parameters %}
+{% api-method-parameter name="icon" type="string" required=false %}
+Icon name or svc to show it on user interface.
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="sequenceNumber" type="integer" required=false %}
+Sequence number - will be updated automaticaly
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="name" type="string" required=false %}
+Base Configuration name
+{% endapi-method-parameter %}
+{% endapi-method-body-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+Base Configurations saved successfully.
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "name": "string",
+  "sequenceNumber": 0,
+  "icon": "string",
+  "id": "string"
+}
+```
+{% endapi-method-response-example %}
+
+{% api-method-response-example httpCode=401 %}
+{% api-method-response-example-description %}
+Unauthorized
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "error": {
+    "statusCode": 401,
+    "name": "Error",
+    "message": "Authorization Required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
