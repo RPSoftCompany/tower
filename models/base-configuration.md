@@ -919,35 +919,287 @@ Unauthorized
 {% endapi-method-spec %}
 {% endapi-method %}
 
-{% api-method method="get" host="http://tower" path="/api/baseConfigurations/count" %}
+{% api-method method="get" host="http://tower" path="/api/baseConfigurations/findOne" %}
 {% api-method-summary %}
 /findOne
 {% endapi-method-summary %}
 
 {% api-method-description %}
-
+Find first instance of the model matched by filter from the data source.
 {% endapi-method-description %}
 
 {% api-method-spec %}
 {% api-method-request %}
-{% api-method-path-parameters %}
-{% api-method-parameter name="" type="string" required=false %}
-
+{% api-method-headers %}
+{% api-method-parameter name="Authentication" type="string" required=false %}
+Authentication token.
 {% endapi-method-parameter %}
-{% endapi-method-path-parameters %}
+{% endapi-method-headers %}
+
+{% api-method-query-parameters %}
+{% api-method-parameter name="filter" type="string" required=false %}
+Where filter. You can read more about it on this page https://loopback.io/doc/en/lb3/Where-filter.html
+{% endapi-method-parameter %}
+{% endapi-method-query-parameters %}
 {% endapi-method-request %}
 
 {% api-method-response %}
 {% api-method-response-example httpCode=200 %}
 {% api-method-response-example-description %}
-
+Base configurations successfully obtained.
 {% endapi-method-response-example-description %}
 
+```text
+{
+    "name": "string",
+    "sequenceNumber": 0,
+    "icon": "string",
+    "id": "string"
+}
 ```
+{% endapi-method-response-example %}
 
+{% api-method-response-example httpCode=401 %}
+{% api-method-response-example-description %}
+Unathorized
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "error": {
+    "statusCode": 401,
+    "name": "Error",
+    "message": "Authorization Required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
 ```
 {% endapi-method-response-example %}
 {% endapi-method-response %}
 {% endapi-method-spec %}
 {% endapi-method %}
 
+{% api-method method="post" host="http://tower" path="/api/baseConfigurations/replaceOrCreate" %}
+{% api-method-summary %}
+/replaceOrCreate
+{% endapi-method-summary %}
+
+{% api-method-description %}
+Replace an existing model instance or insert a new one into the data source
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-headers %}
+{% api-method-parameter name="Authentication" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% endapi-method-headers %}
+
+{% api-method-query-parameters %}
+{% api-method-parameter name="access\_token" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% endapi-method-query-parameters %}
+
+{% api-method-body-parameters %}
+{% api-method-parameter name="icon" type="string" required=false %}
+Icon name or svc to show it on user interface.
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="sequenceNumber" type="integer" required=false %}
+Sequence number - will be updated automaticaly
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="name" type="string" required=false %}
+Base Configuration name
+{% endapi-method-parameter %}
+{% endapi-method-body-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+Base Configurations saved successfully.
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "name": "string",
+  "sequenceNumber": 0,
+  "icon": "string",
+  "id": "string"
+}
+```
+{% endapi-method-response-example %}
+
+{% api-method-response-example httpCode=401 %}
+{% api-method-response-example-description %}
+Unauthorized
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "error": {
+    "statusCode": 401,
+    "name": "Error",
+    "message": "Authorization Required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
+
+{% api-method method="post" host="http://tower" path="/api/baseConfigurations/update" %}
+{% api-method-summary %}
+/update
+{% endapi-method-summary %}
+
+{% api-method-description %}
+Update instances of the model matched by {{where}} from the data source
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-headers %}
+{% api-method-parameter name="Authentication" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% endapi-method-headers %}
+
+{% api-method-query-parameters %}
+{% api-method-parameter name="access\_token" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% api-method-parameter name="where" type="string" required=false %}
+Where filter. You can read more about it on this page https://loopback.io/doc/en/lb3/Where-filter.html
+{% endapi-method-parameter %}
+{% endapi-method-query-parameters %}
+
+{% api-method-body-parameters %}
+{% api-method-parameter name="icon" type="string" required=false %}
+Icon name or svc to show it on user interface.
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="sequenceNumber" type="integer" required=false %}
+Sequence number - will be updated automaticaly
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="name" type="string" required=false %}
+Base Configuration name
+{% endapi-method-parameter %}
+{% endapi-method-body-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+Base Configurations updated successfully.
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "count": 0
+}
+```
+{% endapi-method-response-example %}
+
+{% api-method-response-example httpCode=401 %}
+{% api-method-response-example-description %}
+Unauthorized
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "error": {
+    "statusCode": 401,
+    "name": "Error",
+    "message": "Authorization Required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
+
+{% api-method method="post" host="http://tower" path="/api/baseConfigurations/upsertWithWhere" %}
+{% api-method-summary %}
+/upsertWithWhere
+{% endapi-method-summary %}
+
+{% api-method-description %}
+Update an existing model instance or insert a new one into the data source based on the where criteria
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-headers %}
+{% api-method-parameter name="Authentication" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% endapi-method-headers %}
+
+{% api-method-query-parameters %}
+{% api-method-parameter name="access\_token" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+{% api-method-parameter name="where" type="string" required=false %}
+Where filter. You can read more about it on this page https://loopback.io/doc/en/lb3/Where-filter.html
+{% endapi-method-parameter %}
+{% endapi-method-query-parameters %}
+
+{% api-method-body-parameters %}
+{% api-method-parameter name="icon" type="string" required=false %}
+Icon name or svc to show it on user interface.
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="sequenceNumber" type="integer" required=false %}
+Sequence number - will be updated automaticaly
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="name" type="string" required=false %}
+Base Configuration name
+{% endapi-method-parameter %}
+{% endapi-method-body-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+Base Configurations updated successfully.
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "name": "string",
+  "sequenceNumber": 0,
+  "icon": "string",
+  "id": "string"
+}
+```
+{% endapi-method-response-example %}
+
+{% api-method-response-example httpCode=401 %}
+{% api-method-response-example-description %}
+Unauthorized
+{% endapi-method-response-example-description %}
+
+```text
+{
+  "error": {
+    "statusCode": 401,
+    "name": "Error",
+    "message": "Authorization Required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
