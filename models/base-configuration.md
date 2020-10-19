@@ -833,7 +833,7 @@ Base Configuration name
 Base Configuration successfully updated.
 {% endapi-method-response-example-description %}
 
-```
+```text
 
 ```
 {% endapi-method-response-example %}
@@ -843,7 +843,7 @@ Base Configuration successfully updated.
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -892,7 +892,7 @@ Authentication token
 
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "count": 0
 }
@@ -904,7 +904,7 @@ Authentication token
 Unauthorized
 {% endapi-method-response-example-description %}
 
-```
+```text
 {
   "error": {
     "statusCode": 401,
@@ -937,6 +937,10 @@ Authentication token.
 {% endapi-method-headers %}
 
 {% api-method-query-parameters %}
+{% api-method-parameter name="access\_token" type="string" required=false %}
+Authentication token.
+{% endapi-method-parameter %}
+
 {% api-method-parameter name="filter" type="string" required=false %}
 Where filter. You can read more about it on this page https://loopback.io/doc/en/lb3/Where-filter.html
 {% endapi-method-parameter %}
@@ -1059,7 +1063,7 @@ Unauthorized
 {% endapi-method-summary %}
 
 {% api-method-description %}
-Update instances of the model matched by {{where}} from the data source
+Update instances of the model matched by  from the data source
 {% endapi-method-description %}
 
 {% api-method-spec %}
@@ -1074,6 +1078,7 @@ Authentication token.
 {% api-method-parameter name="access\_token" type="string" required=false %}
 Authentication token.
 {% endapi-method-parameter %}
+
 {% api-method-parameter name="where" type="string" required=false %}
 Where filter. You can read more about it on this page https://loopback.io/doc/en/lb3/Where-filter.html
 {% endapi-method-parameter %}
@@ -1148,6 +1153,7 @@ Authentication token.
 {% api-method-parameter name="access\_token" type="string" required=false %}
 Authentication token.
 {% endapi-method-parameter %}
+
 {% api-method-parameter name="where" type="string" required=false %}
 Where filter. You can read more about it on this page https://loopback.io/doc/en/lb3/Where-filter.html
 {% endapi-method-parameter %}
@@ -1203,3 +1209,4 @@ Unauthorized
 {% endapi-method-response %}
 {% endapi-method-spec %}
 {% endapi-method %}
+
