@@ -595,7 +595,7 @@ Unauthorized
 {% endapi-method-summary %}
 
 {% api-method-description %}
-Delete a model instance by  from the data source.
+Delete a model instance by from the data source.
 {% endapi-method-description %}
 
 {% api-method-spec %}
@@ -650,7 +650,6 @@ Unauthorized
 {% endapi-method-spec %}
 {% endapi-method %}
 
-
 {% api-method method="get" host="http://tower" path="/api/baseConfigurations/{id}/exists" %}
 {% api-method-summary %}
 /{id}/exists
@@ -663,7 +662,7 @@ Check whether a model instance exists in the data source.
 {% api-method-spec %}
 {% api-method-request %}
 {% api-method-path-parameters %}
-{% api-method-parameter name="id" type="string" required=false %}
+{% api-method-parameter name="id" type="string" required=true %}
 Base Configuration id
 {% endapi-method-parameter %}
 {% endapi-method-path-parameters %}
@@ -726,7 +725,7 @@ Replace attributes for a model instance and persist it into the data source.
 {% api-method-spec %}
 {% api-method-request %}
 {% api-method-path-parameters %}
-{% api-method-parameter name="id" type="string" required=false %}
+{% api-method-parameter name="id" type="string" required=true %}
 Base Configuration id
 {% endapi-method-parameter %}
 {% endapi-method-path-parameters %}
@@ -793,3 +792,162 @@ Unauthorized
 {% endapi-method-response %}
 {% endapi-method-spec %}
 {% endapi-method %}
+
+{% api-method method="post" host="http://tower" path="/api/baseConfigurations/changeSequence" %}
+{% api-method-summary %}
+/changeSequence
+{% endapi-method-summary %}
+
+{% api-method-description %}
+Changes base model sequences
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-headers %}
+{% api-method-parameter name="Authentication" type="string" required=false %}
+Authentication token
+{% endapi-method-parameter %}
+{% endapi-method-headers %}
+
+{% api-method-query-parameters %}
+{% api-method-parameter name="access\_token" type="string" required=false %}
+Authentication token
+{% endapi-method-parameter %}
+{% endapi-method-query-parameters %}
+
+{% api-method-body-parameters %}
+{% api-method-parameter name="squenceNumber" type="string" required=true %}
+Value, where you what this model to be in sequence
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="name" type="string" required=true %}
+Base Configuration name
+{% endapi-method-parameter %}
+{% endapi-method-body-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+Base Configuration successfully updated.
+{% endapi-method-response-example-description %}
+
+```
+
+```
+{% endapi-method-response-example %}
+
+{% api-method-response-example httpCode=401 %}
+{% api-method-response-example-description %}
+Unauthorized
+{% endapi-method-response-example-description %}
+
+```
+{
+  "error": {
+    "statusCode": 401,
+    "name": "Error",
+    "message": "Authorization Required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
+
+{% api-method method="get" host="http://tower" path="/api/baseConfigurations/count" %}
+{% api-method-summary %}
+/count
+{% endapi-method-summary %}
+
+{% api-method-description %}
+Count instances of the model matched by where from the data source
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-headers %}
+{% api-method-parameter name="Authentication" type="string" required=false %}
+Authentication token
+{% endapi-method-parameter %}
+{% endapi-method-headers %}
+
+{% api-method-query-parameters %}
+{% api-method-parameter name="where" type="string" required=false %}
+where filter. You can read more about it on this page https://loopback.io/doc/en/lb3/Where-filter.html
+{% endapi-method-parameter %}
+
+{% api-method-parameter name="access\_token" type="string" required=false %}
+Authentication token
+{% endapi-method-parameter %}
+{% endapi-method-query-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+
+{% endapi-method-response-example-description %}
+
+```
+{
+  "count": 0
+}
+```
+{% endapi-method-response-example %}
+
+{% api-method-response-example httpCode=401 %}
+{% api-method-response-example-description %}
+Unauthorized
+{% endapi-method-response-example-description %}
+
+```
+{
+  "error": {
+    "statusCode": 401,
+    "name": "Error",
+    "message": "Authorization Required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
+
+{% api-method method="get" host="http://tower" path="/api/baseConfigurations/count" %}
+{% api-method-summary %}
+/findOne
+{% endapi-method-summary %}
+
+{% api-method-description %}
+
+{% endapi-method-description %}
+
+{% api-method-spec %}
+{% api-method-request %}
+{% api-method-path-parameters %}
+{% api-method-parameter name="" type="string" required=false %}
+
+{% endapi-method-parameter %}
+{% endapi-method-path-parameters %}
+{% endapi-method-request %}
+
+{% api-method-response %}
+{% api-method-response-example httpCode=200 %}
+{% api-method-response-example-description %}
+
+{% endapi-method-response-example-description %}
+
+```
+
+```
+{% endapi-method-response-example %}
+{% endapi-method-response %}
+{% endapi-method-spec %}
+{% endapi-method %}
+
