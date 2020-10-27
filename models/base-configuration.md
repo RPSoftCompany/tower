@@ -68,8 +68,10 @@ Unauthorized
   "error": {
     "statusCode": 401,
     "name": "Error",
-    "message": "Authorization Required",
-    "code": "AUTHORIZATION_REQUIR
+    "message": "Authorization required",
+    "code": "AUTHORIZATION_REQUIRED"
+  }
+}
 ```
 {% endapi-method-response-example %}
 {% endapi-method-response %}
@@ -128,7 +130,7 @@ Unathorized
   "error": {
     "statusCode": 401,
     "name": "Error",
-    "message": "Authorization Required",
+    "message": "Authorization required",
     "code": "AUTHORIZATION_REQUIRED"
   }
 }
@@ -276,7 +278,7 @@ Unauthorized
   "error": {
     "statusCode": 401,
     "name": "Error",
-    "message": "Authorization Required",
+    "message": "Authorization required",
     "code": "AUTHORIZATION_REQUIRED"
   }
 }
