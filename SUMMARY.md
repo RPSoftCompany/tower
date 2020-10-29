@@ -20,7 +20,7 @@
 * [Model](user-interface/model.md)
 * [Settings](user-interface/settings.md)
 
-## Models
+## Models \(API\) <a id="models"></a>
 
 * [Base Configuration](models/base-configuration.md)
 * [Configuration](models/configuration.md)
