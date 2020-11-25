@@ -6,6 +6,10 @@ import './registerServiceWorker'
 import vuetify from './plugins/vuetify'
 import axios from 'axios'
 
+import VueCookie from 'vue-cookie'
+
+Vue.use(VueCookie)
+
 Vue.config.productionTip = false
 
 Vue.prototype.$http = axios

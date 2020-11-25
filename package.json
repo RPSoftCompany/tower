@@ -26,5 +26,6 @@
   "homepage": "https://github.com/RPSoftCompany/tower#readme",
   "devDependencies": {
     "recursive-install": "^1.4.0"
-  }
+  },
+  "dependencies": {}
 }

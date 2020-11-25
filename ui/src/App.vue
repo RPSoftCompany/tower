@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/.
 <template>
   <v-app>
     <v-dialog
@@ -107,6 +107,8 @@
       }
     },
     async mounted () {
+      this.$cookie.set('SameSite', 'Lax', { expires: '10Y' })
+
       this.axios.interceptors.response.use(
         response => response,
         e => {

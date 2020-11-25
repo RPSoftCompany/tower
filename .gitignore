@@ -78,7 +78,6 @@ typings/
 
 # Nuxt.js build / generate output
 .nuxt
-dist/tower-*
 
 # Gatsby files
 .cache/
@@ -105,3 +104,5 @@ node_modules
 server/client
 server/secret
 server/server/datasources.test*
+
+dist/tower-*

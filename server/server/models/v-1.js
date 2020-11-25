@@ -56,10 +56,8 @@ module.exports = function(V1) {
     V1.getConfiguration = async (data, options) => {
         V1.app.get('winston').log('debug', 'V1.getConfiguration STARTED');
 
-        let url = data._parsedUrl.path;
+        let url = data.params[0];
         const query = data.query;
-
-        url = url.replace(/%20/, '');
 
         if (url.indexOf('?') !== -1) {
             url = url.substring(0, url.indexOf('?'));
