@@ -24,26 +24,26 @@ module.exports = function(app) {
         const token = await member.basicAuthLogin(context);
 
         if (token === null) {
-            let accessToken = context.args?.options?.accessToken ? context.args.options.accessToken :
-                context.req.query.access_token
+            let accessToken = context.args.options.accessToken ? context.args.options.accessToken :
+                context.req.query.access_token;
 
-            if(!accessToken) {
-                let headerToken = null
-                for(const header of app.get("AuthorizationHeaders")){
-                    if(!headerToken) {
-                        headerToken = context.req.headers[header]
+            if (!accessToken) {
+                let headerToken = null;
+                for (const header of app.get('AuthorizationHeaders')) {
+                    if (!headerToken) {
+                        headerToken = context.req.headers[header];
                     }
                 }
 
-                if(headerToken) {
-                    accessToken = headerToken
+                if (headerToken) {
+                    accessToken = headerToken;
                 }
             }
 
-            const decryptedToken = app.get("ConfigurationInstance").decryptPassword(accessToken)
+            const decryptedToken = app.get('ConfigurationInstance').decryptPassword(accessToken);
 
-            if(decryptedToken) {
-                context.req.accessToken = await getAccessTokenDetails(app, decryptedToken)
+            if (decryptedToken) {
+                context.req.accessToken = await getAccessTokenDetails(app, decryptedToken);
                 if (context.args.options === undefined) {
                     context.args.options = {};
                 }
@@ -56,7 +56,7 @@ module.exports = function(app) {
                 context.args.options = {};
             }
             context.args.options.accessToken = token;
-            context.req.accessToken = token
+            context.req.accessToken = token;
 
             await baseAuth(context, next);
         }
@@ -64,7 +64,7 @@ module.exports = function(app) {
 
     const getAccessTokenDetails = async (app, token) => {
         return app.models.AccessToken.findById(token);
-    }
+    };
 
     Role.registerResolver('groupSolver', async (_role, context) => {
         const logger = app.get('winston');
