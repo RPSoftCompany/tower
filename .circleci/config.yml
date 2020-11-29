@@ -42,4 +42,4 @@ workflows:
                 filters:
                     branches:
                         only:
-                            - master
+                            - 1.9.0
