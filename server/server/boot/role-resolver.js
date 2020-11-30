@@ -24,8 +24,12 @@ module.exports = function(app) {
         const token = await member.basicAuthLogin(context);
 
         if (token === null) {
-            let accessToken = context.args.options.accessToken ? context.args.options.accessToken :
-                context.req.query.access_token;
+            let accessToken = null;
+            if (!context.args.options && context.args.options.accessToken) {
+                accessToken = context.args.options.accessToken;
+            } else if (context.req.query) {
+                accessToken = context.req.query.access_token;
+            }
 
             if (!accessToken) {
                 let headerToken = null;
