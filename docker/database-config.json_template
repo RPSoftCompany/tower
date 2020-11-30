@@ -1,0 +1,5 @@
+{
+    "mongoDB": {
+        "url": "$DATABASE"
+    }
+}

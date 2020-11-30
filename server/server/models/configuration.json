@@ -19,9 +19,7 @@
       "default": "$now"
     },
     "variables": {
-      "type": [
-        "variable"
-      ],
+      "type": "any",
       "required": true
     },
     "createdBy": {

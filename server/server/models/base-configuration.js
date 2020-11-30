@@ -66,7 +66,7 @@ module.exports = function(Baseconfiguration) {
     });
 
     Baseconfiguration.remoteMethod('changeSequence', {
-        http: {verb: 'POST', status: 200, path: '/changeSequence'},
+        http: {verb: 'POST', status: 204, path: '/changeSequence'},
         accepts: [
             {arg: 'model', type: 'baseConfiguration', http: {source: 'body'}},
         ],

@@ -1,6 +1,6 @@
 {
   "name": "tower",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,8 @@
   },
   "homepage": "https://github.com/RPSoftCompany/tower#readme",
   "devDependencies": {
+    "nodemon": "^2.0.6",
     "recursive-install": "^1.4.0"
-  }
+  },
+  "dependencies": {}
 }

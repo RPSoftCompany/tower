@@ -1,0 +1,10 @@
+{
+  "host": "$HOST",
+  "port": $PORT,
+  "logLevel": "$LOG_LEVEL",
+  "explorer": $EXPLORER,
+  "nonSafe": $NON_SAFE,
+  "tokenHeaders": $TOKEN_HEADERS,
+  "#privateKey": "./certs/privatekey.pem",
+  "#certificate": "./certs/certificate.pem"
+}

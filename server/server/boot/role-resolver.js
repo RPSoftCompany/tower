@@ -24,14 +24,50 @@ module.exports = function(app) {
         const token = await member.basicAuthLogin(context);
 
         if (token === null) {
-            baseAuth(context, next);
+            let accessToken = null;
+            if (context.args.options && context.args.options.accessToken) {
+                accessToken = context.args.options.accessToken;
+            } else if (context.req.query) {
+                accessToken = context.req.query.access_token;
+            }
+
+            if (!accessToken) {
+                let headerToken = null;
+                for (const header of app.get('AuthorizationHeaders')) {
+                    if (!headerToken) {
+                        headerToken = context.req.headers[header];
+                    }
+                }
+
+                if (headerToken) {
+                    accessToken = headerToken;
+                }
+            }
+
+            const decryptedToken = app.get('ConfigurationInstance').decryptPassword(accessToken);
+
+            if (decryptedToken) {
+                context.req.accessToken = await getAccessTokenDetails(app, decryptedToken);
+                if (context.args.options === undefined) {
+                    context.args.options = {};
+                }
+                context.args.options.accessToken = context.req.accessToken;
+            }
+
+            await baseAuth(context, next);
         } else {
             if (context.args.options === undefined) {
                 context.args.options = {};
             }
             context.args.options.accessToken = token;
-            next();
+            context.req.accessToken = token;
+
+            await baseAuth(context, next);
         }
+    };
+
+    const getAccessTokenDetails = async (app, token) => {
+        return app.models.AccessToken.findById(token);
     };
 
     Role.registerResolver('groupSolver', async (_role, context) => {

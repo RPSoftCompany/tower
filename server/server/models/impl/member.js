@@ -189,7 +189,7 @@ module.exports = class Member {
             },
         });
 
-        if (this.ldapServer !== null && credentials.username !== 'admin' && user === null) {
+        if (this.ldapServer && credentials.username !== 'admin' && user === null) {
             try {
                 const configuration = new ConfigurationClass(this.app);
                 await configuration.createCrypt();
@@ -246,7 +246,7 @@ module.exports = class Member {
                 ttl: ldapUser.ttl,
                 userId: ldapUser.userId,
                 created: ldapUser.created,
-                id: ldapUser.id,
+                id: this.app.get('ConfigurationInstance').encryptPassword(ldapUser.id),
             };
 
             if (include === 'user') {
@@ -285,7 +285,7 @@ module.exports = class Member {
                 },
             });
 
-            if (member !== null && member !== undefined) {
+            if (member) {
                 if (member.technicalUser) {
                     this.log('debug', 'login', 'FINISHED');
                     throw new HttpErrors.Unauthorized('User is technical only');
@@ -314,7 +314,7 @@ module.exports = class Member {
                 ttl: user.ttl,
                 userId: user.userId,
                 created: user.created,
-                id: user.id,
+                id: this.app.get('ConfigurationInstance').encryptPassword(user.id),
             };
 
             if (include === 'user') {

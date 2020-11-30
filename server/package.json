@@ -1,6 +1,6 @@
 {
   "name": "tower",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "bin": "server/server.js",
   "main": "server/server.js",
   "engines": {
@@ -68,6 +68,7 @@
     "express-session": "^1.16.2",
     "file-system": "^2.2.2",
     "helmet": "^3.21.1",
+    "http-errors": "^1.8.0",
     "ldap-authentication": "^2.2.1",
     "ldapauth-fork": "^4.2.0",
     "ldapjs": "^1.0.2",
@@ -82,7 +83,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "eslint": "^6.0.0",
+    "eslint": "^6.8.0",
     "eslint-config-google": "^0.13.0",
     "eslint-config-loopback": "^8.0.0",
     "mocha": "^6.2.0",

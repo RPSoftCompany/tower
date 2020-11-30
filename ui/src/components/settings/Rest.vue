@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/.
 
 <template>
   <v-card
@@ -180,7 +180,6 @@
       },
 
       newRowValid: true,
-      registred: false,
     }),
     computed: {
       addDisabled () {
@@ -188,14 +187,10 @@
           return true
         }
 
-        if (this.newItem.template === '' || this.newItem.template === null) {
-          return true
-        }
-
-        return false
+        return this.newItem.template === '' || this.newItem.template === null
       },
     },
-    async mounted () {
+    mounted () {
       this.resetData()
     },
     methods: {
@@ -289,7 +284,7 @@
         this.newItem.template = null
         this.newItem.returnType = 'json'
 
-        this.resetData()
+        await this.resetData()
       },
       async saveConfig (i) {
         const find = this.$refs.existingRowForm.find(el => {

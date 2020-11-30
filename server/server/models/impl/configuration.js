@@ -164,7 +164,7 @@ module.exports = class Configuration {
      * @return {string} encrypted password
      */
     encryptPassword(password) {
-        if (password === '' || password === null || password === undefined) {
+        if (!password) {
             return '';
         }
 
@@ -187,20 +187,24 @@ module.exports = class Configuration {
      * @return {string} decrypted password
      */
     decryptPassword(password) {
-        if (password === '' || password === null || password === undefined) {
+        if (!password) {
             return '';
         }
 
-        const textParts = password.split(':');
-        const ivText = textParts.shift().split('').reverse().join('');
-        const iv = Buffer.from(ivText, 'hex');
-        const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-        const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(this.cryptr), iv);
-        let decrypted = decipher.update(encryptedText);
+        try {
+            const textParts = password.split(':');
+            const ivText = textParts.shift().split('').reverse().join('');
+            const iv = Buffer.from(ivText, 'hex');
+            const encryptedText = Buffer.from(textParts.join(':'), 'hex');
+            const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(this.cryptr), iv);
+            let decrypted = decipher.update(encryptedText);
 
-        decrypted = Buffer.concat([decrypted, decipher.final()]);
+            decrypted = Buffer.concat([decrypted, decipher.final()]);
 
-        return decrypted.toString();
+            return decrypted.toString();
+        } catch (e) {
+            return '';
+        }
     }
 
     /**
@@ -254,11 +258,20 @@ module.exports = class Configuration {
             }
 
             if (hasPermissions) {
-                config.variables.map((variable) => {
-                    if (variable.type === 'password') {
-                        variable.value = this.decryptPassword(variable.value);
+                if (!Array.isArray(config.variables)) {
+                    config.variables = this.decryptPassword(config.variables);
+                    if (config.variables) {
+                        config.variables = JSON.parse(config.variables);
+                    } else {
+                        config.variables = [];
                     }
-                });
+                } else {
+                    config.variables.map((variable) => {
+                        if (variable.type === 'password') {
+                            variable.value = this.decryptPassword(variable.value);
+                        }
+                    });
+                }
                 findArray.push(config);
             }
         }
@@ -379,33 +392,34 @@ module.exports = class Configuration {
             }
         }
 
-        config.variables.map( (variable) => {
-            if (variable.name === undefined || variable.name === null || variable.name === '') {
+        config.variables.map( (variable, i) => {
+            if (!variable.name) {
                 this.log('debug', 'createConfiguration', 'FINISHED');
                 throw new HttpErrors.BadRequest('Invalid variable: name not valid');
             }
-            if (variable.type === undefined || variable.type === null || variable.type === '') {
+            if (!variable.type) {
                 this.log('debug', 'createConfiguration', 'FINISHED');
                 throw new HttpErrors.BadRequest('Invalid variable: type not valid');
             }
 
-            if (variable.type === 'password' && variable.value !== '' &&
-                variable.value !== null && variable.value !== undefined) {
+            if (variable.type === 'password' && variable.value && !this.app.fullEncryption) {
                 variable.value = this.encryptPassword(variable.value);
             }
 
-            if (variable.type === 'number') {
-                if (isNaN(variable.value)) {
-                    this.log('debug', 'createConfiguration', 'FINISHED');
-                    throw new HttpErrors.BadRequest('Invalid variable: value is not a number');
-                }
+            if (variable.type === 'number' && isNaN(variable.value)) {
+                this.log('debug', 'createConfiguration', 'FINISHED');
+                throw new HttpErrors.BadRequest('Invalid variable: value is not a number');
             }
 
-            const random = Math.random().toString(36).substr(2, 15);
-            variable._id = random;
+            variable._id = i;
         });
 
-        newObject.variables = config.variables;
+        if (this.app.fullEncryption) {
+            const allVariables = JSON.stringify(config.variables);
+            newObject.variables = this.encryptPassword(allVariables);
+        } else {
+            newObject.variables = config.variables;
+        }
 
         const configuration = this.app.models.configuration;
         let version = await configuration.count(basesObj);

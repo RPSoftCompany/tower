@@ -169,7 +169,7 @@
         return this.filteredIcons.slice((this.iconsPage - 1) * this.iconsPerPage, this.iconsPage * this.iconsPerPage)
       },
     },
-    async mounted () {
+    mounted () {
       this.resetData()
     },
     methods: {
@@ -234,16 +234,16 @@
           newBase,
         )
 
-        this.resetData()
         this.$eventHub.$emit('updateIcons')
+        await this.resetData()
       },
       async deleteBase (item) {
         await this.axios.delete(
           `${this.$store.state.mainUrl}/baseConfigurations/${item.id}`,
         )
 
-        this.resetData()
         this.$eventHub.$emit('updateIcons')
+        await this.resetData()
       },
     },
   }

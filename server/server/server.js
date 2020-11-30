@@ -86,6 +86,8 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
 
 app.nonSafe = nonSafe;
 
+app.fullEncryption = mainConfig.config.fullEncryption === undefined ? false : mainConfig.config.fullEncryption;
+
 const tokenHeaders = mainConfig.config.tokenHeaders === undefined ? [] : mainConfig.config.tokenHeaders;
 
 const winstonFormat = winston.format.printf(({level, message, _label, timestamp}) => {
@@ -106,7 +108,7 @@ const logger = (module.exports = winston.createLogger({
         winston.format.colorize({
             all: true,
         }),
-        winstonFormat
+        winstonFormat,
     ),
 }));
 
@@ -147,6 +149,8 @@ app.start = () => {
             headers: ['Authorization', ...tokenHeaders],
             params: ['access_token'],
         }));
+
+        app.set('AuthorizationHeaders', ['authorization', ...tokenHeaders]);
 
         console.log();
         console.log('============================================================');

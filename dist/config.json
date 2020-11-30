@@ -4,6 +4,7 @@
   "logLevel": "error",
   "explorer": true,
   "nonSafe": false,
+  "fullEncryption": false,
   "tokenHeaders": [],
   "#privateKey": "./certs/privatekey.pem",
   "#certificate": "./certs/certificate.pem"

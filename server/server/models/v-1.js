@@ -56,9 +56,8 @@ module.exports = function(V1) {
     V1.getConfiguration = async (data, options) => {
         V1.app.get('winston').log('debug', 'V1.getConfiguration STARTED');
 
-        let url = data._parsedUrl.path;
-
-        url = url.replace(/%20/, '');
+        let url = data.params[0];
+        const query = data.query;
 
         if (url.indexOf('?') !== -1) {
             url = url.substring(0, url.indexOf('?'));
@@ -73,20 +72,32 @@ module.exports = function(V1) {
             variables = await v1Model.getDataFromConfiguration(configurations[i], url, options);
             usedConfig = configurations[i];
             if (variables.variables !== undefined) {
+                if (query.include !== undefined) {
+                    const regex = new RegExp(query.include);
+                    variables.variables = variables.variables.filter((el) => {
+                        return regex.test(el.name);
+                    });
+                }
+                if (query.exclude !== undefined) {
+                    const regex = new RegExp(query.exclude);
+                    variables.variables = variables.variables.filter((el) => {
+                        return !regex.test(el.name);
+                    });
+                }
                 i = configurations.length;
             }
         }
 
         let output = [];
 
-        if (variables.variables !== undefined) {
+        if (variables.variables !== undefined && variables.variables.length !== 0) {
             const returns = usedConfig.returnType === 'json';
             const inter = new Interpreter(usedConfig.template, variables, returns, []);
             output = inter.handle();
         }
 
         if (output.length === 0) {
-            throw new HttpErrors.Unauthorized();
+            throw new HttpErrors.NotFound();
         } else {
             // removing new line at the end of output
             output = output.replace(/\s+$/, '');
