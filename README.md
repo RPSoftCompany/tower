@@ -10,6 +10,8 @@ But, of course, that's not the only feature you can find in Tower. This tools en
 
 But enought of this, let us show you how to install and start Tower.
 
+For more information go to our [documentation](https://rpsoft.gitbook.io/tower/)
+
 
 
 
