@@ -44,6 +44,7 @@ if (process.env.NODE_ENV === 'production') {
     mainConfig.config.logLevel = userMainConfig.logLevel;
     mainConfig.config.nonSafe = userMainConfig.nonSafe;
     mainConfig.config.tokenHeaders = userMainConfig.tokenHeaders;
+    mainConfig.config.fullEncryption = userMainConfig.fullEncryption;
 
     mainConfig.components = null;
 
