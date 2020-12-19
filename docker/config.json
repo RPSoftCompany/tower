@@ -4,6 +4,7 @@
   "logLevel": "$LOG_LEVEL",
   "explorer": $EXPLORER,
   "nonSafe": $NON_SAFE,
+  "fullEncryption": $FULL_ENCRYPTION,
   "tokenHeaders": $TOKEN_HEADERS,
   "#privateKey": "./certs/privatekey.pem",
   "#certificate": "./certs/certificate.pem"
