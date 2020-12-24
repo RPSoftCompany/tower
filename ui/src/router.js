@@ -47,7 +47,7 @@ const router = new Router({
     },
     {
       path: '/initialize',
-      name: 'Initilize',
+      name: 'Initialize',
       component: () => import('./views/Initialize.vue'),
     },
   ],

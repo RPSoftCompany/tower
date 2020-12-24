@@ -107,8 +107,6 @@
       }
     },
     async mounted () {
-      this.$cookie.set('SameSite', 'Lax', { expires: '10Y' })
-
       this.axios.interceptors.response.use(
         response => response,
         e => {

@@ -29,7 +29,9 @@
           :disabled="!isNew || !editable"
           :rules="currentRules"
           label="Name"
+          :error-messages="errorMessage"
           class="pl-5 pr-1"
+          @input="errorMessage = undefined"
           @change="onChange"
         />
       </v-col>
@@ -118,7 +120,7 @@
           :class="{'elevation-0': !variableForced}"
           fab
           small
-          class="mt-3 mx-1 variableButton"
+          class="mt-1 mx-1 variableButton"
           v-on="on"
           @click="variableForced = !variableForced; onChange()"
         >
@@ -139,7 +141,7 @@
           :class="{'elevation-0': !variableAddIfAbsent, 'mr-4': !editable}"
           fab
           small
-          class="mt-3 mx-1 variableButton"
+          class="mt-1 mx-1 variableButton"
           v-on="on"
           @click="variableAddIfAbsent = !variableAddIfAbsent; onChange()"
         >
@@ -158,7 +160,7 @@
         <v-btn
           v-if="editable"
           fab
-          class="mr-4 mt-3 ml-2 elevation-4"
+          class="mr-4 mt-1 ml-2 elevation-4"
           small
           v-on="on"
           @click="addValue"
@@ -218,6 +220,7 @@
       types: ['string', 'number', 'password', 'boolean', 'text', 'list', 'Vault'],
 
       currentRules: [],
+      errorMessage: undefined,
 
       pass_locked: true,
 
@@ -248,6 +251,17 @@
       },
     },
     methods: {
+      reset () {
+        this.$refs.variableValidationForm.reset()
+
+        this.$nextTick(() => {
+          this.variableName = null
+          this.variableType = 'string'
+          this.variableValue = ''
+          this.variableForced = true
+          this.variableAddIfAbsent = true
+        })
+      },
       addValue () {
         if (this.isNew) {
           this.currentRules = [this.rules.required]
@@ -262,16 +276,6 @@
               }
 
               this.$emit('addVariable', all)
-
-              this.$refs.variableValidationForm.reset()
-
-              this.$nextTick(() => {
-                this.variableName = null
-                this.variableType = 'string'
-                this.variableValue = ''
-                this.variableForced = true
-                this.variableAddIfAbsent = true
-              })
             }
           })
         } else {
