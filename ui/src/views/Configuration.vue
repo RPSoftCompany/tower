@@ -128,6 +128,24 @@
         @change="fillNextArray(base.sequenceNumber + 1, bases.baseValues[base.sequenceNumber])"
       />
     </div>
+    <div
+      v-if="bases.items.length === 0 && bases.loading === false"
+    >
+      <div
+        class="text-center text-h4 font-weight-light mt-5"
+        style="width: 100%"
+      >
+        You need to configure your base items first
+      </div>
+      <div
+        class="text-center text-subtitle-1 font-weight-thin"
+        style="width: 100%"
+      >
+        Go to <router-link :to="{name: 'Settings', params:{tab:'base'}}">
+          Settings > Base Models
+        </router-link>
+      </div>
+    </div>
     <v-progress-linear
       v-if="configuration.loading"
       :height="3"
@@ -340,12 +358,14 @@
       </div>
       <div v-else>
         <v-responsive
-          class="overflow-y-auto"
+          v-if="filteredItems.length > 0"
+          class="overflow-y-auto pt-2"
           style="max-height: calc(100vh - 436px)"
         >
           <v-form
             ref="configValidation"
             v-model="configuration.valid"
+            style="overflow: hidden"
           >
             <v-lazy
               v-for="item of filteredItems"
@@ -370,6 +390,7 @@
       </div>
       <div v-if="constantVariables.show">
         <v-responsive
+          v-if="filteredConstantVariables.length > 0"
           class="overflow-y-auto pt-3"
           style="max-height: calc(100vh - 351px);"
         >
@@ -1289,7 +1310,7 @@
 
         for (let i = 0; i < this.bases.items.length; i++) {
           const base = this.bases.baseValues[i]
-          if (base.base) {
+          if (base && base.base) {
             post[base.base] = base.name
           }
         }

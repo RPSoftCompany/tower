@@ -36,6 +36,11 @@ const router = new Router({
       component: () => import('./views/Settings.vue'),
     },
     {
+      path: '/settings/:tab',
+      name: 'SettingsTab',
+      component: () => import('./views/Settings.vue'),
+    },
+    {
       path: '/noPermissions',
       name: 'noPermissions',
       component: () => import('./views/NoPermissions.vue'),

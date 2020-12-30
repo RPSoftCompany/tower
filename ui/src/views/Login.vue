@@ -134,7 +134,7 @@
         let path = null
 
         if (this.$store.state.user.username === 'admin' || roles.includes('admin')) {
-          return 'settings'
+          return 'settings/users'
         }
 
         if (

@@ -157,5 +157,11 @@
         }
       },
     },
+    mounted () {
+      const tab = this.$route.params.tab
+      if (tab) {
+        this.tab = tab
+      }
+    },
   }
 </script>
