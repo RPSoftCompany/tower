@@ -76,6 +76,7 @@
               :loading="loading"
               data-cy="loginButton"
               :disabled="!form.valid"
+              :elevation="!form.valid ? 1 : undefined"
               color="primary"
               block
               @click="submit"

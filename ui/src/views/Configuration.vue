@@ -442,6 +442,7 @@
               color="primary"
               :loading="configuration.saving"
               data-cy="saveConfigurationButton"
+              :elevation="!differentThanPrevVersion ? 1 : undefined"
               @click="saveConfiguration"
             >
               {{ saveButtonText }}
