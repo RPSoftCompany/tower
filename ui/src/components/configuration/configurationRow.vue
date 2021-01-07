@@ -365,6 +365,10 @@
   border-color: rgba(0,0,0,0.05);
 }
 
+.configRow_draft {
+  background: rgba(155, 163, 158, 0.3);
+}
+
 .configRow_crossed {
   text-decoration: line-through;
 }

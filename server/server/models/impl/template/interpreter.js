@@ -53,7 +53,7 @@ class InterpreterCommon {
             if (/%%\s*effectiveDate\s*%%/.test(line)) {
                 line = line.replace(
                     /%%\s*effectiveDate\s*%%/,
-                    this.configuration.effectiveDate
+                    this.configuration.effectiveDate,
                 );
             }
         }
@@ -130,7 +130,7 @@ class InterpreterCommon {
             newTextLines.join('\n'),
             this.configuration,
             this.returnsJson,
-            this.variables
+            this.variables,
         );
 
         const handled = newIf.handle();
@@ -156,7 +156,7 @@ class InterpreterCommon {
             newTextLines.join('\n'),
             this.configuration,
             this.returnsJson,
-            this.variables
+            this.variables,
         );
         const handled = newForEach.handle();
 
@@ -447,80 +447,89 @@ class If extends InterpreterCommon {
      */
     getIfData(text) {
         // IF validation
-        const valid = /^\s*%%if\s+(\S+\[['"`]\S+['"`]\]|\S+\.(name|value)+)\s+[<>=!~]+\s+\S+\s*%%\s*/.test(text);
+        // eslint-disable-next-line max-len
+        let valid = /^\s*%%if\s+[\[]*["'`]*\s*variables\s*\[+["'`]+[^"'`]+["'`]+\s*]\s+[<>=!~]+\s+["'`]*\S+["'`]*\s*]%%/.test(text);
+        let variablesLine = true;
+        if (!valid) {
+            // eslint-disable-next-line max-len
+            valid = /^\s*%%if\s+[\[]*\s*["'`]*\s*\S+[.]+(value|type|name)+["'`]*\s+[<>=!~]+\s+["'`]*[^'"`]+["'`]*[\]]*%%/.test(text);
+            variablesLine = false;
+        }
+
         if (!valid) {
             throw new Error(`Invalid if statement: ${text}`);
         }
 
         text = text.replace(/\s*%%if\s*/, '');
+        text = text.replace(/\s*$/, '');
 
-        const variable = {
-            name: null,
-            prop: null,
-            standard: false,
-        };
-
-        let variables = /variables\[['"`]\S+['"`]\]/.exec(text);
-        if (variables !== null) {
-            variables = variables[0];
+        if (text.startsWith('[')) {
+            text = text.substring(1, text.length - 2);
         } else {
-            variables = null;
+            text = text.substring(0, text.length - 2);
         }
 
-        if (variables === null) {
-            const temp = /\S+\.(name|value)+/.exec(text)[0];
-            const split = temp.split('.');
-            variable.name = split[0];
-            variable.prop = split[1];
-
-            text = text.replace(/^\S+\s*[^=!~<>]+/, '');
-        } else {
-            let temp = text.replace(/variables\[['"`]/, '');
-            temp = temp.replace(/['"`].*/, '');
-
-            variable.name = temp;
-            variable.standard = true;
-
-            text = text.replace(/^\S+[^\s=!<>~]/, '');
+        if (text.endsWith(']')) {
+            text = text.substring(0, text.length - 1);
         }
 
-        let varValue = null;
+        text = text.replace(/^\s*/, '');
+        text = text.replace(/["'`]/g, '');
 
-        if (variable.standard) {
-            console.log(this.configurationVariables);
+        let variable = null;
 
-            varValue = this.configurationVariables.find((el) => {
+        if (variablesLine) {
+            text = text.replace(/^\s*variables\s*\[/, '');
+            variable = /^[^\]]+/.exec(text)[0].trim();
+            variable = {
+                name: variable,
+                type: 'value',
+            };
+
+            variable.value = this.configuration.variables.find((el) => {
                 return el.name === variable.name;
             });
 
-            if (varValue !== null && varValue !== undefined) {
-                varValue = varValue.value;
+            if (variable.value) {
+                variable.value = variable.value.value;
+            } else {
+                variable.value = null;
             }
         } else {
-            varValue = this.variables.find((el) => {
+            variable = /^[^<>=!~]+/.exec(text);
+
+            if (variable) {
+                variable = variable[0].trim();
+            }
+
+            variable = variable.split('.');
+            variable = {
+                name: variable[0],
+                type: variable[1],
+            };
+
+            variable.value = this.variables.find((el) => {
                 return el.varName === variable.name;
             });
 
-            if (varValue !== null && varValue !== undefined) {
-                varValue = varValue[variable.prop];
+            if (variable.value) {
+                variable.value = variable.value[variable.type];
+            } else {
+                variable.value = null;
             }
         }
 
-        if (varValue === undefined) {
-            varValue = null;
-        }
+        text = text.replace(/^[^<>=!~]+/, '');
 
-        let sign = /\s*[~=!<>]+/.exec(text)[0];
-        sign = sign.trim();
+        variable.sign = /^[<>=!~]+/.exec(text)[0];
 
-        text = text.replace(/\s*[\s=!~<>]+/, '');
+        text = text.replace(/^[<>=!~]+\s+/, '');
 
-        let condition = text.replace(/%%\s*$/, '');
-        if (condition.startsWith('"')) {
-            condition = condition.substring(1, condition.length - 1);
-        }
+        variable.condition = /^[^\]%]+/.exec(text)[0].trim();
 
-        console.log(`${varValue == condition}`);
+        const sign = variable.sign;
+        const condition = variable.condition;
+        const varValue = variable.value;
 
         if (sign === '==') {
             return `${varValue}` == `${condition}`;

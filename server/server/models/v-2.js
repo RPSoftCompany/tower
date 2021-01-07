@@ -20,11 +20,11 @@ const HttpErrors = require('http-errors');
 const Interpreter = require('./impl/template/interpreter');
 const V1 = require('./impl/v1.js');
 
-let v1Model = null;
+let v2Model = null;
 
 const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
-        v1Model = new V1(main.app, 'v1');
+        v2Model = new V1(main.app, 'v2');
     } else {
         setTimeout(() => {
             initiate(main);
@@ -32,29 +32,29 @@ const initiate = (main) => {
     }
 };
 
-module.exports = function(V1) {
-    initiate(V1);
+module.exports = function(V2) {
+    initiate(V2);
 
-    V1.disableRemoteMethodByName('upsert');
-    V1.disableRemoteMethodByName('upsertWithWhere');
-    V1.disableRemoteMethodByName('update');
-    V1.disableRemoteMethodByName('find');
-    V1.disableRemoteMethodByName('replaceOrCreate');
-    V1.disableRemoteMethodByName('create');
+    V2.disableRemoteMethodByName('upsert');
+    V2.disableRemoteMethodByName('upsertWithWhere');
+    V2.disableRemoteMethodByName('update');
+    V2.disableRemoteMethodByName('find');
+    V2.disableRemoteMethodByName('replaceOrCreate');
+    V2.disableRemoteMethodByName('create');
 
-    V1.disableRemoteMethodByName('prototype.updateAttributes');
-    V1.disableRemoteMethodByName('findById');
-    V1.disableRemoteMethodByName('exists');
-    V1.disableRemoteMethodByName('replaceById');
-    V1.disableRemoteMethodByName('deleteById');
+    V2.disableRemoteMethodByName('prototype.updateAttributes');
+    V2.disableRemoteMethodByName('findById');
+    V2.disableRemoteMethodByName('exists');
+    V2.disableRemoteMethodByName('replaceById');
+    V2.disableRemoteMethodByName('deleteById');
 
-    V1.disableRemoteMethodByName('createChangeStream');
+    V2.disableRemoteMethodByName('createChangeStream');
 
-    V1.disableRemoteMethodByName('count');
-    V1.disableRemoteMethodByName('findOne');
+    V2.disableRemoteMethodByName('count');
+    V2.disableRemoteMethodByName('findOne');
 
-    V1.getConfiguration = async (data, options) => {
-        V1.app.get('winston').log('debug', 'V1.getConfiguration STARTED');
+    V2.getConfiguration = async (data, options) => {
+        V2.app.get('winston').log('debug', 'V2.getConfiguration STARTED');
 
         let url = data.params[0];
         const query = data.query;
@@ -63,13 +63,13 @@ module.exports = function(V1) {
             url = url.substring(0, url.indexOf('?'));
         }
 
-        const configurations = await v1Model.matchConfigurationURL(url);
+        const configurations = await v2Model.matchConfigurationURL(url);
         let variables = {};
         let usedConfig = {
             templateType: 'json',
         };
         for (let i = 0; i < configurations.length; i++) {
-            variables = await v1Model.getDataFromConfiguration(configurations[i], url, options);
+            variables = await v2Model.getDataFromConfiguration(configurations[i], url, options);
             usedConfig = configurations[i];
             if (variables.variables !== undefined) {
                 if (query.include !== undefined) {
@@ -113,7 +113,7 @@ module.exports = function(V1) {
         return [output, contentType];
     };
 
-    V1.remoteMethod('getConfiguration', {
+    V2.remoteMethod('getConfiguration', {
         http: {
             errorStatus: 500,
             path: '/**',

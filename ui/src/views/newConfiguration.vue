@@ -128,24 +128,6 @@
         @change="fillNextArray(base.sequenceNumber + 1, bases.baseValues[base.sequenceNumber])"
       />
     </div>
-    <div
-      v-if="bases.items.length === 0 && bases.loading === false"
-    >
-      <div
-        class="text-center text-h4 font-weight-light mt-5"
-        style="width: 100%"
-      >
-        You need to configure your base items first
-      </div>
-      <div
-        class="text-center text-subtitle-1 font-weight-thin"
-        style="width: 100%"
-      >
-        Go to <router-link :to="{name: 'Settings', params:{tab:'base'}}">
-          Settings > Base Models
-        </router-link>
-      </div>
-    </div>
     <v-progress-linear
       v-if="configuration.loading"
       :height="3"
@@ -348,7 +330,7 @@
                 :force-cause="item.forcedCause"
                 :current-version-value="item.currentVersionValue"
                 :current-version-type="item.currentVersionType"
-                :draft="isCurrentConfigurationDraft"
+                :draft="item.draft"
                 :draft-versions="configuration.draftVersions"
                 :is-new="item.isNew"
               />
@@ -358,14 +340,12 @@
       </div>
       <div v-else>
         <v-responsive
-          v-if="filteredItems.length > 0"
-          class="overflow-y-auto pt-2"
+          class="overflow-y-auto"
           style="max-height: calc(100vh - 436px)"
         >
           <v-form
             ref="configValidation"
             v-model="configuration.valid"
-            style="overflow: hidden"
           >
             <v-lazy
               v-for="item of filteredItems"
@@ -390,7 +370,6 @@
       </div>
       <div v-if="constantVariables.show">
         <v-responsive
-          v-if="filteredConstantVariables.length > 0"
           class="overflow-y-auto pt-3"
           style="max-height: calc(100vh - 351px);"
         >
@@ -438,11 +417,10 @@
             style="display: flex; justify-content: center"
           >
             <v-btn
-              :disabled="!differentThanPrevVersion && !isMaxConfigurationDraft"
+              :disabled="!differentThanPrevVersion"
               color="primary"
               :loading="configuration.saving"
               data-cy="saveConfigurationButton"
-              :elevation="!differentThanPrevVersion ? 1 : undefined"
               @click="saveConfiguration"
             >
               {{ saveButtonText }}
@@ -586,28 +564,6 @@
         } else {
           return false
         }
-      },
-      isCurrentConfigurationDraft () {
-        if (this.configuration.versions.length === 0) {
-          return false
-        }
-
-        if (this.configuration.versions[this.configuration.shownVersion]) {
-          return this.configuration.versions[this.configuration.shownVersion].draft
-        } else {
-          return false
-        }
-      },
-      isMaxConfigurationDraft () {
-        if (this.configuration.versions.length === 0) {
-          return false
-        }
-
-        if (this.configuration.versions[this.configuration.maxVersion]) {
-          return this.configuration.versions[this.configuration.maxVersion].draft
-        }
-
-        return false
       },
       differentThanShownVersion () {
         if (this.configuration.versions.length === 0) {
@@ -1049,7 +1005,6 @@
 
             this.configuration.saving = false
             this.configuration.loading = false
-            this.configuration.saveAsDraft = false
           } else {
             this.configuration.loading = false
             this.$store.commit(
@@ -1334,7 +1289,7 @@
 
         for (let i = 0; i < this.bases.items.length; i++) {
           const base = this.bases.baseValues[i]
-          if (base && base.base) {
+          if (base.base) {
             post[base.base] = base.name
           }
         }
