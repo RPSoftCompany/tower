@@ -130,12 +130,37 @@
         return styleClass
       },
     },
+    async beforeCreate () {
+      let token = this.$cookie.get('token')
+      if (token) {
+        token = JSON.parse(token)
+        this.$store.commit('setUserData', token)
+
+        const roles = await this.axios.get(
+          `${this.$store.state.mainUrl}/members/getUserRoles`,
+        )
+
+        this.$store.commit('setUserRoles', roles.data)
+
+        if (token.user.newUser) {
+          this.$router.push('/changePassword')
+        } else {
+          let path = this.getUserStartPath(roles.data)
+
+          if (path === null) {
+            path = 'noPermissions'
+          }
+
+          this.$router.push(`/${path}`)
+        }
+      }
+    },
     methods: {
       getUserStartPath (roles) {
         let path = null
 
         if (this.$store.state.user.username === 'admin' || roles.includes('admin')) {
-          return 'settings/users'
+          return 'settings'
         }
 
         if (
@@ -185,6 +210,8 @@
             user.data.username = this.login
 
             this.$store.commit('setUserData', user.data)
+
+            this.$cookie.set('token', JSON.stringify(user.data), { expires: `${user.data.ttl}s` })
 
             const roles = await this.axios.get(
               `${this.$store.state.mainUrl}/members/getUserRoles`,

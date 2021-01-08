@@ -141,7 +141,7 @@
         class="text-center text-subtitle-1 font-weight-thin"
         style="width: 100%"
       >
-        Go to <router-link :to="{name: 'Settings', params:{tab:'base'}}">
+        Go to <router-link :to="{name: 'Settings', hash: '#base'}">
           Settings > Base Models
         </router-link>
       </div>
@@ -365,6 +365,7 @@
           <v-form
             ref="configValidation"
             v-model="configuration.valid"
+            data-cy="newConfigParent"
             style="overflow: hidden"
           >
             <v-lazy
@@ -452,13 +453,16 @@
       </div>
       <div
         v-else-if="configuration.editMode === true"
+        data-cy="newConstantVariable"
       >
         <new-configuration-row
           ref="newConfigurationRow"
           @add-row="addConfigRow"
         />
       </div>
-      <div v-else-if="constantVariables.show">
+      <div
+        v-else-if="constantVariables.show"
+      >
         <constantVariable
           v-if="constantVariables.editable"
           ref="newConstantVariable"

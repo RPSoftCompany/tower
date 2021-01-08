@@ -88,6 +88,7 @@
     },
     methods: {
       logout () {
+        this.$cookie.delete('token')
         this.$store.commit('setUserData', null)
         this.$store.commit('setUserRoles', [])
 
