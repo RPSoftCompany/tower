@@ -116,6 +116,17 @@ class InterpreterCommon {
     }
 
     /**
+     * Checks if line represents def (create variable)
+     *
+     * @param {string} line line to check
+     *
+     * @return {boolean} true if line represents end of if statement, false otherwise
+     */
+    checkIfDef(line) {
+        return /\%\%def\s+\S+\%\%/.test(line);
+    }
+
+    /**
      * Handles if
      *
      * @param {int} i iterator, where iterpreter stopped
@@ -158,9 +169,33 @@ class InterpreterCommon {
             this.returnsJson,
             this.variables,
         );
-        const handled = newForEach.handle();
+        return newForEach.handle();
+    }
 
-        return handled;
+    /**
+     * Handles def statement
+     *
+     * @param {string} text def line
+     *
+     */
+    handleDef(text) {
+        let newText = this.replaceVariables(text);
+
+        if (/%%def\s+\S+=\S+\s*%%/.test(newText)) {
+            newText = newText.replace(/\s*%%def\s*/, '');
+            newText= newText.substring(0, newText.lastIndexOf('%%'));
+
+            const array = newText.split('=');
+
+            return {
+                name: array[0],
+                varName: array[0],
+                type: 'string',
+                value: array[1],
+            };
+        } else {
+            throw new Error(`Invalid def statement: ${text}`);
+        }
     }
 
     /**
@@ -182,8 +217,8 @@ class InterpreterCommon {
             }
         }
 
-        while (/%%[^%]*\.(name|value)%%/.test(text)) {
-            let variable = /%%[^%]*\.(name|value)%%/.exec(text)[0];
+        while (/%%[^%]*\.(name|value|type)%%/.test(text)) {
+            let variable = /%%[^%]*\.(name|value|type)%%/.exec(text)[0];
 
             const index = text.indexOf(variable);
             newText += text.substring(0, index);
@@ -242,7 +277,66 @@ class InterpreterCommon {
 
         newText += text;
 
+        if (/%%\s*tower_[^%]+%%/.test(newText)) {
+            const exec = /%%tower_[^%]+%%/.exec(text);
+            const tempText = exec[0];
+            const methodName = /%%tower_[^(]+/.exec(tempText)[0].substring(2);
+            const params = tempText.substring(tempText.indexOf('(') + 1, tempText.lastIndexOf(')'));
+
+            const methodOutput = this.executeMethod(methodName, params);
+
+            newText = newText.replace(tempText, methodOutput);
+        }
+
         return newText;
+    }
+
+    /**
+     * Executes givn method
+     *
+     * @param {string} method method name
+     * @param {string} params method params
+     *
+     * @return {string} updated string
+     */
+    executeMethod(method, params) {
+        method = method.trim();
+        params = params.trim();
+
+        if (method === 'tower_toBase64') {
+            const buff = Buffer.from(params);
+            return buff.toString('base64');
+        } else if (method === 'tower_random') {
+            const array = params.split(',');
+            if (array.length === 2 ) {
+                const min = Math.ceil(array[0]);
+                const max = Math.floor(array[1]);
+                return `${Math.floor(Math.random() * (max - min)) + min}`;
+            } else {
+                return `${Math.ceil(Math.random() * 100)}`;
+            }
+        } else if (method === 'tower_substring') {
+            const array = params.split(',');
+            if (array.length === 2 || array.length === 3) {
+                return array[0].substring(array[1], array[2]);
+            } else {
+                throw new Error(`tower_substring method needs two of three arguments`);
+            }
+        } else if (method === 'tower_length') {
+            const length = `${params}`.length;
+            return `${length}`;
+        } else if (method === 'tower_indexOf') {
+            const lastIndex = params.lastIndexOf(',');
+            if (lastIndex === -1) {
+                throw new Error(`tower_indexOf method needs two arguments`);
+            } else {
+                const text = params.substring(0, lastIndex);
+                const index = params.substring(lastIndex + 1, params.length);
+                return `${text.trim().indexOf(index.trim())}`;
+            }
+        }
+
+        throw new Error(`Invalid method name: '${method}'`);
     }
 }
 
@@ -274,7 +368,25 @@ module.exports = class Interpreter extends InterpreterCommon {
             let line = textLines[i];
             let addLine = true;
 
-            if (this.checkIfIfEnd(line)) {
+            if (this.checkIfDef(line)) {
+                const variable = this.handleDef(line);
+                const found = this.variables.find( (el) => {
+                    return el.name === variable.name;
+                });
+
+                if (found) {
+                    this.variables.map( (el) => {
+                        if (el.varName === variable.varName) {
+                            el.value = variable.value;
+                            el.type = variable.type;
+                            return el;
+                        }
+                    });
+                } else {
+                    this.variables.push(variable);
+                }
+                addLine = false;
+            } else if (this.checkIfIfEnd(line)) {
                 addLine = false;
             } else if (this.checkIfIfStart(line)) {
                 addLine = false;
@@ -382,7 +494,25 @@ class If extends InterpreterCommon {
                 response.lines++;
                 let addLine = true;
 
-                if (this.checkIfIfEnd(line)) {
+                if (this.checkIfDef(line)) {
+                    const variable = this.handleDef(line);
+                    const found = this.variables.find( (el) => {
+                        return el.name === variable.name;
+                    });
+
+                    if (found) {
+                        this.variables.map( (el) => {
+                            if (el.varName === variable.varName) {
+                                el.value = variable.value;
+                                el.type = variable.type;
+                                return el;
+                            }
+                        });
+                    } else {
+                        this.variables.push(variable);
+                    }
+                    addLine = false;
+                } else if (this.checkIfIfEnd(line)) {
                     ifEnd = true;
                     addLine = false;
                 } else if (this.checkIfElse(line) && !inElse) {
@@ -591,7 +721,19 @@ class ForEach extends InterpreterCommon {
                 value: variable.value,
                 varName: data.variableName,
             };
-            this.variables.push(newVariable);
+
+            if (this.variables.find((el) => {
+                return newVariable.varName === el.varName;
+            })) {
+                this.variables.map( (el) => {
+                    if (el.varName === newVariable.varName) {
+                        el.value = newVariable.value;
+                        el.name = newVariable.name;
+                    }
+                });
+            } else {
+                this.variables.push(newVariable);
+            }
 
             let i = 1;
             processedLines = 0;
@@ -601,7 +743,25 @@ class ForEach extends InterpreterCommon {
                 processedLines++;
                 let addLine = true;
 
-                if (this.checkIfIfEnd(line)) {
+                if (this.checkIfDef(line)) {
+                    const variable = this.handleDef(line);
+                    const found = this.variables.find( (el) => {
+                        return el.name === variable.name;
+                    });
+
+                    if (found) {
+                        this.variables.map( (el) => {
+                            if (el.varName === variable.varName) {
+                                el.value = variable.value;
+                                el.type = variable.type;
+                                return el;
+                            }
+                        });
+                    } else {
+                        this.variables.push(variable);
+                    }
+                    addLine = false;
+                } else if (this.checkIfIfEnd(line)) {
                     addLine = false;
                 } else if (this.checkIfElse(line)) {
                     addLine = false;

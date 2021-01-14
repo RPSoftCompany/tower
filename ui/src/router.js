@@ -6,7 +6,7 @@ import Settings from './views/Settings.vue'
 Vue.use(Router)
 
 const router = new Router({
-  mode: 'history',
+  base: '/ui/',
   routes: [
     {
       path: '/timearchive',

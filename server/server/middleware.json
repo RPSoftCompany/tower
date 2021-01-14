@@ -1,7 +1,7 @@
 {
   "initial:before": {
     "loopback#favicon": {
-      "params": "$!../client/favicon.ico"
+      "params": "$!../client/ui/favicon.ico"
     }
   },
   "initial": {
@@ -51,15 +51,7 @@
   },
   "files": {
     "loopback#static": [{
-      "name": "publicPath",
-      "paths": ["/"],
-      "params": "$!../client/dist"
-    },
-    {
-      "name": "vueRouter",
-      "paths": ["*"],
-      "params": "$!../client/dist/index.html",
-      "optional": true
+      "params": "$!../client"
     }]
   },
   "final": {
