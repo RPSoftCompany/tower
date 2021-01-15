@@ -14,6 +14,14 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
 
+let customFunctions = null;
+
+try {
+    customFunctions = require('./extensions/customFunctions.js');
+} catch (_e) {
+    // ignore
+}
+
 /**
  * Common class for interpreter
  */
@@ -333,6 +341,10 @@ class InterpreterCommon {
                 const text = params.substring(0, lastIndex);
                 const index = params.substring(lastIndex + 1, params.length);
                 return `${text.trim().indexOf(index.trim())}`;
+            }
+        } else if (customFunctions) {
+            if (customFunctions.customFunctions[method]) {
+                return customFunctions.customFunctions[method](params);
             }
         }
 
