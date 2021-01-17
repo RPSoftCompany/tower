@@ -24,9 +24,10 @@ module.exports = class V1 {
      * Constructor
      *
      * @param {object} app APP
+     * @param {string} modelName model name
      */
-    constructor(app) {
-        this.configurationName = 'v1';
+    constructor(app, modelName) {
+        this.configurationName = modelName;
         this.logger = null;
 
         this.app = app;
@@ -66,6 +67,9 @@ module.exports = class V1 {
         const restConfiguration = this.app.models.restConfiguration;
         const baseConfiguration = this.app.models.baseConfiguration;
         const all = await restConfiguration.find({
+            where: {
+                type: this.configurationName,
+            },
             order: 'sequenceNumber ASC',
         });
 
@@ -75,7 +79,8 @@ module.exports = class V1 {
 
         const toReturn = [];
 
-        const bases = await baseConfiguration.find();
+        const bases = await baseConfiguration.find({});
+
         const basesArray = [];
         bases.forEach((base) => {
             basesArray.push(`{${base.name}}`);
@@ -97,15 +102,28 @@ module.exports = class V1 {
                 matchedUrl = '/' + matchedUrl;
             }
 
-            if (configSplit.length === split.length) {
-                basesArray.forEach((base) => {
-                    matchedUrl = matchedUrl.replace(base, '[^\\/]*');
-                });
+            if (config.type === 'v1') {
+                if (configSplit.length === split.length) {
+                    basesArray.forEach((base) => {
+                        matchedUrl = matchedUrl.replace(base, '[^\\/]*');
+                    });
 
-                matchedUrl.replace('/', '\\/');
+                    matchedUrl.replace('/', '\\/');
+
+                    const regex = new RegExp(matchedUrl);
+
+                    if (regex.test(url)) {
+                        toReturn.push(config);
+                    }
+                }
+            } else {
+                for (let i = 0; i < bases.length; i++) {
+                    matchedUrl += '/[^\\/]*';
+                }
+
+                matchedUrl += '/*';
 
                 const regex = new RegExp(matchedUrl);
-
                 if (regex.test(url)) {
                     toReturn.push(config);
                 }
@@ -287,9 +305,24 @@ module.exports = class V1 {
 
         const values = {};
 
+        const BaseConfiguration = this.app.models.baseConfiguration;
+        const models = await BaseConfiguration.find({
+            order: 'sequenceNumber ASC',
+        });
+
         const splittedUrl = url.split('/');
         if (splittedUrl[0] === '') {
             splittedUrl.shift();
+        }
+
+        if (this.configurationName === 'v2') {
+            if (configuration.url.endsWith('/')) {
+                configuration.url = configuration.url.slice(0, -1);
+            }
+
+            models.forEach((model) => {
+                configuration.url += `/{${model.name}}`;
+            });
         }
 
         const split = configuration.url.split('/');
@@ -333,17 +366,12 @@ module.exports = class V1 {
         values.deleted = false;
 
         const Config = new ConfigurationClass(this.app);
-        const BaseConfiguration = this.app.models.baseConfiguration;
 
         const full = await Config.findWithPermissions({
             where: values,
             order: 'version DESC',
             limit: 1,
         }, options);
-
-        const models = await BaseConfiguration.find({
-            order: 'sequenceNumber ASC',
-        });
 
         if (full.length > 0) {
             const current = full[0];
@@ -370,7 +398,26 @@ module.exports = class V1 {
                 if (item.type === 'Vault') {
                     retValue.variables[i].value = await this.getDataFromVault(item.value, modelForVault);
                 }
-            };
+            }
+
+            if (configuration.type === 'v2') {
+                const leng = configuration.url.split('/').length;
+                const rest = url.split('/');
+                rest.splice(0, leng);
+
+                if (rest.length > 0) {
+                    let regex = rest.join('/');
+                    regex = `^${regex}`;
+
+                    regex = `${regex}$|${regex}[\\/]+.*`;
+
+                    const expression = new RegExp(regex);
+
+                    retValue.variables = retValue.variables.filter((toFilter) => {
+                        return expression.test(toFilter.name);
+                    });
+                }
+            }
 
             this.log('debug', 'getDataFromConfiguration', 'FINISHED');
             return retValue;

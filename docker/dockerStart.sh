@@ -34,6 +34,12 @@ then
   __NON_SAFE="false"
 fi
 
+__FULL_ENCRYPTION=${FULL_ENCRYPTION}
+if [ -z "${__FULL_ENCRYPTION}" ]
+then
+  __FULL_ENCRYPTION="false"
+fi
+
 __TOKEN_HEADERS=${TOKEN_HEADERS}
 if [ -z "${__TOKEN_HEADERS}" ]
 then
@@ -45,6 +51,7 @@ sed -i s/\$PORT/"${__PORT}"/g config.json
 sed -i s/\$LOG_LEVEL/"${__LOG_LEVEL}"/g config.json
 sed -i s/\$EXPLORER/"${__EXPLORER}"/g config.json
 sed -i s/\$NON_SAFE/"${__NON_SAFE}"/g config.json
+sed -i s/\FULL_ENCRYPTION/"${__FULL_ENCRYPTION}"/g config.json
 sed -i s/\$TOKEN_HEADERS/"${__TOKEN_HEADERS}"/g config.json
 
 # =============================
@@ -58,7 +65,5 @@ then
 fi
 
 awk -v database="${__DATABASE}" '{sub(/\$DATABASE/, database)}1' database-config.json_template > database-config.json
-
-cat database-config.json
 
 exec ./tower-linux

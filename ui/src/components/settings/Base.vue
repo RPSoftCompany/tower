@@ -251,7 +251,7 @@
 
 <style lang="scss" scoped>
 .handler {
-  cursor: grab;
+  cursor: move;
 }
 
 .baseIcon {

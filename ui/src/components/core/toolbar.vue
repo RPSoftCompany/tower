@@ -27,7 +27,7 @@
       />
       <v-avatar size="40">
         <v-img
-          src="/tower.png"
+          src="/ui/tower.png"
           class="towerImage"
         />
       </v-avatar>

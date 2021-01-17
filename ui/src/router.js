@@ -1,9 +1,12 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+import Settings from './views/Settings.vue'
+
 Vue.use(Router)
 
 const router = new Router({
+  base: '/ui/',
   routes: [
     {
       path: '/timearchive',
@@ -33,7 +36,7 @@ const router = new Router({
     {
       path: '/settings',
       name: 'Settings',
-      component: () => import('./views/Settings.vue'),
+      component: Settings,
     },
     {
       path: '/noPermissions',
@@ -47,13 +50,13 @@ const router = new Router({
     },
     {
       path: '/initialize',
-      name: 'Initilize',
+      name: 'Initialize',
       component: () => import('./views/Initialize.vue'),
     },
   ],
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, from, next) => {
   if (to.path === '/login' || to.path === '/initialize') {
     next()
   } else {

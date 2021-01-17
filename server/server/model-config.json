@@ -101,6 +101,10 @@
     "dataSource": "mongoDB",
     "public": true
   },
+  "v2": {
+    "dataSource": "mongoDB",
+    "public": true
+  },
   "promotion": {
     "dataSource": "mongoDB",
     "public": true

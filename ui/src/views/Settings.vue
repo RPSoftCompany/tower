@@ -157,5 +157,12 @@
         }
       },
     },
+    mounted () {
+      let tab = this.$route.hash
+      if (tab) {
+        tab = tab.slice(1, tab.length)
+        this.tab = tab
+      }
+    },
   }
 </script>

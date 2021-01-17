@@ -33,7 +33,7 @@
           :items="target.types"
           :data-cy="`${isNew === true ? 'newRuleTargetSelect' : 'targetSelect' + targetValue}`"
           label="Target"
-          style="border-radius: 4px 0px 0px 4px;"
+          style="border-radius: 4px 0 0 4px;"
           background-color="rgb(236 236 236)"
           dense
           outlined
@@ -52,7 +52,7 @@
           required
           dense
           outlined
-          style="border-radius: 0px 4px 4px 0px; margin-left: -1px"
+          style="border-radius: 0 4px 4px 0; margin-left: -1px"
           :placeholder="target.regex ? '^[A-Za-z]+$' : 'text'"
           :append-icon="target.regex ? icons.mdiFormatLetterCase : icons.mdiRegex"
           @click:append="target.regex = !target.regex; modifyRule()"
@@ -65,7 +65,7 @@
       >
         <v-select
           v-model="condition.type"
-          style="border-radius: 4px 0px 0px 4px"
+          style="border-radius: 4px 0 0 4px"
           background-color="rgb(236 236 236)"
           :data-cy="`${isNew === true ? 'newRuleConditionSelect' : 'ConditionSelect' + targetValue}`"
           :items="condition.types"
@@ -86,7 +86,7 @@
           :data-cy="`${isNew === true ? 'newRuleConditionText' : 'ConditionText' + targetValue}`"
           dense
           outlined
-          style="border-radius: 0px 4px 4px 0px; margin-left: -1px"
+          style="border-radius: 0 4px 4px 0; margin-left: -1px"
           :placeholder="condition.regex ? '^[A-Za-z]+$' : 'text'"
           :append-icon="condition.regex ? icons.mdiFormatLetterCase : icons.mdiRegex"
           @click:append="condition.regex = !condition.regex; modifyRule()"
@@ -143,7 +143,7 @@
       },
       conditionType: {
         type: String,
-        default: 'name',
+        default: 'value',
         required: false,
       },
       conditionRegEx: {
@@ -176,7 +176,7 @@
       },
       condition: {
         types: ['type', 'value'],
-        type: 'name',
+        type: 'value',
         value: null,
         regex: false,
       },
@@ -201,7 +201,7 @@
       this.target.regex = this.targetRegEx === undefined ? false : this.targetRegEx
 
       this.condition.value = this.conditionValue === undefined ? null : this.conditionValue
-      this.condition.type = this.conditionType === undefined ? 'name' : this.conditionType
+      this.condition.type = this.conditionType === undefined ? 'value' : this.conditionType
       this.condition.regex = this.conditionRegEx === undefined ? false : this.conditionRegEx
 
       this.error.message = this.errorMessage === undefined ? null : this.errorMessage

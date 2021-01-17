@@ -18,6 +18,10 @@
       "type": "string",
       "required": true
     },
+    "type": {
+      "type": "string",
+      "default": "v1"
+    },
     "sequenceNumber": {
       "type": "number",
       "required": true

@@ -14,6 +14,14 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
 
+let customFunctions = null;
+
+try {
+    customFunctions = require('./extensions/customFunctions.js');
+} catch (_e) {
+    // ignore
+}
+
 /**
  * Common class for interpreter
  */
@@ -53,7 +61,7 @@ class InterpreterCommon {
             if (/%%\s*effectiveDate\s*%%/.test(line)) {
                 line = line.replace(
                     /%%\s*effectiveDate\s*%%/,
-                    this.configuration.effectiveDate
+                    this.configuration.effectiveDate,
                 );
             }
         }
@@ -116,6 +124,17 @@ class InterpreterCommon {
     }
 
     /**
+     * Checks if line represents def (create variable)
+     *
+     * @param {string} line line to check
+     *
+     * @return {boolean} true if line represents end of if statement, false otherwise
+     */
+    checkIfDef(line) {
+        return /\%\%def\s+\S+\%\%/.test(line);
+    }
+
+    /**
      * Handles if
      *
      * @param {int} i iterator, where iterpreter stopped
@@ -130,7 +149,7 @@ class InterpreterCommon {
             newTextLines.join('\n'),
             this.configuration,
             this.returnsJson,
-            this.variables
+            this.variables,
         );
 
         const handled = newIf.handle();
@@ -156,11 +175,35 @@ class InterpreterCommon {
             newTextLines.join('\n'),
             this.configuration,
             this.returnsJson,
-            this.variables
+            this.variables,
         );
-        const handled = newForEach.handle();
+        return newForEach.handle();
+    }
 
-        return handled;
+    /**
+     * Handles def statement
+     *
+     * @param {string} text def line
+     *
+     */
+    handleDef(text) {
+        let newText = this.replaceVariables(text);
+
+        if (/%%def\s+\S+=\S+\s*%%/.test(newText)) {
+            newText = newText.replace(/\s*%%def\s*/, '');
+            newText= newText.substring(0, newText.lastIndexOf('%%'));
+
+            const array = newText.split('=');
+
+            return {
+                name: array[0],
+                varName: array[0],
+                type: 'string',
+                value: array[1],
+            };
+        } else {
+            throw new Error(`Invalid def statement: ${text}`);
+        }
     }
 
     /**
@@ -182,8 +225,8 @@ class InterpreterCommon {
             }
         }
 
-        while (/%%[^%]*\.(name|value)%%/.test(text)) {
-            let variable = /%%[^%]*\.(name|value)%%/.exec(text)[0];
+        while (/%%[^%]*\.(name|value|type)%%/.test(text)) {
+            let variable = /%%[^%]*\.(name|value|type)%%/.exec(text)[0];
 
             const index = text.indexOf(variable);
             newText += text.substring(0, index);
@@ -242,7 +285,70 @@ class InterpreterCommon {
 
         newText += text;
 
+        if (/%%\s*tower_[^%]+%%/.test(newText)) {
+            const exec = /%%tower_[^%]+%%/.exec(text);
+            const tempText = exec[0];
+            const methodName = /%%tower_[^(]+/.exec(tempText)[0].substring(2);
+            const params = tempText.substring(tempText.indexOf('(') + 1, tempText.lastIndexOf(')'));
+
+            const methodOutput = this.executeMethod(methodName, params);
+
+            newText = newText.replace(tempText, methodOutput);
+        }
+
         return newText;
+    }
+
+    /**
+     * Executes givn method
+     *
+     * @param {string} method method name
+     * @param {string} params method params
+     *
+     * @return {string} updated string
+     */
+    executeMethod(method, params) {
+        method = method.trim();
+        params = params.trim();
+
+        if (method === 'tower_toBase64') {
+            const buff = Buffer.from(params);
+            return buff.toString('base64');
+        } else if (method === 'tower_random') {
+            const array = params.split(',');
+            if (array.length === 2 ) {
+                const min = Math.ceil(array[0]);
+                const max = Math.floor(array[1]);
+                return `${Math.floor(Math.random() * (max - min)) + min}`;
+            } else {
+                return `${Math.ceil(Math.random() * 100)}`;
+            }
+        } else if (method === 'tower_substring') {
+            const array = params.split(',');
+            if (array.length === 2 || array.length === 3) {
+                return array[0].substring(array[1], array[2]);
+            } else {
+                throw new Error(`tower_substring method needs two of three arguments`);
+            }
+        } else if (method === 'tower_length') {
+            const length = `${params}`.length;
+            return `${length}`;
+        } else if (method === 'tower_indexOf') {
+            const lastIndex = params.lastIndexOf(',');
+            if (lastIndex === -1) {
+                throw new Error(`tower_indexOf method needs two arguments`);
+            } else {
+                const text = params.substring(0, lastIndex);
+                const index = params.substring(lastIndex + 1, params.length);
+                return `${text.trim().indexOf(index.trim())}`;
+            }
+        } else if (customFunctions) {
+            if (customFunctions.customFunctions[method]) {
+                return customFunctions.customFunctions[method](params);
+            }
+        }
+
+        throw new Error(`Invalid method name: '${method}'`);
     }
 }
 
@@ -274,7 +380,25 @@ module.exports = class Interpreter extends InterpreterCommon {
             let line = textLines[i];
             let addLine = true;
 
-            if (this.checkIfIfEnd(line)) {
+            if (this.checkIfDef(line)) {
+                const variable = this.handleDef(line);
+                const found = this.variables.find( (el) => {
+                    return el.name === variable.name;
+                });
+
+                if (found) {
+                    this.variables.map( (el) => {
+                        if (el.varName === variable.varName) {
+                            el.value = variable.value;
+                            el.type = variable.type;
+                            return el;
+                        }
+                    });
+                } else {
+                    this.variables.push(variable);
+                }
+                addLine = false;
+            } else if (this.checkIfIfEnd(line)) {
                 addLine = false;
             } else if (this.checkIfIfStart(line)) {
                 addLine = false;
@@ -382,7 +506,25 @@ class If extends InterpreterCommon {
                 response.lines++;
                 let addLine = true;
 
-                if (this.checkIfIfEnd(line)) {
+                if (this.checkIfDef(line)) {
+                    const variable = this.handleDef(line);
+                    const found = this.variables.find( (el) => {
+                        return el.name === variable.name;
+                    });
+
+                    if (found) {
+                        this.variables.map( (el) => {
+                            if (el.varName === variable.varName) {
+                                el.value = variable.value;
+                                el.type = variable.type;
+                                return el;
+                            }
+                        });
+                    } else {
+                        this.variables.push(variable);
+                    }
+                    addLine = false;
+                } else if (this.checkIfIfEnd(line)) {
                     ifEnd = true;
                     addLine = false;
                 } else if (this.checkIfElse(line) && !inElse) {
@@ -447,80 +589,89 @@ class If extends InterpreterCommon {
      */
     getIfData(text) {
         // IF validation
-        const valid = /^\s*%%if\s+(\S+\[['"`]\S+['"`]\]|\S+\.(name|value)+)\s+[<>=!~]+\s+\S+\s*%%\s*/.test(text);
+        // eslint-disable-next-line max-len
+        let valid = /^\s*%%if\s+[\[]*["'`]*\s*variables\s*\[+["'`]+[^"'`]+["'`]+\s*]\s+[<>=!~]+\s+["'`]*\S+["'`]*\s*]%%/.test(text);
+        let variablesLine = true;
+        if (!valid) {
+            // eslint-disable-next-line max-len
+            valid = /^\s*%%if\s+[\[]*\s*["'`]*\s*\S+[.]+(value|type|name)+["'`]*\s+[<>=!~]+\s+["'`]*[^'"`]+["'`]*[\]]*%%/.test(text);
+            variablesLine = false;
+        }
+
         if (!valid) {
             throw new Error(`Invalid if statement: ${text}`);
         }
 
         text = text.replace(/\s*%%if\s*/, '');
+        text = text.replace(/\s*$/, '');
 
-        const variable = {
-            name: null,
-            prop: null,
-            standard: false,
-        };
-
-        let variables = /variables\[['"`]\S+['"`]\]/.exec(text);
-        if (variables !== null) {
-            variables = variables[0];
+        if (text.startsWith('[')) {
+            text = text.substring(1, text.length - 2);
         } else {
-            variables = null;
+            text = text.substring(0, text.length - 2);
         }
 
-        if (variables === null) {
-            const temp = /\S+\.(name|value)+/.exec(text)[0];
-            const split = temp.split('.');
-            variable.name = split[0];
-            variable.prop = split[1];
-
-            text = text.replace(/^\S+\s*[^=!~<>]+/, '');
-        } else {
-            let temp = text.replace(/variables\[['"`]/, '');
-            temp = temp.replace(/['"`].*/, '');
-
-            variable.name = temp;
-            variable.standard = true;
-
-            text = text.replace(/^\S+[^\s=!<>~]/, '');
+        if (text.endsWith(']')) {
+            text = text.substring(0, text.length - 1);
         }
 
-        let varValue = null;
+        text = text.replace(/^\s*/, '');
+        text = text.replace(/["'`]/g, '');
 
-        if (variable.standard) {
-            console.log(this.configurationVariables);
+        let variable = null;
 
-            varValue = this.configurationVariables.find((el) => {
+        if (variablesLine) {
+            text = text.replace(/^\s*variables\s*\[/, '');
+            variable = /^[^\]]+/.exec(text)[0].trim();
+            variable = {
+                name: variable,
+                type: 'value',
+            };
+
+            variable.value = this.configuration.variables.find((el) => {
                 return el.name === variable.name;
             });
 
-            if (varValue !== null && varValue !== undefined) {
-                varValue = varValue.value;
+            if (variable.value) {
+                variable.value = variable.value.value;
+            } else {
+                variable.value = null;
             }
         } else {
-            varValue = this.variables.find((el) => {
+            variable = /^[^<>=!~]+/.exec(text);
+
+            if (variable) {
+                variable = variable[0].trim();
+            }
+
+            variable = variable.split('.');
+            variable = {
+                name: variable[0],
+                type: variable[1],
+            };
+
+            variable.value = this.variables.find((el) => {
                 return el.varName === variable.name;
             });
 
-            if (varValue !== null && varValue !== undefined) {
-                varValue = varValue[variable.prop];
+            if (variable.value) {
+                variable.value = variable.value[variable.type];
+            } else {
+                variable.value = null;
             }
         }
 
-        if (varValue === undefined) {
-            varValue = null;
-        }
+        text = text.replace(/^[^<>=!~]+/, '');
 
-        let sign = /\s*[~=!<>]+/.exec(text)[0];
-        sign = sign.trim();
+        variable.sign = /^[<>=!~]+/.exec(text)[0];
 
-        text = text.replace(/\s*[\s=!~<>]+/, '');
+        text = text.replace(/^[<>=!~]+\s+/, '');
 
-        let condition = text.replace(/%%\s*$/, '');
-        if (condition.startsWith('"')) {
-            condition = condition.substring(1, condition.length - 1);
-        }
+        variable.condition = /^[^\]%]+/.exec(text)[0].trim();
 
-        console.log(`${varValue == condition}`);
+        const sign = variable.sign;
+        const condition = variable.condition;
+        const varValue = variable.value;
 
         if (sign === '==') {
             return `${varValue}` == `${condition}`;
@@ -582,7 +733,19 @@ class ForEach extends InterpreterCommon {
                 value: variable.value,
                 varName: data.variableName,
             };
-            this.variables.push(newVariable);
+
+            if (this.variables.find((el) => {
+                return newVariable.varName === el.varName;
+            })) {
+                this.variables.map( (el) => {
+                    if (el.varName === newVariable.varName) {
+                        el.value = newVariable.value;
+                        el.name = newVariable.name;
+                    }
+                });
+            } else {
+                this.variables.push(newVariable);
+            }
 
             let i = 1;
             processedLines = 0;
@@ -592,7 +755,25 @@ class ForEach extends InterpreterCommon {
                 processedLines++;
                 let addLine = true;
 
-                if (this.checkIfIfEnd(line)) {
+                if (this.checkIfDef(line)) {
+                    const variable = this.handleDef(line);
+                    const found = this.variables.find( (el) => {
+                        return el.name === variable.name;
+                    });
+
+                    if (found) {
+                        this.variables.map( (el) => {
+                            if (el.varName === variable.varName) {
+                                el.value = variable.value;
+                                el.type = variable.type;
+                                return el;
+                            }
+                        });
+                    } else {
+                        this.variables.push(variable);
+                    }
+                    addLine = false;
+                } else if (this.checkIfIfEnd(line)) {
                     addLine = false;
                 } else if (this.checkIfElse(line)) {
                     addLine = false;

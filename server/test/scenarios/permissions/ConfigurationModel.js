@@ -1,7 +1,7 @@
 const axios = require('axios');
 const should = require('should');
 
-const url = 'http://localhost:3000/api';
+const url = 'http://localhost:3000';
 
 let token = null;
 let mietekToken = null;

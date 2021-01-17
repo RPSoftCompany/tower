@@ -1,7 +1,7 @@
 {
   "initial:before": {
     "loopback#favicon": {
-      "params": "$!../client/favicon.ico"
+      "params": "$!../client/ui/favicon.ico"
     }
   },
   "initial": {
@@ -50,9 +50,9 @@
     }
   },
   "files": {
-    "loopback#static": {
+    "loopback#static": [{
       "params": "$!../client"
-    }
+    }]
   },
   "final": {
     "loopback#urlNotFound": {}

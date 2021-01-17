@@ -31,7 +31,7 @@
         <v-card :class="cardClass">
           <v-img
             :width="384"
-            src="/tower.png"
+            src="/ui/tower.png"
             class="towerImage"
           />
           <v-card-text>
@@ -76,6 +76,7 @@
               :loading="loading"
               data-cy="loginButton"
               :disabled="!form.valid"
+              :elevation="!form.valid ? 1 : undefined"
               color="primary"
               block
               @click="submit"
@@ -128,6 +129,31 @@
 
         return styleClass
       },
+    },
+    async beforeCreate () {
+      let token = this.$cookie.get('token')
+      if (token) {
+        token = JSON.parse(token)
+        this.$store.commit('setUserData', token)
+
+        const roles = await this.axios.get(
+          `${this.$store.state.mainUrl}/members/getUserRoles`,
+        )
+
+        this.$store.commit('setUserRoles', roles.data)
+
+        if (token.user.newUser) {
+          this.$router.push('/changePassword')
+        } else {
+          let path = this.getUserStartPath(roles.data)
+
+          if (path === null) {
+            path = 'noPermissions'
+          }
+
+          this.$router.push(`/${path}`)
+        }
+      }
     },
     methods: {
       getUserStartPath (roles) {
@@ -184,6 +210,8 @@
             user.data.username = this.login
 
             this.$store.commit('setUserData', user.data)
+
+            this.$cookie.set('token', JSON.stringify(user.data), { expires: `${user.data.ttl}s` })
 
             const roles = await this.axios.get(
               `${this.$store.state.mainUrl}/members/getUserRoles`,

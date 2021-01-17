@@ -233,7 +233,7 @@
     components: { 'v-rule': rule },
     data: () => ({
       base: null,
-      models: null,
+      models: [],
 
       deleteDialog: {
         show: false,

@@ -21,7 +21,7 @@ USER tower
 
 RUN wget https://github.com/RPSoftCompany/tower/releases/download/${VERSION}/tower-${VERSION}.zip
 RUN unzip tower-${VERSION}.zip
-RUN mv tower-*/* .
+RUN mv tower/* .
 
 RUN chmod 777 ./tower-linux
 

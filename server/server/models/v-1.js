@@ -24,7 +24,7 @@ let v1Model = null;
 
 const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
-        v1Model = new V1(main.app);
+        v1Model = new V1(main.app, 'v1');
     } else {
         setTimeout(() => {
             initiate(main);

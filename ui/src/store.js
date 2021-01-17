@@ -12,7 +12,7 @@ export default new Vuex.Store({
   state: {
     user: null,
     userRoles: [],
-    mainUrl: `${main}/api`,
+    mainUrl: `${main}`,
 
     error: {
       text: '',

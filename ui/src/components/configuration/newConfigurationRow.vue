@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/.
 
 <template>
   <transition
@@ -20,7 +20,6 @@
     mode="out-in"
   >
     <v-form
-      v-show="visible"
       ref="newConfigForm"
       autocomplete="off"
     >
@@ -31,112 +30,33 @@
           :data-cy="`${local_name === null ? 'newConfigName' : 'newConfigName_' + local_name}`"
           :rules="[local_rules.required, ...nameRules]"
           :disabled="local_added"
-          class="pr-3 pl-4 newConfigRow_thirdWidth"
+          class="pr-3 pl-4 newConfigRow_halfWidth"
           autocomplete="off"
-          label="name"
+          label="Variable Name"
+          :error-messages="errorMessage"
+          @input="removeErrorMessage"
+          @keyup.enter="iconClicked"
         />
-        <v-select
-          v-model="local_type"
-          :items="local_types"
-          label="Type"
-          :data-cy="`${local_name === null ? 'newConfigSelect' : 'newConfigSelect_' + local_name}`"
-          class="newConfigRow_thirdWidth"
-          :rules="typeRules"
-          autocomplete="off"
-          @input="changed"
-        />
-        <v-text-field
-          v-if="local_type === 'string'"
-          v-model="local_value"
-          data-cy="newConfigString"
-          :readonly="forced"
-          class="px-2 newConfigRow_thirdWidth"
-          autocomplete="off"
-          label="value"
-          @input="changed"
-        />
-        <v-text-field
-          v-if="local_type === 'Vault'"
-          v-model="local_value"
-          data-cy="newConfigVaule"
-          :readonly="forced"
-          class="px-2 newConfigRow_thirdWidth"
-          autocomplete="off"
-          label="value"
-          @input="changed"
-        />
-        <v-textarea
-          v-if="local_type === 'text'"
-          v-model="local_value"
-          data-cy="newConfigText"
-          :readonly="forced"
-          class="px-2 newConfigRow_thirdWidth"
-          autocomplete="off"
-          rows="1"
-          label="value"
-          @input="changed"
-        />
-        <v-text-field
-          v-if="local_type === 'password'"
-          v-model="local_value"
-          data-cy="newConfigPassword"
-          :readonly="forced"
-          :type="pass_locked ? 'password' : 'text'"
-          :append-icon="pass_locked ? icons.mdiLock : icons.mdiLockOpen"
-          class="px-2 newConfigRow_thirdWidth"
-          autocomplete="off"
-          label="value"
-          @input="changed"
-          @click:append="pass_locked = !pass_locked"
-        />
-        <div
-          v-if="local_type === 'boolean'"
-          class="newConfigRow_thirdWidth pl-2"
-          style="min-width:32%; max-height: 30px"
-        >
-          <v-checkbox
-            v-model="local_value"
-            :readonly="forced"
-            data-cy="newConfigBoolean"
-            color="lightblack"
-            class="align-center justify-center"
-            style="margin-top: 10px; width: 100%"
-            ripple
-            @change="changed"
+        <div class="d-flex newConfigRow_halfWidth">
+          <v-select
+            v-model="local_type"
+            :items="local_types"
+            label="Type"
+            :data-cy="`${local_name === null ? 'newConfigSelect' : 'newConfigSelect_' + local_name}`"
+            :rules="typeRules"
+            :disabled="disabled"
+            autocomplete="off"
+            @input="changed"
+          />
+          <v-icon
+            :disabled="addIfAbsent"
+            :data-cy="`${local_name === null ? 'newConfigAdd' : 'newConfigAdd_' + local_name}`"
+            class="mx-3 mt-6"
+            style="height: 24px"
+            @click="iconClicked"
+            v-text="local_added ? icons.mdiMinus : icons.mdiPlus"
           />
         </div>
-        <v-text-field
-          v-if="local_type === 'number'"
-          v-model="local_value"
-          data-cy="newConfigNumber"
-          :readonly="forced"
-          class="px-2 newConfigRow_thirdWidth"
-          autocomplete="off"
-          label="value"
-          type="number"
-          @input="changed"
-        />
-        <v-combobox
-          v-if="local_type === 'list'"
-          v-model="local_value"
-          data-cy="newConfigList"
-          :readonly="forced"
-          style="margin-top: 8px;"
-          class="px-2 newConfigRow_thirdWidth"
-          dense
-          label="List"
-          multiple
-          chips
-          deletable-chips
-          append-icon
-        />
-        <v-icon
-          :disabled="addIfAbsent"
-          :data-cy="`${local_name === null ? 'newConfigAdd' : 'newConfigAdd_' + local_name}`"
-          class="newConfigRow_addRemoveIcon mr-3 mt-3 pb-0"
-          @click="iconClicked"
-          v-text="local_added ? icons.mdiMinus : icons.mdiPlus"
-        />
       </div>
     </v-form>
   </transition>
@@ -164,14 +84,6 @@
         type: Boolean,
         default: false,
       },
-      filter: {
-        type: String,
-        default: '',
-      },
-      visible: {
-        type: Boolean,
-        default: true,
-      },
       rules: {
         type: Array,
         default: () => { return [] },
@@ -182,9 +94,10 @@
         default: () => { return [] },
         required: false,
       },
-      forced: {
+      disabled: {
         type: Boolean,
         default: false,
+        required: false,
       },
       addIfAbsent: {
         type: Boolean,
@@ -281,14 +194,13 @@
       },
       iconClicked () {
         if (this.added) {
-          this.$emit('remove_row', {
+          this.$emit('delete', {
             name: this.local_name,
           })
         } else {
           if (this.$refs.newConfigForm.validate()) {
-            this.$emit('add_row', {
+            this.$emit('add-row', {
               name: this.local_name,
-              value: this.local_value,
               type: this.local_type,
               _this: this,
             })
@@ -296,9 +208,8 @@
         }
       },
       changed () {
-        this.$emit('change_row', {
+        this.$emit('changed', {
           name: this.local_name,
-          value: this.local_value,
           type: this.local_type,
         })
       },
@@ -320,8 +231,9 @@
   }
 </script>
 
-<style scoped>
-.v-chip__content {
-
+<style>
+.newConfigRow_halfWidth {
+  min-width: 50%;
+  max-width: 50%;
 }
 </style>

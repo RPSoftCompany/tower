@@ -12,177 +12,179 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/.
 
 <template>
-  <transition
-    name="slowfade"
-    mode="out-in"
+  <div
+    :class="{configRow_crossed: deleted, 'font-weight-light': deleted, 'font-italic': deleted,
+             'configRow_different': different}"
+    :style="local_type === 'boolean' ? 'height:70px' : ''"
+    class="d-flex flex-row justify-space-around"
   >
-    <v-form
-      v-show="visible"
-      ref="newConfigForm"
-      :class="getClass"
+    <div
+      :style="
+        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
+      "
+      class="px-2 text-center configRow_history"
+      v-text="local_name"
+    />
+    <div
+      v-if="currentVersionValue !== null || deleted"
+      :style="
+        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
+      "
+      :class="{ configRow_draft : draft, 'font-weight-light': draft, 'font-italic': draft,
+                configRow_pre : local_type !== 'list'}"
+      class="px-2 text-center configRow_history"
+      v-text="
+        local_type === 'password' && pass_locked
+          ? '••••••••'
+          : deleted === true ? local_value : currentVersionValue
+      "
+    />
+    <v-text-field
+      v-if="local_type === 'string'"
+      v-model="local_value"
+      :data-cy="`configRow_${local_name}`"
+      :style="
+        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
+      "
+      :rules="local_rules"
+      :disabled="deleted"
+      :readonly="forcedValue"
+      :hint="forceCause"
+      class="px-2 configRow_field thirdWidth"
       autocomplete="off"
+      :error-messages="errorMessage"
+      label="value"
+      persistent-hint
+      @input="change"
+    />
+    <v-text-field
+      v-else-if="local_type === 'Vault'"
+      v-model="local_value"
+      :data-cy="`configRow_${local_name}`"
+      :style="
+        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
+      "
+      :disabled="deleted"
+      :rules="local_rules"
+      :readonly="forcedValue"
+      :hint="forceCause"
+      :error-messages="errorMessage"
+      class="px-2 configRow_field thirdWidth"
+      autocomplete="off"
+      label="value"
+      persistent-hint
+      @input="change"
+    />
+    <v-textarea
+      v-else-if="local_type === 'text'"
+      v-model="local_value"
+      :data-cy="`configRow_${local_name}`"
+      :disabled="deleted"
+      :style="
+        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
+      "
+      :rules="local_rules"
+      :readonly="forcedValue"
+      :hint="forceCause"
+      :error-messages="errorMessage"
+      class="px-2 configRow_field thirdWidth"
+      autocomplete="off"
+      rows="1"
+      label="value"
+      persistent-hint
+      @input="change"
+    />
+    <v-text-field
+      v-else-if="local_type === 'password'"
+      v-model="local_value"
+      :data-cy="`configRow_${local_name}`"
+      :disabled="deleted"
+      :style="
+        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
+      "
+      :type="pass_locked ? 'password' : 'text'"
+      :append-icon="pass_locked ? icons.mdiLock : icons.mdiLockOpen"
+      :rules="local_rules"
+      :readonly="forcedValue"
+      :hint="forceCause"
+      :error-messages="errorMessage"
+      class="px-2 configRow_field thirdWidth"
+      autocomplete="off"
+      label="value"
+      persistent-hint
+      @input="change"
+      @click:append="pass_locked = !pass_locked"
+    />
+    <v-combobox
+      v-else-if="local_type === 'list'"
+      v-model="local_value"
+      :data-cy="`configRow_${local_name}`"
+      :disabled="deleted"
+      :style="
+        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
+      "
+      class="px-2 mt-4 configRow_field thirdWidth"
+      :rules="local_rules"
+      :error-messages="errorMessage"
+      :readonly="forcedValue"
+      :hint="forceCause"
+      dense
+      label="List"
+      multiple
+      chips
+      deletable-chips
+      append-icon
+      persistent-hint
+      @change="change"
+    />
+    <div
+      v-else-if="local_type === 'boolean'"
+      :style="
+        currentVersionValue !== null || deleted
+          ? 'min-width:33.33%'
+          : 'min-width:50%'
+      "
+      class="px-2 configRow_field thirdWidth"
     >
-      <div
-        :class="{configRow_crossed: deleted, 'font-weight-light': deleted, 'font-italic': deleted}"
-        :style="local_type === 'boolean' ? 'height:70px' : ''"
-        class="d-flex flex-row justify-space-around"
-      >
-        <div
-          :style="
-            versions.length > 0 || deleted ? 'min-width:33.33%' : 'min-width:50%'
-          "
-          class="px-2 text-center configRow_history"
-          label="name"
-          v-text="local_name"
-        />
-        <div
-          v-if="versions.length > 0 || deleted"
-          :style="
-            versions.length > 0 || deleted ? 'min-width:33.33%' : 'min-width:50%'
-          "
-          :class="{ configRow_draft : draft, 'font-weight-light': draft, 'font-italic': draft,
-                    configRow_pre : local_type !== 'list'}"
-          class="px-2 text-center configRow_history"
-          v-text="
-            local_type === 'password' && pass_locked
-              ? '••••••••'
-              : deleted === true ? local_value : versions[current_version]
-          "
-        />
-        <v-text-field
-          v-if="local_type === 'string'"
-          v-model="local_value"
-          :data-cy="`configRow_${local_name}`"
-          :style="
-            versions.length > 0 || deleted ? 'min-width:33.33%' : 'min-width:50%'
-          "
-          :rules="local_rules"
-          :readonly="forced_value"
-          :hint="force_cause"
-          class="px-2 configRow_field"
-          autocomplete="off"
-          label="value"
-          persistent-hint
-          @input="change"
-        />
-        <v-text-field
-          v-if="local_type === 'Vault'"
-          v-model="local_value"
-          :data-cy="`configRow_${local_name}`"
-          :style="
-            versions.length > 0 || deleted ? 'min-width:33.33%' : 'min-width:50%'
-          "
-          :rules="local_rules"
-          :readonly="forced_value"
-          :hint="force_cause"
-          class="px-2 configRow_field"
-          autocomplete="off"
-          label="value"
-          persistent-hint
-          @input="change"
-        />
-        <v-textarea
-          v-if="local_type === 'text'"
-          v-model="local_value"
-          :data-cy="`configRow_${local_name}`"
-          :style="
-            versions.length > 0 || deleted ? 'min-width:33.33%' : 'min-width:50%'
-          "
-          :rules="local_rules"
-          :readonly="forced_value"
-          :hint="force_cause"
-          class="px-2 configRow_field"
-          autocomplete="off"
-          rows="1"
-          label="value"
-          persistent-hint
-          @input="change"
-        />
-        <v-text-field
-          v-if="local_type === 'password'"
-          v-model="local_value"
-          :data-cy="`configRow_${local_name}`"
-          :style="
-            versions.length > 0 || deleted ? 'min-width:33.33%' : 'min-width:50%'
-          "
-          :type="pass_locked ? 'password' : 'text'"
-          :append-icon="pass_locked ? icons.mdiLock : icons.mdiLockOpen"
-          :rules="local_rules"
-          :readonly="forced_value"
-          :hint="force_cause"
-          class="px-2 configRow_field"
-          autocomplete="off"
-          label="value"
-          persistent-hint
-          @input="change"
-          @click:append="pass_locked = !pass_locked"
-        />
-        <v-combobox
-          v-if="local_type === 'list'"
-          v-model="local_value"
-          :data-cy="`configRow_${local_name}`"
-          :style="
-            versions.length > 0 || deleted ? 'min-width:33.33%' : 'min-width:50%'
-          "
-          class="px-2 mt-4 configRow_field"
-          :rules="local_rules"
-          :readonly="forced_value"
-          :hint="force_cause"
-          dense
-          label="List"
-          multiple
-          chips
-          deletable-chips
-          append-icon
-          persistent-hint
-          @change="change"
-        />
-        <div
-          v-if="local_type === 'boolean'"
-          :style="
-            versions.length > 0 || deleted
-              ? 'min-width:33.33%'
-              : 'min-width:50%'
-          "
-          class="px-2 configRow_field"
-        >
-          <v-checkbox
-            v-model="local_value"
-            :data-cy="`configRow_${local_name}`"
-            :rules="local_rules"
-            :readonly="forced_value"
-            :hint="force_cause"
-            color="lightblack"
-            class="align-center justify-center"
-            style="margin-top: 20px; width: 100%"
-            ripple
-            persistent-hint
-            @change="change"
-          />
-        </div>
-        <v-text-field
-          v-if="local_type === 'number'"
-          v-model="local_value"
-          :data-cy="`configRow_${local_name}`"
-          :style="
-            versions.length > 0 || deleted ? 'min-width:33.33%' : 'min-width:50%'
-          "
-          :rules="local_rules"
-          :readonly="forced_value"
-          :hint="force_cause"
-          class="px-2 configRow_field"
-          autocomplete="off"
-          label="value"
-          type="number"
-          persistent-hint
-          @input="change"
-        />
-      </div>
-    </v-form>
-  </transition>
+      <v-checkbox
+        v-model="local_value"
+        :data-cy="`configRow_${local_name}`"
+        :rules="local_rules"
+        :disabled="deleted"
+        :readonly="forcedValue"
+        :hint="forceCause"
+        :error-messages="errorMessage"
+        color="lightblack"
+        class="align-center justify-center"
+        style="margin-top: 20px; width: 100%"
+        ripple
+        persistent-hint
+        @change="change"
+      />
+    </div>
+    <v-text-field
+      v-else-if="local_type === 'number'"
+      v-model="local_value"
+      :data-cy="`configRow_${local_name}`"
+      :disabled="deleted"
+      :style="
+        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
+      "
+      :rules="local_rules"
+      :readonly="forcedValue"
+      :error-messages="errorMessage"
+      :hint="forceCause"
+      class="px-2 configRow_field thirdWidth"
+      autocomplete="off"
+      label="value"
+      type="number"
+      persistent-hint
+      @input="change"
+    />
+  </div>
 </template>
 
 <script>
@@ -194,11 +196,6 @@
       name: {
         type: String,
         required: true,
-      },
-      versions: {
-        type: Array,
-        required: false,
-        default: function () { return [] },
       },
       value: {
         type: [String, Boolean, Number, Array],
@@ -219,24 +216,31 @@
         type: Boolean,
         default: false,
       },
-      current_version: {
-        type: Number,
-        required: true,
+      currentVersionValue: {
+        type: [String, Boolean, Number, Array],
+        default: null,
+        required: false,
       },
-      forced_value: {
+      currentVersionType: {
+        type: String,
+        default: undefined,
+        required: false,
+      },
+      forcedValue: {
         type: Boolean,
         default: false,
       },
-      force_cause: {
+      forceCause: {
         type: String,
+        default: null,
       },
-      visible: {
+      isNew: {
         type: Boolean,
-        default: true,
+        default: false,
       },
-      draft_versions: {
-        type: Array,
-        required: true,
+      draft: {
+        type: Boolean,
+        default: false,
       },
     },
     data: attrs => ({
@@ -249,23 +253,21 @@
       local_type: attrs.type,
       local_rules: [],
 
+      errorMessage: [],
+
       pass_locked: true,
     }),
     computed: {
-      draft () {
-        return this.draft_versions.includes(this.current_version)
-      },
       getClass () {
-        const base = this.different ? 'configRow_different' : 'configRow_noColor'
-
-        return base
-      },
-      historicLabel () {
-        return `Version #${this.current_version}`
+        return this.different ? 'configRow_different' : 'configRow_noColor'
       },
       different () {
-        if (this.deleted) {
-          return this.local_value
+        if (this.deleted || this.isNew) {
+          return true
+        }
+
+        if (this.currentVersionType && this.currentVersionType !== this.type) {
+          return true
         }
 
         if (this.local_type === 'list') {
@@ -273,19 +275,18 @@
           if (this.local_value === '') {
             return true
           }
-          if (this.versions[this.current_version] === undefined || this.versions[this.current_version] === null) {
+          if (this.currentVersionValue === undefined || this.currentVersionValue === null) {
             return true
-          } else if (this.versions[this.current_version].length !== this.local_value.length) {
+          } else if (this.currentVersionValue.length !== this.local_value.length) {
             return true
           }
 
           this.local_value.forEach((el, i) => {
-            if (this.versions[this.current_version] === undefined ||
-              this.versions[this.current_version][i] === undefined) {
+            if (this.currentVersionValue === undefined) {
               diff = true
               return
             }
-            if (el !== this.versions[this.current_version][i]) {
+            if (el !== this.currentVersionValue[i]) {
               diff = true
             }
           })
@@ -293,7 +294,7 @@
           return diff
         }
 
-        return this.versions[this.current_version] !== this.local_value
+        return this.currentVersionValue !== this.local_value
       },
     },
     watch: {
@@ -303,25 +304,24 @@
     },
     mounted () {
       this.createLocalRules()
+      this.validate()
     },
     methods: {
       getLocalValue () {
         if (this.type === 'boolean') {
-          if (this.value === 'true' || this.value === true) {
-            return true
-          } else {
-            return false
-          }
+          return this.value === 'true' || this.value === true
         } else {
           return this.value
         }
       },
       change () {
-        this.$emit('change', {
-          name: this.local_name,
-          value: this.local_value,
-          type: this.local_type,
-        })
+        if (this.local_type === 'number') {
+          this.local_value = Number(this.local_value)
+        } else if (this.local_type === 'string') {
+          this.local_value = `${this.local_value}`
+        }
+
+        this.$emit('input', this.local_value)
       },
       createLocalRules () {
         this.rules.forEach(rule => {
@@ -338,9 +338,43 @@
           }
         })
       },
-      valid () {
-        return this.$refs.newConfigForm.validate()
+      validate () {
+        this.errorMessage = []
+        this.local_rules.forEach(rule => {
+          const output = rule(this.local_value)
+          if (output !== true) {
+            this.errorMessage = output
+          }
+        })
       },
     },
   }
 </script>
+
+<style>
+.configRow_history {
+  padding-top: 22px;
+  border-bottom: solid;
+  border-width: 1px;
+  border-color: rgba(0,0,0,0.05);
+}
+
+.configRow_field {
+  border-bottom: solid;
+  border-width: 1px;
+  border-color: rgba(0,0,0,0.05);
+}
+
+.configRow_draft {
+  background: rgba(155, 163, 158, 0.3);
+}
+
+.configRow_crossed {
+  text-decoration: line-through;
+}
+
+.configRow_different {
+  background: rgba(242, 165, 42, 0.42);
+  transition: all 0.3s;
+}
+</style>
