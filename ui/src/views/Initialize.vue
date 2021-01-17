@@ -31,7 +31,7 @@
         <v-card>
           <div class="px-4 pt-4">
             <v-img
-              src="/ui/tower.png"
+              src="tower.png"
               class="towerImage"
             />
           </div>
@@ -55,6 +55,7 @@
               color="primary"
               block
               :disabled="!form.valid"
+              :elevation="!form.valid ? 1 : undefined"
               @click="submit"
             >
               Set encryption key

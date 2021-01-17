@@ -53,7 +53,7 @@
     "runFullTest": "NODE_ENV=development node .",
     "test": "mocha --growl",
     "testScenarios": "mocha --growl test/scenarios/**/*.js",
-    "package": "pkg --out-path ../dist --targets node14-linux-x64 .",
+    "package": "pkg --out-path ../dist --targets node14-linux-x64,node14-win-x64,node14-macos-x64 .",
     "start-server": "npm run runFullTest",
     "ci": "start-server-and-test start-server http://localhost:3000 test"
   },

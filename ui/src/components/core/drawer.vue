@@ -50,7 +50,9 @@
       </v-list-item>
     </v-list>
     <v-divider v-if="mainLinksPerm.length > 0" />
-    <v-list dense>
+    <v-list
+      dense
+    >
       <v-list-item
         v-for="obj of archiveLinks"
         :key="obj.name"
@@ -70,8 +72,11 @@
         </v-list-item-icon>
       </v-list-item>
     </v-list>
-    <v-divider v-if="baseModelLinks.length > 0" />
-    <v-list dense>
+    <v-divider />
+    <v-list
+      v-if="baseModelLinks.length > 0"
+      dense
+    >
       <v-list-item
         v-for="obj of baseModelLinks"
         :key="obj.name"
