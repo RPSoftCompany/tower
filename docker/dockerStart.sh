@@ -51,7 +51,7 @@ sed -i s/\$PORT/"${__PORT}"/g config.json
 sed -i s/\$LOG_LEVEL/"${__LOG_LEVEL}"/g config.json
 sed -i s/\$EXPLORER/"${__EXPLORER}"/g config.json
 sed -i s/\$NON_SAFE/"${__NON_SAFE}"/g config.json
-sed -i s/\FULL_ENCRYPTION/"${__FULL_ENCRYPTION}"/g config.json
+sed -i s/\$FULL_ENCRYPTION/"${__FULL_ENCRYPTION}"/g config.json
 sed -i s/\$TOKEN_HEADERS/"${__TOKEN_HEADERS}"/g config.json
 
 # =============================

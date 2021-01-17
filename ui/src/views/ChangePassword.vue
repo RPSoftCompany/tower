@@ -31,7 +31,7 @@
         <v-card>
           <v-img
             :width="384"
-            src="/ui/tower.png"
+            src="tower.png"
             class="towerImage"
           />
           <v-card-text>

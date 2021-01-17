@@ -2,12 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e16bfb61-4cb0-49e0-8a6e-5dbd8447af86" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/tower.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tower.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/explorer/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/dist/explorer/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker/dockerStart.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/dockerStart.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Configuration.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Configuration.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/explorer/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/explorer/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/core/drawer.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/drawer.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Initialize.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Initialize.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/src/views/Login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Login.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/NoPermissions.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/NoPermissions.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,11 +34,25 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="npm.build">
+    <configuration name="build" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/ui/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <configuration name="dev" type="js.build_tools.npm" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -43,6 +63,21 @@
       <envs />
       <method v="2" />
     </configuration>
+    <configuration name="package" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/server/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="package" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="npm.package" />
+      <item itemvalue="npm.dev" />
+      <item itemvalue="npm.build" />
+    </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -53,6 +88,8 @@
       <option name="presentableId" value="Default" />
       <updated>1609690508727</updated>
       <workItem from="1609690511230" duration="498000" />
+      <workItem from="1610903993690" duration="638000" />
+      <workItem from="1610907232913" duration="3013000" />
     </task>
     <servers />
   </component>

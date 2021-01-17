@@ -30,7 +30,7 @@
       >
         <v-card>
           <v-img
-            src="/tower.png"
+            src="tower.png"
             :width="384"
             class="towerImage"
           />
