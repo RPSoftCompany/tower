@@ -20,6 +20,11 @@
 * [Model](user-interface/model.md)
 * [Settings](user-interface/settings.md)
 
+## REST Templates
+
+* [How To](rest-templates/how-to.md)
+* [Templates](rest-templates/templates.md)
+
 ## Models \(API\) <a id="models"></a>
 
 * [Base Configuration](models/base-configuration.md)
