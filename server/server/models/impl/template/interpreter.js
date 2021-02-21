@@ -185,6 +185,7 @@ class InterpreterCommon {
      *
      * @param {string} text def line
      *
+     * @return {object} variable
      */
     handleDef(text) {
         let newText = this.replaceVariables(text);
@@ -590,7 +591,7 @@ class If extends InterpreterCommon {
     getIfData(text) {
         // IF validation
         // eslint-disable-next-line max-len
-        let valid = /^\s*%%if\s+[\[]*["'`]*\s*variables\s*\[+["'`]+[^"'`]+["'`]+\s*]\s+[<>=!~]+\s+["'`]*\S+["'`]*\s*]%%/.test(text);
+        let valid = /^\s*%%if\s+[\[]*["'`]*\s*variables\s*\[+["'`]+[^"'`]+["'`]+\s*]\s+[<>=!~]+\s+["'`]*\S+["'`]*\s*%%/.test(text);
         let variablesLine = true;
         if (!valid) {
             // eslint-disable-next-line max-len
