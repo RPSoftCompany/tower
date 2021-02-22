@@ -4,9 +4,9 @@ description: 'On this page, you can find Tower templates for different technolog
 
 # Templates
 
-### Tibco
+### TIBCO
 
-#### Flogo
+**TIBCO Flogo® Enterprise**
 
 To use Tower with Tibco Flogo you will need to create Consul like API. To do so, you will need to create new REST API url via REST Configuration page. The URL you will provide must start with **kv**, in my case it's **kv/{Environment}/{Application}**. Be aware, that you will need to change the line 6 of the following template to match your url \(without the kv string\).
 
