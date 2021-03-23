@@ -1,6 +1,6 @@
 # How To
 
-REST Templates are the most complex feature of Tower, but at the same time, it's not easy to create template with all the features you need and especially your application needs.
+REST Templates are the most complex feature of Tower, but at the same time, it's not easy to create template with all the features you and especially your application needs.
 
 But let's start with basics... Default template looks like this:
 
