@@ -12,13 +12,69 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
-  <v-card
+  <uiCard
     flat
-    class="mt-4"
+    class="pt-4"
   >
+    <template v-slot:help>
+      <div class="mt-4">
+        <div class="text-h4 font-weight-bold text-uppercase">
+          Users
+        </div>
+        <v-divider class="mt-2 mb-7" />
+        <div />
+        <div class="text-h5 mb-3 font-weight-medium">
+          Overview
+        </div>
+        <span class="font-weight-bold">Users</span> section allows you to create and modify users in Tower, assign them
+        to groups and create technical users.
+        <v-divider class="my-2" />
+      </div>
+      <div class="mt-4">
+        <div class="text-h5 font-weight-medium">
+          New user
+        </div>
+        To create a new user account, you just need to fill in the <span class="font-weight-bold">User</span> input and
+        click on the <kbd>+</kbd> button.
+        <gif
+          src="Users_create_user.gif"
+          alt="New user"
+        />
+      </div>
+      <v-divider class="my-2" />
+      <div class="text-h5 font-weight-medium">
+        User Groups
+      </div>
+      <div class="mt-4">
+        User can be assigned to any number of <router-link :to="{name: 'Settings', hash: '#base'}">
+          groups
+        </router-link>. Each group (defined by the administrator) gives different permissions to user.
+        <div>
+          To assign group to the user, you will need to click on the 'User groups' input and
+          choose which group you want your user to be assigned to.
+        </div>
+      </div>
+      <gif
+        src="Users_add_to_group.gif"
+        alt="Add user to group"
+      />
+      <v-divider class="my-2" />
+      <div class="text-h5 font-weight-medium">
+        Technical User
+      </div>
+      <div class="mt-4">
+        Sometimes you may want your user to act as a 'technical' one to use it in your API, CI/CD or other scripts.
+        In that case you wound need that user to have API token which will not expire.
+        There is a special switch for such cases called 'Technical user'.
+      </div>
+      <gif
+        src="Users_technical_user.gif"
+        alt="Set user as technical"
+      />
+    </template>
     <div class="d-flex justify-center">
       <div class="halfWidth">
         <v-autocomplete
@@ -103,14 +159,20 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-card>
+  </uiCard>
 </template>
 
 <script>
   import { mdiPlus } from '@mdi/js'
+  import uiCard from '../base/uiCard'
+  import gif from '../base/gif'
 
   export default {
     name: 'User',
+    components: {
+      uiCard,
+      gif,
+    },
     data: () => ({
       user: {
         items: [],

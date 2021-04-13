@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 'use strict';
 
@@ -52,10 +52,6 @@ module.exports = (Connection) => {
 
     Connection.disableRemoteMethodByName('createChangeStream');
 
-    Connection.validatesUniquenessOf('system', {
-        message: 'System is not unique',
-    });
-
     Connection.testConnection = async (type) => {
         return await connection.testConnection(type);
     };
@@ -70,6 +66,10 @@ module.exports = (Connection) => {
 
     Connection.findConnection = async (filter) => {
         return await connection.findConnection(filter);
+    };
+
+    Connection.findSCPConnectionsAndCopy = async (conn) => {
+        return await connection.findSCPConnectionsAndCopy(conn);
     };
 
     // ====================================================

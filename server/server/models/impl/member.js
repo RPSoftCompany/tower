@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 const HttpErrors = require('http-errors');
 const {authenticate} = require('ldap-authentication');
@@ -487,7 +487,9 @@ module.exports = class Member {
         const groupCache = await this.getGroupsFromCache();
 
         const groups = groupCache.filter((el) => {
-            return user.groups.includes(el.name);
+            if (user.groups) {
+                return user.groups.includes(el.name);
+            }
         });
 
         const roles = new Set();
@@ -499,7 +501,7 @@ module.exports = class Member {
             }
         });
 
-        if (user.username === 'admin' || roles.has('admin')) {
+        if (user && (user.username === 'admin' || roles.has('admin'))) {
             const rolesCache = await this.getRolesFromCache();
             rolesCache.forEach((role) => {
                 roles.add(role.name);

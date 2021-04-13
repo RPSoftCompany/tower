@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 const HttpErrors = require('http-errors');
 const ConfigurationModelClass = require('./configurationModel.js');
@@ -433,17 +433,30 @@ module.exports = class Configuration {
 
         const configObject = await Configuration.create(newObject);
 
-        const hookObject = {
-            version: configObject.version,
-        };
-
         if (!configObject.draft) {
-            this.app.hookSingleton.executeAdvancedHook('afterCreate', 'Configuration', basesObj, hookObject);
+            const hookObject = {
+                version: configObject.version,
+            };
+
+            this.afterSaveHooks(configObject, basesObj, hookObject);
         }
 
         this.log('debug', 'createConfiguration', 'FINISHED');
 
         return configObject;
+    }
+
+    /**
+     * Executed after the configuration save
+     *
+     * @param {Object} configuration configuration
+     * @param {string} bases bases for given hook
+     * @param {string} data data of hook to execute
+     *
+     */
+    async afterSaveHooks(configuration, bases, data) {
+        await this.app.models.connection.findSCPConnectionsAndCopy(configuration);
+        await this.app.hookSingleton.executeAdvancedHook('afterCreate', 'Configuration', bases, data);
     }
 
     /**

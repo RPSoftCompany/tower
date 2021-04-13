@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 module.exports = async (app) => {
     const Member = app.models.Member;
@@ -34,7 +34,7 @@ module.exports = async (app) => {
             password: 'admin',
             groups: [],
             newUser: true,
-        }, );
+        } );
     }
 
     const rolesList = [{
@@ -98,20 +98,6 @@ module.exports = async (app) => {
     if (vault === null) {
         await connection.create({
             system: 'Vault',
-            enabled: false,
-        });
-    }
-
-    const kubernetes = await connection.findOne({
-        where: {
-            system: 'Kubernetes/OpenShift',
-        },
-    });
-
-    if (kubernetes === null) {
-        await connection.create({
-            system: 'Kubernetes/OpenShift',
-            connections: [],
             enabled: false,
         });
     }
