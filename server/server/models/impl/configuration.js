@@ -455,8 +455,10 @@ module.exports = class Configuration {
      *
      */
     async afterSaveHooks(configuration, bases, data) {
-        await this.app.models.connection.findSCPConnectionsAndCopy(configuration);
-        await this.app.hookSingleton.executeAdvancedHook('afterCreate', 'Configuration', bases, data);
+        if (configuration.draft !== true) {
+            await this.app.models.connection.findSCPConnectionsAndCopy(configuration);
+            await this.app.hookSingleton.executeAdvancedHook('afterCreate', 'Configuration', bases, data);
+        }
     }
 
     /**

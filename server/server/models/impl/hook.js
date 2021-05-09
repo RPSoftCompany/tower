@@ -253,7 +253,7 @@ module.exports = class Hook {
             },
         });
 
-        if (one !== null && one !== undefined) {
+        if (one) {
             for (const hookObj of one.hooks) {
                 axios.post(hookObj.url, data);
             }
@@ -308,6 +308,8 @@ module.exports = class Hook {
                     headers: headers,
                     data: template,
                     url: hookObj.url,
+                }).catch( (error) => {
+                    this.log('error', `executeHook ${method} ${model}`, error);
                 });
             }
         }
