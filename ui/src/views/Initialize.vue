@@ -30,10 +30,11 @@
       >
         <v-card>
           <div class="px-4 pt-4">
-            <v-img
+            <img
               src="@/assets/tower.png"
+              width="333"
               class="towerImage"
-            />
+            >
           </div>
           <v-card-text>
             <v-form
@@ -70,7 +71,7 @@
 <script>
   export default {
     name: 'Initialize',
-    data: props => ({
+    data: () => ({
       form: {
         valid: false,
       },

@@ -29,11 +29,11 @@
         style="max-width:389px;"
       >
         <v-card :class="cardClass">
-          <v-img
-            :width="384"
+          <img
+            width="349"
             src="@/assets/tower.png"
             class="towerImage"
-          />
+          >
           <v-card-text>
             <v-form
               ref="form"

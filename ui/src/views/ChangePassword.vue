@@ -28,12 +28,12 @@
         sm="4"
         style="max-width:389px;"
       >
-        <v-card>
-          <v-img
-            :width="384"
+        <v-card class="pa-2">
+          <img
+            :width="354"
             src="@/assets/tower.png"
             class="towerImage"
-          />
+          >
           <v-card-text>
             <v-form
               ref="form"
