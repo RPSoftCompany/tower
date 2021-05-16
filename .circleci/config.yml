@@ -24,7 +24,7 @@ jobs:
             - run:
                 name: Install pkg
                 command: |
-                    sudo npm install -g pkg@4.4.9
+                    sudo npm install -g pkg@5.1.0
             - run:
                 name: Build Server
                 command: |
