@@ -16,7 +16,9 @@
 
 const ConfigurationClass = require('./configuration.js');
 const Interpreter = require('./template/interpreter');
+const V1 = require('./v1');
 
+const ObjectID = require('mongodb').ObjectID;
 const axios = require('axios');
 const {authenticate} = require('ldap-authentication');
 const HttpErrors = require('http-errors');
@@ -374,6 +376,7 @@ module.exports = class Connection {
 
         const Connection = this.app.models.connection;
         const RestConfiguration = this.app.models.restConfiguration;
+        const V1model = new V1(this.app, 'v1');
 
         const BaseConfiguration = this.app.get('BaseConfigurationInstance');
         const Configuration = this.app.get('ConfigurationInstance');
@@ -395,6 +398,21 @@ module.exports = class Connection {
             },
         });
 
+        const Member = this.app.models.member;
+
+        const user = await Member.findOne({
+            where: {
+                username: 'admin',
+            },
+        });
+
+        const token = await user.createAccessToken(86400);
+
+        const options = {
+            accessToken: token,
+            authorizedRoles: {admin: true, groupSolver: true},
+        };
+
         for (const connection of connections) {
             for (const conf of connection.items) {
                 let match = true;
@@ -406,6 +424,16 @@ module.exports = class Connection {
 
                 if (match === true) {
                     const template = await RestConfiguration.findById(conf.template.id);
+
+                    let url = template.url;
+                    for (const base of bases) {
+                        const toChange = `{${base.name}}`;
+                        const changeTo = `${configuration[base.name]}`;
+                        url = url.replaceAll(toChange, changeTo);
+                    }
+
+                    configuration.url = url;
+                    configuration = await V1model.getDataFromConfiguration(configuration, template.url, options, configuration);
 
                     const sftp = new SCPClient();
 
@@ -439,11 +467,13 @@ module.exports = class Connection {
                         await fs.unlink(filename);
                     } catch (err) {
                         this.log('error', 'findSCPConnectionsForSCP',
-                            'Error connecting to server via SFTP\n', err);
+                            'Error connecting to server via SCP\n', err);
                     }
                 }
             }
         }
+
+        await Member.logout(token.id);
 
         this.log('debug', 'findSCPConnectionsForSCP', 'FINISHED');
     }

@@ -172,7 +172,7 @@ module.exports = class Member {
     async login(credentials, include, ttl) {
         this.log('debug', 'login', 'STARTED');
 
-        if (ttl === undefined) {
+        if (!ttl) {
             ttl = 86400;
         }
 
@@ -467,7 +467,7 @@ module.exports = class Member {
 
         const Member = this.app.models.member;
 
-        if (userId === undefined || userId === '' || userId === null) {
+        if (!userId) {
             return [];
         }
 

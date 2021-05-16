@@ -219,7 +219,6 @@ module.exports = class Configuration {
         this.log('debug', 'findWithPermissions', 'STARTED');
 
         const configuration = this.app.models.configuration;
-        // const baseConfiguration = this.app.models.baseConfiguration;
         const configModel = new ConfigurationModelClass(this.app);
 
         const configAll = await configuration.find(filter);
