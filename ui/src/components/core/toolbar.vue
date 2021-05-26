@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
   <v-app-bar
@@ -26,10 +26,10 @@
         v-text="route"
       />
       <v-avatar size="40">
-        <v-img
-          src="tower.png"
+        <img
+          src="@/assets/tower.png"
           class="towerImage"
-        />
+        >
       </v-avatar>
       <div class="tower ml-1 font-weight-thin">
         Tower

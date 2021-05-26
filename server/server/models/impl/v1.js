@@ -12,11 +12,10 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 const HttpErrors = require('http-errors');
 const axios = require('axios');
-const ConfigurationClass = require('./configuration.js');
 const ConstantVariableClass = require('./constantVariable');
 
 module.exports = class V1 {
@@ -292,15 +291,57 @@ module.exports = class V1 {
     }
 
     /**
+     * updates variables with data from globals/Vault etc.
+     *
+     * @param {object} configuration
+     *
+     * @return {[object]} updated configuration
+     */
+    async updateVariables(configuration, models) {
+        this.log('debug', 'updateVariables', 'STARTED');
+
+        const current = configuration;
+        const retValue = {
+            variables: current.variables,
+            effectiveDate: current.effectiveDate,
+            version: current.version,
+        };
+
+        const modelForVault = new Map();
+
+        models.forEach((model) => {
+            const modelValue = current[model.name];
+            if (modelValue !== undefined) {
+                retValue[model.name] = modelValue;
+                modelForVault.set(model.name, modelValue);
+            }
+        });
+
+        retValue.variables = await this.updateVariablesWithDefaults(retValue.variables, models, current, options);
+
+        for (let i = 0; i < retValue.variables.length; i++) {
+            const item = retValue.variables[i];
+            if (item.type === 'Vault') {
+                retValue.variables[i].value = await this.getDataFromVault(item.value, modelForVault);
+            }
+        }
+
+        this.log('debug', 'updateVariables', 'FINISHED');
+
+        return retValue;
+    }
+
+    /**
      * match configuration url
      *
      * @param {restConfiguration} configuration configuration to get data from
      * @param {string} url url to check
      * @param {object} options request options
+     * @param {object} fullConfiguration optional full configuration
      *
      * @return {Configuration} matched configuration
      */
-    async getDataFromConfiguration(configuration, url, options) {
+    async getDataFromConfiguration(configuration, url, options, fullConfiguration) {
         this.log('debug', 'getDataFromConfiguration', 'STARTED');
 
         const values = {};
@@ -365,13 +406,19 @@ module.exports = class V1 {
         values.draft = false;
         values.deleted = false;
 
-        const Config = new ConfigurationClass(this.app);
+        const Config = this.app.get('ConfigurationInstance');
 
-        const full = await Config.findWithPermissions({
-            where: values,
-            order: 'version DESC',
-            limit: 1,
-        }, options);
+        let full;
+
+        if (!fullConfiguration) {
+            full = await Config.findWithPermissions({
+                where: values,
+                order: 'version DESC',
+                limit: 1,
+            }, options);
+        } else {
+            full = [fullConfiguration];
+        }
 
         if (full.length > 0) {
             const current = full[0];

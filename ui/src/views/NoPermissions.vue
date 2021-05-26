@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
   <v-container
@@ -29,14 +29,19 @@
         style="max-width:389px;"
       >
         <v-card>
-          <v-img
-            src="tower.png"
-            :width="384"
-            class="towerImage"
-          />
+          <div class="pa-2">
+            <img
+              src="@/assets/tower.png"
+              :width="354"
+              class="towerImage"
+            >
+          </div>
           <v-divider />
-          <v-card-text style="color:red">
-            <b>Yes have not enought permissions to access Tower</b>
+          <v-card-text
+            style="color:red"
+            class="text-center"
+          >
+            <b>Yes have not enough permissions to access Tower</b>
           </v-card-text>
         </v-card>
       </v-col>
@@ -50,6 +55,8 @@
     mounted () {
       this.$store.commit('setUserRoles', null)
       this.$store.commit('setUserData', null)
+
+      this.$cookie.delete('token')
     },
   }
 </script>

@@ -12,12 +12,20 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
+const ConfigurationClass = require('./configuration.js');
+const Interpreter = require('./template/interpreter');
+const V1 = require('./v1');
+
+const ObjectID = require('mongodb').ObjectID;
 const axios = require('axios');
 const {authenticate} = require('ldap-authentication');
 const HttpErrors = require('http-errors');
-const ConfigurationClass = require('./configuration.js');
+const SCPClient = require('ssh2-sftp-client');
+const os = require('os');
+const path = require('path');
+const fs = require('fs').promises;
 
 module.exports = class Connection {
     /**
@@ -124,7 +132,7 @@ module.exports = class Connection {
     async saveConnection(connection) {
         this.log('debug', 'saveConnection', 'STARTED');
 
-        if (connection.id !== undefined) {
+        if (connection.id) {
             const Connection = this.app.models.connection;
             const tempConn = await Connection.findOne({
                 where: {
@@ -134,29 +142,50 @@ module.exports = class Connection {
 
             if (tempConn.system === 'LDAP') {
                 tempConn.url = connection.url !== undefined ? connection.url : tempConn.url;
-                tempConn.bindDN = connection.bindDN !== undefined ? connection.bindDN : tempConn.bindDN;
-                tempConn.bindCredentials = connection.bindCredentials !== undefined ?
+                tempConn.bindDN = connection.bindDN ? connection.bindDN : tempConn.bindDN;
+                tempConn.bindCredentials = connection.bindCredentials ?
                     connection.bindCredentials : tempConn.bindCredentials;
-                tempConn.searchBase = connection.searchBase !== undefined ?
+                tempConn.searchBase = connection.searchBase ?
                     connection.searchBase : tempConn.searchBase;
-                tempConn.enabled = connection.enabled !== undefined ?
+                tempConn.enabled = connection.enabled ?
                     connection.enabled : tempConn.enabled;
-                tempConn.usernameAttribute = connection.usernameAttribute !== undefined ?
+                tempConn.usernameAttribute = connection.usernameAttribute ?
                     connection.usernameAttribute : tempConn.usernameAttribute;
-                tempConn.displayAttribute = connection.displayAttribute !== undefined ?
+                tempConn.displayAttribute = connection.displayAttribute ?
                     connection.displayAttribute : tempConn.displayAttribute;
             } else if (tempConn.system === 'Vault') {
-                tempConn.url = connection.url !== undefined ? connection.url : tempConn.url;
-                tempConn.globalToken = connection.globalToken !== undefined ?
+                tempConn.url = connection.url ? connection.url : tempConn.url;
+                tempConn.globalToken = connection.globalToken ?
                     connection.globalToken : tempConn.globalToken;
-                tempConn.enabled = connection.enabled !== undefined ? connection.enabled : tempConn.enabled;
-                tempConn.useGlobalToken = connection.useGlobalToken !== undefined ?
+                tempConn.enabled = connection.enabled ? connection.enabled : tempConn.enabled;
+                tempConn.useGlobalToken = connection.useGlobalToken ?
                     connection.useGlobalToken : tempConn.useGlobalToken;
-                tempConn.tokens = connection.tokens !== undefined ? connection.tokens : tempConn.tokens;
+                tempConn.tokens = connection.tokens ? connection.tokens : tempConn.tokens;
+            } else if (tempConn.system === 'SCP') {
+                tempConn.name = connection.name ? connection.name : tempConn.name;
+                tempConn.username = connection.username ? connection.username : tempConn.username;
+                tempConn.authType = connection.authType ? connection.authType : tempConn.authType;
+                tempConn.items = connection.items ? connection.items : tempConn.items;
+
+                if (connection.authType === 'key') {
+                    tempConn.password = null;
+                    tempConn.key = connection.key ? connection.key : tempConn.key;
+                } else {
+                    tempConn.key = null;
+                    tempConn.password = connection.password ? connection.password : tempConn.password;
+                }
+
+                if (connection.authType === 'key' && !connection.key) {
+                    this.log('debug', 'saveConnection', 'FINISHED');
+                    throw new HttpErrors.BadRequest('Invalid request');
+                } else if (connection.authType === 'userpass' && !connection.password) {
+                    this.log('debug', 'saveConnection', 'FINISHED');
+                    throw new HttpErrors.BadRequest('Invalid request');
+                }
             }
 
             connection = tempConn;
-        } else if (connection.system !== undefined) {
+        } else if (connection.system && connection.system !== 'SCP') {
             const Connection = this.app.models.connection;
             const tempConn = await Connection.findOne({
                 where: {
@@ -195,12 +224,12 @@ module.exports = class Connection {
             }
 
             connection = tempConn;
-        } else {
+        } else if (connection.system !== 'SCP') {
             this.log('debug', 'saveConnection', 'FINISHED');
             throw new HttpErrors.BadRequest('Correct instance should contain id or system name');
         }
 
-        if (connection.system !== 'LDAP' && connection.system !== 'Vault') {
+        if (connection.system !== 'LDAP' && connection.system !== 'Vault' && connection.system !== 'SCP') {
             this.log('debug', 'saveConnection', 'FINISHED');
             throw new HttpErrors.BadRequest('Invalid connection type');
         }
@@ -209,18 +238,17 @@ module.exports = class Connection {
         await configuration.createCrypt();
 
         if (connection.system === 'LDAP') {
-            if (connection.bindCredentials === undefined || connection.bindCredentials === null) {
+            if (!connection.bindCredentials) {
                 this.log('debug', 'saveConnection', 'FINISHED');
                 throw new HttpErrors.BadRequest('LDAP connection must contain bindCredentials field');
             }
             connection.bindCredentials = configuration.encryptPassword(connection.bindCredentials);
         } else if (connection.system === 'Vault') {
-            if (connection.globalToken !== undefined && connection.globalToken !== null &&
-                connection.globalToken !== '') {
+            if (connection.globalToken) {
                 connection.globalToken = configuration.encryptPassword(connection.globalToken);
             }
 
-            if (connection.tokens !== undefined) {
+            if (connection.tokens) {
                 if (!Array.isArray(connection.tokens)) {
                     this.log('debug', 'saveConnection', 'FINISHED');
                     throw new HttpErrors.BadRequest('Vault connections tokens must be an array');
@@ -235,12 +263,59 @@ module.exports = class Connection {
                 this.log('debug', 'saveConnection', 'FINISHED');
                 throw new HttpErrors.BadRequest('Vault connection must contain tokens field');
             }
+        } else if (connection.system === 'SCP') {
+            return await this.addScpConnection(connection);
         } else {
             this.log('debug', 'saveConnection', 'FINISHED');
             throw new HttpErrors.BadRequest('Invalid system type');
         }
 
         this.log('debug', 'saveConnection', 'FINISHED');
+
+        return await connection.save();
+    }
+
+    /**
+     * Add SCP connection
+     *
+     * @param {connection} connection connection object to save
+     */
+    async addScpConnection(connection) {
+        this.log('debug', 'addScpConnection', 'STARTED');
+
+        if (connection.system !== 'SCP') {
+            this.log('debug', 'addScpConnection', 'FINISHED');
+            throw new HttpErrors.BadRequest('Invalid system type');
+        }
+
+        if (!connection.host || !connection.username || !connection.authType) {
+            this.log('debug', 'addScpConnection', 'FINISHED');
+            throw new HttpErrors.BadRequest('Invalid request');
+        }
+
+        if (connection.authType === 'key' && !connection.key) {
+            this.log('debug', 'addScpConnection', 'FINISHED');
+            throw new HttpErrors.BadRequest('Invalid request');
+        }
+
+        if (connection.authType === 'userpass' && !connection.password ) {
+            this.log('debug', 'addScpConnection', 'FINISHED');
+            throw new HttpErrors.BadRequest('Invalid request');
+        }
+
+        if (!connection.items) {
+            connection.items = [];
+        }
+
+        const configInstance = this.app.get('ConfigurationInstance');
+
+        if (connection.authType === 'userpass') {
+            connection.password = configInstance.encryptPassword(connection.password);
+        } else {
+            connection.key = configInstance.encryptPassword(connection.key);
+        }
+
+        this.log('debug', 'addScpConnection', 'FINISHED');
 
         return await connection.save();
     }
@@ -257,8 +332,7 @@ module.exports = class Connection {
 
         const connection = await Connection.find(filter);
 
-        const configuration = new ConfigurationClass(this.app);
-        await configuration.createCrypt();
+        const configuration = this.app.get('ConfigurationInstance');
 
         connection.map( (conn) => {
             if (conn.system === 'LDAP') {
@@ -279,10 +353,128 @@ module.exports = class Connection {
                         });
                     }
                 }
+            } else if (conn.system === 'SCP') {
+                if (conn.authType === 'userpass') {
+                    conn.password = configuration.decryptPassword(conn.password);
+                } else {
+                    conn.key = configuration.decryptPassword(conn.key);
+                }
             }
         });
 
         this.log('debug', 'findConnection', 'FINISHED');
         return connection;
+    }
+
+    /**
+     * SCP on configuration save
+     *
+     * @param {object} configuration configuration to save
+     */
+    async findSCPConnectionsAndCopy(configuration) {
+        this.log('debug', 'findSCPConnectionsForSCP', 'STARTED');
+
+        const Connection = this.app.models.connection;
+        const RestConfiguration = this.app.models.restConfiguration;
+        const V1model = new V1(this.app, 'v1');
+
+        const BaseConfiguration = this.app.get('BaseConfigurationInstance');
+        const Configuration = this.app.get('ConfigurationInstance');
+        const bases = await BaseConfiguration.getConfigurationModelFromCache();
+
+        const where = {};
+
+        bases.forEach( (base) => {
+            if (configuration[base.name]) {
+                where[base.name] = configuration[base.name];
+            } else {
+                where[base.name] = '';
+            }
+        });
+
+        const connections = await Connection.find({
+            where: {
+                system: 'SCP',
+            },
+        });
+
+        const Member = this.app.models.member;
+
+        const user = await Member.findOne({
+            where: {
+                username: 'admin',
+            },
+        });
+
+        const token = await user.createAccessToken(86400);
+
+        const options = {
+            accessToken: token,
+            authorizedRoles: {admin: true, groupSolver: true},
+        };
+
+        for (const connection of connections) {
+            for (const conf of connection.items) {
+                let match = true;
+                bases.forEach( (base) => {
+                    if (conf[base.name] !== where[base.name]) {
+                        match = false;
+                    }
+                });
+
+                if (match === true) {
+                    const template = await RestConfiguration.findById(conf.template.id);
+
+                    let url = template.url;
+                    for (const base of bases) {
+                        const toChange = `{${base.name}}`;
+                        const changeTo = `${configuration[base.name]}`;
+                        url = url.replaceAll(toChange, changeTo);
+                    }
+
+                    configuration.url = url;
+                    configuration = await V1model.getDataFromConfiguration(configuration, template.url, options, configuration);
+
+                    const sftp = new SCPClient();
+
+                    try {
+                        if (connection.authType === 'userpass') {
+                            await sftp.connect({
+                                port: 22,
+                                host: connection.host,
+                                username: connection.username,
+                                password: Configuration.decryptPassword(connection.password),
+                                readyTimeout: 3000,
+                            });
+                        } else {
+                            await sftp.connect({
+                                port: 22,
+                                host: connection.host,
+                                username: connection.username,
+                                privateKey: Configuration.decryptPassword(connection.key),
+                                readyTimeout: 3000,
+                            });
+                        }
+
+                        const inter = new Interpreter(template.template, configuration, template.returnType,
+                            []);
+
+                        const filename = path.join(os.tmpdir(), Math.random().toString(36).substring(2, 15));
+
+                        await fs.writeFile(filename, inter.handle() );
+                        await sftp.fastPut(filename, conf.path);
+
+                        await fs.unlink(filename);
+                    } catch (err) {
+                        this.log('error', 'findSCPConnectionsForSCP',
+                            'Error connecting to server via SCP\n', err);
+                    }
+                }
+            }
+        }
+
+        await Member.logout(token.id);
+
+        this.log('debug', 'findSCPConnectionsForSCP', 'FINISHED');
     }
 };

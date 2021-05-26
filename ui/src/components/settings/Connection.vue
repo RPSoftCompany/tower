@@ -12,14 +12,14 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
   <v-card
     flat
     class="py-3 px-3"
   >
-    <v-expansion-panels accordion>
+    <v-expansion-panels>
       <v-expansion-panel>
         <v-expansion-panel-header>
           <template v-slot:default>
@@ -54,7 +54,7 @@
                   :disabled="!ldap.enabled"
                   :hint="ldap.urlHint"
                   :rules="[ldap.rules.validateUrl]"
-                  autocomplete="new-password"
+                  autocomplete="off"
                   label="URL"
                   @blur="updateLdap"
                 />
@@ -69,7 +69,7 @@
                   :rules="[ldap.rules.required]"
                   :disabled="!ldap.enabled"
                   label="Base DN"
-                  autocomplete="new-password"
+                  autocomplete="off"
                   @blur="updateLdap"
                 />
               </v-col>
@@ -83,7 +83,7 @@
                   :rules="[ldap.rules.required]"
                   :disabled="!ldap.enabled"
                   label="User DN"
-                  autocomplete="new-password"
+                  autocomplete="off"
                   @blur="updateLdap"
                 />
               </v-col>
@@ -96,7 +96,7 @@
                   :rules="[ldap.rules.required]"
                   :disabled="!ldap.enabled"
                   name="other"
-                  autocomplete="new-password"
+                  autocomplete="off"
                   label="Password"
                   type="password"
                   @blur="updateLdap"
@@ -112,7 +112,7 @@
                   :disabled="!ldap.enabled"
                   :hint="ldap.userAttrHint"
                   label="Username attribute"
-                  autocomplete="new-password"
+                  autocomplete="off"
                   @blur="updateLdap"
                 />
               </v-col>
@@ -126,7 +126,7 @@
                   :disabled="!ldap.enabled"
                   :hint="ldap.displayAttrHint"
                   label="Display attribute"
-                  autocomplete="new-password"
+                  autocomplete="off"
                   @blur="updateLdap"
                 />
               </v-col>
@@ -149,11 +149,7 @@
       <v-expansion-panel>
         <v-expansion-panel-header>
           <template v-slot:default>
-            <v-row no-gutters>
-              <v-col cols="12">
-                Vault
-              </v-col>
-            </v-row>
+            Vault
           </template>
         </v-expansion-panel-header>
         <v-expansion-panel-content>
@@ -262,6 +258,257 @@
           </v-form>
         </v-expansion-panel-content>
       </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>
+            SCP
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <v-divider />
+            <v-form>
+              <v-row>
+                <v-col
+                  class="d-flex mt-3"
+                  cols="12"
+                >
+                  <v-btn
+                    color="primary"
+                    @click="addScpConnection"
+                  >
+                    Add SCP Connection
+                  </v-btn>
+                </v-col>
+                <v-col cols="12">
+                  <v-expansion-panels v-model="scp.panel">
+                    <v-expansion-panel
+                      v-for="connection of scp.connections"
+                      :key="connection.id"
+                    >
+                      <v-expansion-panel-header>
+                        <template v-slot:default>
+                          {{ connection.username }}@{{ connection.host }}
+                        </template>
+                      </v-expansion-panel-header>
+                      <v-expansion-panel-content>
+                        <v-divider class="mb-2" />
+                        <v-form :ref="`SCPForm-${connection.id}`">
+                          <v-row>
+                            <v-col
+                              cols="5"
+                              class="pb-0"
+                            >
+                              <v-text-field
+                                v-model="connection.host"
+                                label="Host"
+                                autocomplete="off"
+                                :rules="[scp.rules.required]"
+                                @blur="saveSCPConnection(connection)"
+                              />
+                            </v-col>
+                            <v-col
+                              cols="5"
+                              offset="2"
+                              class="pb-0"
+                            >
+                              <v-text-field
+                                v-model="connection.username"
+                                label="User name"
+                                autocomplete="off"
+                                :rules="[scp.rules.required]"
+                                @blur="saveSCPConnection(connection)"
+                              />
+                            </v-col>
+                          </v-row>
+                          <v-row
+                            class="scpAuth mt-6"
+                          >
+                            <div class="scpAuthLabel px-2">
+                              Authentication
+                            </div>
+                            <v-col
+                              cols="2"
+                              class="py-0"
+                            >
+                              <v-radio-group
+                                v-model="connection.authTypeRadio"
+                                dense
+                              >
+                                <v-radio
+                                  label="SSH Key"
+                                  dense
+                                />
+                                <v-radio
+                                  label="Password"
+                                  dense
+                                />
+                              </v-radio-group>
+                            </v-col>
+                            <v-col
+                              v-if="connection.authTypeRadio === 0"
+                              cols="10"
+                            >
+                              <v-text-field
+                                v-model="connection.key"
+                                label="SSH key"
+                                autocomplete="off"
+                                type="password"
+                                :rules="[scp.rules.required]"
+                                @blur="saveSCPConnection(connection)"
+                              />
+                            </v-col>
+                            <v-col
+                              v-else
+                              cols="10"
+                            >
+                              <v-text-field
+                                v-model="connection.password"
+                                label="Password"
+                                type="password"
+                                autocomplete="off"
+                                :rules="[ldap.rules.required]"
+                                @blur="saveSCPConnection(connection)"
+                              />
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col cols="12">
+                              <v-data-table
+                                :headers="scp.headers"
+                                :items="connection.items"
+                              >
+                                <template v-slot:header.name="{ header }">
+                                  {{ header.text.toUpperCase() }}
+                                </template>
+                                <template v-slot:top>
+                                  <v-toolbar
+                                    flat
+                                  >
+                                    <v-toolbar-title>Connection models</v-toolbar-title>
+                                    <v-spacer />
+                                    <v-dialog
+                                      v-model="scp.addItemDialog"
+                                      max-width="80%"
+                                    >
+                                      <template v-slot:activator="{ on, attrs }">
+                                        <v-btn
+                                          color="primary"
+                                          dark
+                                          class="mb-2"
+                                          v-bind="attrs"
+                                          v-on="on"
+                                          @click="resetSCPNewItem"
+                                        >
+                                          Add Connection model
+                                        </v-btn>
+                                      </template>
+                                      <v-card>
+                                        <v-card-title class="primary">
+                                          <span
+                                            class="headline"
+                                          >Add Connection model</span>
+                                        </v-card-title>
+                                        <v-card-text>
+                                          <v-row>
+                                            <v-col
+                                              v-for="(base, baseName) of scp.availableBases"
+                                              :key="baseName"
+                                              :cols="12 / scp.availableBases.length"
+                                            >
+                                              <v-autocomplete
+                                                v-model="scp.newItem[baseName]"
+                                                :label="baseName"
+                                                :items="base"
+                                                autocomplete="off"
+                                                @change="SCPNewItemSaveDisabled"
+                                              />
+                                            </v-col>
+                                          </v-row>
+                                          <v-row>
+                                            <v-col
+                                              cols="12"
+                                            >
+                                              <v-text-field
+                                                v-model="scp.newItem.path"
+                                                label="Path"
+                                                autocomplete="new-password"
+                                                hint="eg. /apps/myApplication/configuration.json"
+                                                @keyup="SCPNewItemSaveDisabled"
+                                              />
+                                            </v-col>
+                                          </v-row>
+                                          <v-row>
+                                            <v-col
+                                              cols="12"
+                                            >
+                                              <v-autocomplete
+                                                v-model="scp.newItem.template"
+                                                :items="scp.restTemplates"
+                                                return-object
+                                                item-text="url"
+                                                autocomplete="off"
+                                                label="Template"
+                                                @change="SCPNewItemSaveDisabled"
+                                              />
+                                            </v-col>
+                                          </v-row>
+                                          <v-card-actions>
+                                            <span
+                                              v-if="scp.identical"
+                                              class="error--text font-weight-bold text-h6"
+                                            >
+                                              Connection with identical properties exists already</span>
+                                            <v-spacer />
+                                            <v-btn
+                                              text
+                                              @click="scp.addItemDialog = false"
+                                            >
+                                              Cancel
+                                            </v-btn>
+                                            <v-btn
+                                              color="primary"
+                                              text
+                                              :disabled="scp.newItemSaveDisabled"
+                                              @click="saveNewSCPItem(connection)"
+                                            >
+                                              Save
+                                            </v-btn>
+                                          </v-card-actions>
+                                        </v-card-text>
+                                      </v-card>
+                                    </v-dialog>
+                                  </v-toolbar>
+                                </template>
+                                <template v-slot:item.actions="{ item }">
+                                  <v-icon
+                                    small
+                                    class="mr-2"
+                                    @click="openEditSCPDialog(item, connection)"
+                                  >
+                                    {{ icons.mdiPencil }}
+                                  </v-icon>
+                                  <v-icon
+                                    small
+                                    @click="deleteSCPItem(item, connection)"
+                                  >
+                                    {{ icons.mdiDelete }}
+                                  </v-icon>
+                                </template>
+                                <template v-slot:no-data>
+                                  Click 'New Connection Model' button to add the connection
+                                </template>
+                              </v-data-table>
+                            </v-col>
+                          </v-row>
+                        </v-form>
+                      </v-expansion-panel-content>
+                    </v-expansion-panel>
+                  </v-expansion-panels>
+                </v-col>
+              </v-row>
+            </v-form>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panel>
     </v-expansion-panels>
     <v-dialog
       v-model="showTestDialog"
@@ -295,10 +542,18 @@
 </template>
 
 <script>
+  import { mdiRegex, mdiPencil, mdiDelete } from '@mdi/js'
+
   export default {
     name: 'ConnectionsSettings',
     data: () => ({
       showTestDialog: false,
+
+      icons: {
+        mdiRegex,
+        mdiPencil,
+        mdiDelete,
+      },
 
       ldap: {
         id: null,
@@ -350,9 +605,24 @@
 
         urlHint: "eg. 'http://localhost:8200'",
       },
+      scp: {
+        restTemplates: [],
+        panel: undefined,
+        headers: [],
+        identical: false,
+        addItemDialog: false,
+        newItem: {},
+        newItemSaveDisabled: true,
+        editItemId: -1,
+        connections: [],
+        availableBases: {},
+        rules: {
+          required: value => !!value || 'Required.',
+        },
+      },
     }),
     async mounted () {
-      this.resetData()
+      await this.resetData()
     },
     methods: {
       async resetData () {
@@ -361,6 +631,55 @@
         const response = await this.axios.get(
           `${this.$store.state.mainUrl}/connections`,
         )
+
+        this.scp.connections = []
+
+        const basesResponse = await this.axios.get(
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+        )
+
+        const allBasesResponse = await this.axios.get(
+          `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC"}`,
+        )
+
+        const restConfigurationsResponse = await this.axios.get(
+          `${this.$store.state.mainUrl}/restConfigurations?filter={"order":"url ASC"}`,
+        )
+
+        this.scp.restTemplates = restConfigurationsResponse.data
+
+        this.scp.availableBases = {}
+        this.scp.headers = []
+
+        for (const base of basesResponse.data) {
+          this.scp.availableBases[base.name] = []
+          this.scp.newItem[base.name] = null
+          this.scp.headers.push({
+            text: base.name,
+            value: base.name,
+          })
+        }
+
+        this.scp.headers.push({
+          text: 'Path',
+          value: 'path',
+        })
+        this.scp.headers.push({
+          text: 'Template',
+          value: 'template.url',
+        })
+        this.scp.headers.push({
+          text: 'Actions',
+          value: 'actions',
+          sortable: false,
+          align: 'end',
+        })
+
+        allBasesResponse.data.forEach(el => {
+          if (this.scp.availableBases[el.base]) {
+            this.scp.availableBases[el.base].push(el.name)
+          }
+        })
 
         response.data.forEach(el => {
           const temp = el
@@ -386,12 +705,20 @@
             this.Vault.tokens.items =
               temp.tokens === undefined ? [] : temp.tokens
             this.Vault.switch = temp.useGlobalToken === undefined ? false : temp.useGlobalToken
+          } else if (temp.system === 'SCP') {
+            const item = {
+              id: temp.id,
+              host: temp.host,
+              username: temp.username,
+              authTypeRadio: temp.authType === 'userpass' ? 1 : 0,
+              password: temp.password,
+              key: temp.key,
+              items: temp.items,
+            }
+
+            this.scp.connections.push(item)
           }
         })
-
-        const basesResponse = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
-        )
 
         basesResponse.data.forEach(el => {
           this.Vault.bases.push(el)
@@ -515,6 +842,176 @@
 
         await this.updateVault()
       },
+      addScpConnection () {
+        const exists = this.scp.connections.find(el => {
+          return el.id === -1
+        })
+
+        const allBases = {}
+
+        for (const base in this.scp.availableBases) {
+          allBases[base] = []
+        }
+
+        if (!exists) {
+          this.scp.connections.push({
+            name: 'New connection',
+            id: -1,
+            authTypeRadio: 0,
+            items: [],
+          })
+        }
+
+        this.scp.panel = this.scp.connections.length - 1
+
+        this.$nextTick(() => {
+          let component = this.$refs['SCPForm--1']
+          if (Array.isArray(component)) {
+            component = component[0]
+          }
+          component.validate()
+
+          this.$vuetify.goTo(component)
+        })
+      },
+      async saveSCPConnection (connection) {
+        let component = this.$refs[`SCPForm-${connection.id}`]
+        if (!component) {
+          return
+        }
+
+        if (Array.isArray(component)) {
+          component = component[0]
+        }
+
+        if (!component.validate()) {
+          return
+        }
+
+        const items = [...connection.items]
+        items.map(el => {
+          el.template = {
+            id: el.template.id,
+            url: el.template.url,
+          }
+        })
+
+        const patchConnection = {
+          id: connection.id === -1 ? undefined : connection.id,
+          system: 'SCP',
+          authType: connection.authTypeRadio === 0 ? 'key' : 'userpass',
+          key: connection.key,
+          host: connection.host,
+          password: connection.password,
+          items: items,
+          username: connection.username,
+        }
+
+        const response = await this.axios.patch(
+          `${this.$store.state.mainUrl}/connections`, patchConnection,
+        )
+
+        if (response.status === 200) {
+          for (let i = 0; i < this.scp.connections.length; i++) {
+            const conn = this.scp.connections[i]
+            if (conn.id === -1) {
+              this.scp.connections[i].id = response.data.id
+              this.$nextTick(() => {
+                this.scp.panel = i
+              })
+              return
+            }
+          }
+        }
+      },
+      resetSCPNewItem () {
+        for (const item in this.scp.newItem) {
+          this.scp.newItem[item] = null
+        }
+        this.scp.newItemSaveDisabled = true
+      },
+      SCPNewItemSaveDisabled () {
+        for (const item in this.scp.newItem) {
+          if (!this.scp.newItem[item]) {
+            this.scp.newItemSaveDisabled = true
+            return
+          }
+        }
+
+        if (!this.scp.newItem.path) {
+          this.scp.newItemSaveDisabled = true
+          return
+        }
+
+        if (!this.scp.newItem.template) {
+          this.scp.newItemSaveDisabled = true
+          return
+        }
+
+        this.scp.newItemSaveDisabled = false
+      },
+      openEditSCPDialog (itemToEdit, connection) {
+        let foundI = -1
+        connection.items.find((el, i) => {
+          for (const item in itemToEdit) {
+            if (itemToEdit[item] !== el[item]) {
+              return false
+            }
+          }
+
+          foundI = i
+          return true
+        })
+
+        this.scp.editItemId = foundI
+        this.scp.newItem = {}
+
+        for (const item in itemToEdit) {
+          this.scp.newItem[item] = itemToEdit[item]
+        }
+
+        this.scp.addItemDialog = true
+      },
+      deleteSCPItem (itemToDelete, connection) {
+        connection.items = connection.items.filter(el => {
+          for (const item in itemToDelete) {
+            if (itemToDelete[item] !== el[item]) {
+              return true
+            }
+          }
+
+          return false
+        })
+
+        this.saveSCPConnection(connection)
+      },
+      saveNewSCPItem (connection) {
+        this.scp.identical = false
+
+        const found = connection.items.find(el => {
+          for (const item in this.scp.newItem) {
+            if (this.scp.newItem[item] !== el[item]) {
+              return false
+            }
+          }
+
+          return true
+        })
+
+        if (found) {
+          this.scp.identical = true
+          return
+        }
+
+        if (this.scp.editItemId >= 0) {
+          connection.items.splice(this.scp.editItemId, 1, this.scp.newItem)
+        } else {
+          connection.items.push(this.scp.newItem)
+        }
+
+        this.scp.addItemDialog = false
+        this.saveSCPConnection(connection)
+      },
     },
   }
 </script>
@@ -525,5 +1022,20 @@
 }
 .tokenEditLabel {
   color: lightgray;
+}
+
+.scpAuth {
+  border-width: 1px;
+  border-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
+  border-style: solid;
+}
+
+.scpAuthLabel {
+  position: absolute;
+  margin-top: -12px;
+  margin-left: 20px;
+  background-color: white;
+  color: rgba(0,0,0,0.5)
 }
 </style>

@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower. If not, see http://www.gnu.org/licenses/.
+//    along with Tower. If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
   <v-navigation-drawer
@@ -98,28 +98,30 @@
       </v-list-item>
     </v-list>
     <v-divider v-if="baseModelLinks.length > 0" />
-    <v-list
-      v-if="isAdmin"
-      dense
-    >
-      <v-list-item
-        key="Settings"
-        :class="{ maxWidth: mini }"
-        link
-        to="/settings"
-        color="primary"
+    <template v-slot:append>
+      <v-list
+        v-if="isAdmin"
+        dense
       >
-        <v-list-item-icon class="maxWidth">
-          <v-icon
-            class="text-left"
-            style="min-width: 24px"
-          >
-            {{ configurationIcon }}
-          </v-icon>
-          <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">Settings</span>
-        </v-list-item-icon>
-      </v-list-item>
-    </v-list>
+        <v-list-item
+          key="Settings"
+          :class="{ maxWidth: mini }"
+          link
+          to="/settings"
+          color="primary"
+        >
+          <v-list-item-icon class="maxWidth">
+            <v-icon
+              class="text-left"
+              style="min-width: 24px"
+            >
+              {{ configurationIcon }}
+            </v-icon>
+            <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">Settings</span>
+          </v-list-item-icon>
+        </v-list-item>
+      </v-list>
+    </template>
   </v-navigation-drawer>
 </template>
 

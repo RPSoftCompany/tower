@@ -34,14 +34,7 @@
   },
   "session": {},
   "auth": {},
-  "parse": {
-    "body-parser#json": {},
-    "body-parser#urlencoded": {
-      "params": {
-        "extended": true
-      }
-    }
-  },
+  "parse": {},
   "routes": {
     "loopback#rest": {
       "paths": [
@@ -58,13 +51,6 @@
     "loopback#urlNotFound": {}
   },
   "final:after": {
-    "strong-error-handler": {
-      "params": {
-        "safeFields": [
-          "code",
-          "message"
-        ]
-      }
-    }
+    "strong-error-handler": {}
   }
 }

@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 let customFunctions = null;
 
@@ -185,6 +185,7 @@ class InterpreterCommon {
      *
      * @param {string} text def line
      *
+     * @return {object} variable
      */
     handleDef(text) {
         let newText = this.replaceVariables(text);
@@ -590,7 +591,7 @@ class If extends InterpreterCommon {
     getIfData(text) {
         // IF validation
         // eslint-disable-next-line max-len
-        let valid = /^\s*%%if\s+[\[]*["'`]*\s*variables\s*\[+["'`]+[^"'`]+["'`]+\s*]\s+[<>=!~]+\s+["'`]*\S+["'`]*\s*]%%/.test(text);
+        let valid = /^\s*%%if\s+[\[]*["'`]*\s*variables\s*\[+["'`]+[^"'`]+["'`]+\s*]\s+[<>=!~]+\s+["'`]*\S+["'`]*\s*%%/.test(text);
         let variablesLine = true;
         if (!valid) {
             // eslint-disable-next-line max-len

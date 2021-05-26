@@ -12,18 +12,85 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
-  <v-card
+  <uiCard
     flat
-    class="py-3"
+    class="pt-4"
   >
+    <template v-slot:help>
+      <div class="mt-4">
+        <div class="text-h4 font-weight-bold text-uppercase">
+          Base Models
+        </div>
+        <v-divider class="mt-2 mb-7" />
+        <div />
+        <div class="text-h5 mb-3 font-weight-medium">
+          Overview
+        </div>
+        <span class="font-weight-bold">Base Models</span> section allows you to create and remove base models from
+        Tower. This is the most important part of your configuration management, as right here you decide how your
+        configuration hierarchy looks like.
+        <div class="red--text font-weight-bold">
+          But be aware, that any changes made in this section may destroy your existing configuration,
+          so handle with care
+        </div>
+        <v-divider class="my-2" />
+        <div class="text-h5 font-weight-medium">
+          New Base Model
+        </div>
+        To create a new base model, you just need to fill in the <span class="font-weight-bold">New Base</span> input
+        and click on the <kbd>+</kbd> button.
+        <gif
+          src="Bases_new_base.gif"
+          alt="New base"
+        />
+        <v-divider class="my-2" />
+        <div class="text-h5 font-weight-medium">
+          Remove Base Model
+        </div>
+        If you want to remove the Base Model, just click on the bin icon on the right side of the model name.
+        <gif
+          src="Bases_remove_base.gif"
+          alt="New base"
+        />
+        <v-divider class="my-2" />
+        <div class="text-h5 font-weight-medium">
+          Change Base Model Order
+        </div>
+        Sometimes you may need to switch the order of Base Models to make it more suitable for you. To do so, you need
+        to click and hold the three dots icon on the left side of the model name and drag it to any position you want.
+        <gif
+          src="Bases_change_order.gif"
+          alt="Create new group"
+        />
+      </div>
+    </template>
+    <div class="d-flex justify-center">
+      <div class="halfWidth">
+        <v-text-field
+          v-model="appendText"
+          data-cy="newBase"
+          :loading="loading"
+          :disabled="loading"
+          :prepend-icon="allMdi.mdiDatabasePlus"
+          :append-icon="allMdi.mdiPlus"
+          label="New Base"
+          class="mx-5"
+          @click:append="addBase"
+          @keyup.enter="addBase"
+        >
+          <template v-slot:append />
+        </v-text-field>
+      </div>
+    </div>
     <draggable
       :list="items"
       handle=".handler"
       style="width: 100%"
       data-cy="handler"
+      class="pb-3"
       @end="dragEnded"
     >
       <v-card
@@ -64,36 +131,36 @@
         </v-btn>
       </v-card>
     </draggable>
-    <v-text-field
-      v-model="appendText"
-      data-cy="newBase"
-      :loading="loading"
-      :disabled="loading"
-      :prepend-icon="allMdi.mdiDatabasePlus"
-      :append-icon="allMdi.mdiPlus"
-      label="New Base"
-      class="mx-5 mt-5"
-      @click:append="addBase"
-      @keyup.enter="addBase"
-    >
-      <template v-slot:append />
-    </v-text-field>
     <v-dialog
       v-model="iconPicker"
       max-width="890px"
       max-height="90%"
     >
       <v-card tile>
-        <v-card-title primary-title>
-          Choose icon
+        <v-card-title
+          class="headline primary d-flex justify-space-between"
+        >
+          <span>Choose icon</span>
+          <v-btn
+            icon
+            @click="iconPicker = false"
+          >
+            <v-icon>{{ allMdi.mdiClose }}</v-icon>
+          </v-btn>
         </v-card-title>
         <v-divider />
-        <v-text-field
-          v-model="iconsFilter"
-          :prepend-icon="allMdi.mdiMagnify"
-          label="Search"
-          class="mx-3"
-        />
+        <div class="d-flex justify-center">
+          <div class="halfWidth">
+            <v-text-field
+              v-model="iconsFilter"
+              :prepend-icon="allMdi.mdiMagnify"
+              label="Search"
+              class="mt-2"
+              style="margin-bottom: -10px"
+            />
+          </div>
+        </div>
+        <v-divider class="mb-2" />
         <div class="d-flex flex-row flex-wrap">
           <div
             v-for="icon of paginatedIcons"
@@ -109,9 +176,12 @@
               {{ allMdi[icon] }}
             </v-icon>
             <div class="caption">
-              {{ icon }}
+              {{ uncamel(icon) }}
             </div>
           </div>
+        </div>
+        <v-divider class="my-2" />
+        <div class="justify-center">
           <v-pagination
             v-model="iconsPage"
             :length="paginationLength"
@@ -121,17 +191,21 @@
         </div>
       </v-card>
     </v-dialog>
-  </v-card>
+  </uiCard>
 </template>
 
 <script>
   import draggable from 'vuedraggable'
   import * as allMdi from '@mdi/js'
+  import uiCard from '../base/uiCard'
+  import gif from '../base/gif'
 
   export default {
     name: 'BaseModelSettings',
     components: {
       draggable,
+      uiCard,
+      gif,
     },
     data: () => ({
       items: [],
@@ -160,7 +234,7 @@
         } else {
           const filter = this.iconsFilter.toLowerCase()
           return keys.filter(icon => {
-            const text = icon.toLowerCase()
+            const text = this.uncamel(icon).toLowerCase()
             return text.includes(filter)
           })
         }
@@ -173,6 +247,11 @@
       this.resetData()
     },
     methods: {
+      uncamel (text) {
+        text = text.substring(3)
+        const result = text.replace(/([A-Z])/g, ' $1')
+        return result.charAt(0).toUpperCase() + result.slice(1)
+      },
       async resetData () {
         this.loading = true
         const response = await this.axios.get(
@@ -254,9 +333,12 @@
   cursor: move;
 }
 
+.halfWidth {
+  width: 50%;
+}
+
 .baseIcon {
-  border: solid;
-  border-width: 1px;
+  border: 1px solid;
 }
 
 .iconHover:hover {

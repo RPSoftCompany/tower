@@ -12,13 +12,47 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
-  <v-card
+  <uiCard
     flat
-    class="mt-4"
+    class="pt-4"
   >
+    <template v-slot:help>
+      <div class="mt-4">
+        <div class="text-h4 font-weight-bold text-uppercase">
+          Groups
+        </div>
+        <v-divider class="mt-2 mb-7" />
+        <div />
+        <div class="text-h5 mb-3 font-weight-medium">
+          Overview
+        </div>
+        <span class="font-weight-bold">Groups</span> section allows you to create and modify groups in Tower. Right here
+        you can assign different permissions to groups and
+        <v-divider class="my-2" />
+        <div class="text-h5 font-weight-medium">
+          New group
+        </div>
+        To create a new group, you just need to fill in the <span class="font-weight-bold">Group</span> input and
+        click on the <kbd>+</kbd> button.
+        <gif
+          src="Groups_create_group.gif"
+          alt="Create new group"
+        />
+        <v-divider class="my-2" />
+        <div class="text-h5 font-weight-medium">
+          Add permissions to group
+        </div>
+        You can freely modify the permissions in any group by selecting it and choosing the role from the
+        <span class="font-weight-bold">Group Roles</span> input.
+        <gif
+          src="Groups_modify_group.gif"
+          alt="Create new group"
+        />
+      </div>
+    </template>
     <div class="d-flex justify-center">
       <div class="halfWidth">
         <v-autocomplete
@@ -61,14 +95,20 @@
         @change="onRoleChange"
       />
     </div>
-  </v-card>
+  </uiCard>
 </template>
 
 <script>
   import { mdiPlus } from '@mdi/js'
+  import uiCard from '../base/uiCard'
+  import gif from '../base/gif'
 
   export default {
     name: 'GroupsSettings',
+    components: {
+      uiCard,
+      gif,
+    },
     data: () => ({
       icons: {
         mdiPlus,

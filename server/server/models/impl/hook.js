@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 const axios = require('axios');
 const HttpErrors = require('http-errors');
@@ -253,7 +253,7 @@ module.exports = class Hook {
             },
         });
 
-        if (one !== null && one !== undefined) {
+        if (one) {
             for (const hookObj of one.hooks) {
                 axios.post(hookObj.url, data);
             }
@@ -308,6 +308,8 @@ module.exports = class Hook {
                     headers: headers,
                     data: template,
                     url: hookObj.url,
+                }).catch( (error) => {
+                    this.log('error', `executeHook ${method} ${model}`, error);
                 });
             }
         }

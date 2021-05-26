@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
   <v-card>
@@ -85,6 +85,9 @@
       <v-tab-item value="users">
         <user ref="users" />
       </v-tab-item>
+      <v-tab-item value="groups">
+        <groups-settings ref="groups" />
+      </v-tab-item>
       <v-tab-item value="base">
         <base-model-settings ref="base" />
       </v-tab-item>
@@ -99,9 +102,6 @@
       </v-tab-item>
       <v-tab-item value="promotion">
         <promotion-settings ref="promotion" />
-      </v-tab-item>
-      <v-tab-item value="groups">
-        <groups-settings ref="groups" />
       </v-tab-item>
       <v-tab-item value="connections">
         <connections-settings ref="connections" />

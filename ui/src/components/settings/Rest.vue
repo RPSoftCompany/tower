@@ -12,13 +12,62 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see http://www.gnu.org/licenses/.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
-  <v-card
+  <uiCard
     flat
-    class="py-3 px-3"
+    class="pt-4"
   >
+    <template v-slot:help>
+      <div class="text-h4 font-weight-bold text-uppercase">
+        REST Configuration
+      </div>
+      <v-divider class="mt-2 mb-7" />
+      <div />
+      <div class="text-h5 mb-3 font-weight-medium">
+        Overview
+      </div>
+      <span class="font-weight-bold">REST Configuration</span> section allows you to create, modify and remove REST API
+      configuration for Tower. Right here you can decide how Tower will respond to any configuration request.
+      <br>There are two different modules, <span class="font-weight-medium">v1</span> and
+      <span class="font-weight-medium">v2</span>.
+      <br><span class="font-weight-medium">v1</span> will serve you all your configuration variables regardless the url.
+      <br><span class="font-weight-medium">v2</span> response, on the other hand, can be reduced to only the variables
+      you want.
+      <br>You can read more about both of them in the Tower documentation.
+      <v-divider class="my-2" />
+      <div class="text-h5 font-weight-medium">
+        New REST API url
+      </div>
+      All you need to do to create new REST API endpoint is to add the url string to one of the available inputs.
+      <gif
+        src="Rest_new_url.gif"
+        alt="New URL"
+      />
+      <v-divider class="my-2" />
+      <div class="text-h5 font-weight-medium">
+        Modify REST API url
+      </div>
+      To modify the REST API url, you need to find the instance you want to change, click on it and just modify any item
+      you need. You don't need to click on any button, all changes are saved automatically.
+      <gif
+        src="Rest_modify_url.gif"
+        alt="Modify URL"
+      />
+      <v-divider class="my-2" />
+      <div class="text-h5 font-weight-medium">
+        Remove REST API url
+      </div>
+      To delete the REST API url, you need to find the instance you want to change, click on it, find the bin icon and
+      press it. Afterwards, you will be asked to confirm your decision, where you will need to choose "Yes" option.
+      <gif
+        src="Rest_remove_url.gif"
+        alt="Remove URL"
+      />
+      <v-divider class="my-2" />
+      You can read more about REST URLs and templates in Tower documentation.
+    </template>
     <v-dialog
       v-model="deleteDialog.show"
       max-width="50%"
@@ -49,17 +98,20 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-card flat>
-      <v-card-title class="pb-1">
+    <div class="mt-3">
+      <div class="pb-1 mx-5 d-flex justify-center">
         <v-divider
-          class="mr-5"
-          style="max-width: 2%"
+          class="mr-5 mt-4"
+          style="max-width: 10%"
         />
-        <div class="text-h5 font-weight-bold">
+        <div class="text-h6 font-weight-bold">
           v1
         </div>
-        <v-divider class="ml-5" />
-      </v-card-title>
+        <v-divider
+          class="ml-5 mt-4"
+          style="max-width: 10%"
+        />
+      </div>
       <div class="mx-5 mb-3">
         <v-form
           ref="newRowForm"
@@ -119,6 +171,7 @@
                       v-model="item.url"
                       :rules="[rules.required, rules.validateUrl]"
                       label="URL"
+                      prefix="/v1/"
                       autocomplete="off"
                       :append-outer-icon="icons.mdiDelete"
                       @click:append-outer="showDeleteDialog(i, 'v1')"
@@ -175,20 +228,23 @@
           </v-expansion-panel>
         </draggable>
       </v-expansion-panels>
-    </v-card>
-    <v-card
-      flat
+    </div>
+    <div
+      class="mt-3"
     >
-      <v-card-title class="mt-5">
+      <div class="pb-1 mx-5 d-flex justify-center">
         <v-divider
-          class="mr-5"
-          style="max-width: 2%"
+          class="mr-5 mt-4"
+          style="max-width: 10%"
         />
-        <div class="text-h5 font-weight-bold">
+        <div class="text-h6 font-weight-bold">
           v2
         </div>
-        <v-divider class="ml-5" />
-      </v-card-title>
+        <v-divider
+          class="ml-5 mt-4"
+          style="max-width: 10%"
+        />
+      </div>
       <div class="mx-5">
         <v-text-field
           v-model="v2.newItem.url"
@@ -234,6 +290,7 @@
                     v-model="item.url"
                     :rules="[rules.required]"
                     label="URL"
+                    prefix="/v2/"
                     autocomplete="off"
                     :append-outer-icon="icons.mdiDelete"
                     @click:append-outer="showDeleteDialog(i, 'v2')"
@@ -289,13 +346,15 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
-    </v-card>
-  </v-card>
+    </div>
+  </uiCard>
 </template>
 
 <script>
   import draggable from 'vuedraggable'
   import { mdiDotsVertical, mdiPlus, mdiDelete } from '@mdi/js'
+  import uiCard from '../base/uiCard'
+  import gif from '../base/gif'
 
   import { PrismEditor } from 'vue-prism-editor'
   import 'vue-prism-editor/dist/prismeditor.min.css'
@@ -311,6 +370,8 @@
     name: 'RestSettings',
     components: {
       draggable,
+      uiCard,
+      gif,
       'prism-editor': PrismEditor,
     },
     data: (props) => ({

@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 const HttpErrors = require('http-errors');
 
@@ -122,21 +122,83 @@ module.exports = class BaseConfiguration {
 
         await newVariable.save();
 
+        this.log('debug', 'createConstantVariable', 'FINISHED');
+
+        this.afterConstantVariableSave(match, _id, constantVariable, allBases);
+    }
+
+    /**
+     * After constant variable save
+     *
+     * @param {object} match
+     * @param {object} _id
+     * @param {object} constantVariable
+     *
+     * @return {constantVariable} created model
+     */
+    async afterConstantVariableSave(match, _id, constantVariable, bases) {
+        this.log('debug', 'findWithPermissions', 'STARTED');
+
+        const group = {
+            _id: _id,
+            version: {$max: '$version'},
+        };
+
+        for (const base of bases) {
+            group[base.name] = {$first: `$${base.name}`};
+        }
+
         const cursor = await this.app.dataSources['mongoDB'].connector.collection('configuration').aggregate([
             {
                 $match: match,
             },
             {
-                $group: {
-                    _id: _id,
-                    version: {$max: '$version'},
-                },
+                $group: group,
             },
         ]);
 
-        cursor.each( (_err, item) => {
-            if (item !== null) {
-                this.app.hookSingleton.executeAdvancedHook('afterUpdate', 'Configuration', item._id);
+        cursor.each( async (_err, item) => {
+            if (item) {
+                const configurationModel = this.app.models.configuration;
+                const filter = {where: {
+                    version: item.version,
+                }};
+                for (const base of bases) {
+                    filter.where[base.name] = item[base.name];
+                }
+                const fullConfig = await configurationModel.findOne(filter);
+
+                let execute = false;
+                for (let i = 0; i < constantVariable.variables.length; i++) {
+                    const variable = constantVariable.variables[i];
+                    if (variable.addIfAbsent === true) {
+                        execute = true;
+                    } else if (variable.forced === true) {
+                        for (let j = 0; j < fullConfig.variables.length; j++) {
+                            if (fullConfig.variables[j].name === variable.name) {
+                                execute = true;
+                                j = fullConfig.variables.length;
+                            }
+                        }
+                    }
+
+                    if (execute === true) {
+                        i = constantVariable.variables.length;
+                    }
+                }
+                if (execute === true) {
+                    // const configuration = {
+                    //     variables: item.variables,
+                    //     version: item.version,
+                    // };
+                    //
+                    // bases.forEach((key) => {
+                    //     configuration[key.name] = item._id[key.name];
+                    // });
+
+                    await this.app.models.connection.findSCPConnectionsAndCopy(fullConfig);
+                    this.app.hookSingleton.executeAdvancedHook('afterUpdate', 'Configuration', item._id);
+                }
             }
         });
 
@@ -147,8 +209,6 @@ module.exports = class BaseConfiguration {
         });
 
         this.app.hookSingleton.executeAdvancedHook('variableChanged', 'ConstantVariable', hookBase);
-
-        this.log('debug', 'createConstantVariable', 'FINISHED');
     }
 
     /**
@@ -257,7 +317,7 @@ module.exports = class BaseConfiguration {
 
         if (date !== undefined) {
             where.effectiveDate = {
-                lt: new Date(date),
+                le: new Date(date),
             };
         }
 

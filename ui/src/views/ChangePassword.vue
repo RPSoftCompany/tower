@@ -12,7 +12,7 @@
 //    GNU General Public License for more details.
 //
 //    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see <http://www.gnu.org/licenses/>.
+//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
   <v-container
@@ -28,12 +28,12 @@
         sm="4"
         style="max-width:389px;"
       >
-        <v-card>
-          <v-img
-            :width="384"
-            src="tower.png"
+        <v-card class="pa-2">
+          <img
+            :width="354"
+            src="@/assets/tower.png"
             class="towerImage"
-          />
+          >
           <v-card-text>
             <v-form
               ref="form"
