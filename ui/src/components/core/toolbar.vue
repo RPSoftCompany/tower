@@ -26,10 +26,10 @@
         v-text="route"
       />
       <v-avatar size="40">
-        <v-img
+        <img
           src="@/assets/tower.png"
           class="towerImage"
-        />
+        >
       </v-avatar>
       <div class="tower ml-1 font-weight-thin">
         Tower

@@ -39,7 +39,7 @@
       "node_modules/loopback-component-passport/lib/models/*",
       "node_modules/passport/**/*",
       "node_modules/passport-ldapauth/**/*",
-      "client/**",
+      "client/**/*",
       "server/**/*.json",
       "server/**/*.html",
       "server/**/*.css",
@@ -90,7 +90,7 @@
     "mocha": "^6.2.0",
     "nodemon": "^2.0.6",
     "nyc": "^15.0.0",
-    "pkg": "^4.4.9",
+    "pkg": "^5.1.0",
     "should": "^13.2.3",
     "start-server-and-test": "^1.11.3"
   },
