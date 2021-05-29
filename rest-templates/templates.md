@@ -31,7 +31,7 @@ The other thing is, you will need to add the **X-Consul-Token** to the **tokenHe
 ```javascript
 {
   [...]
-  "tokenHeaders": ['X-Consul-Token'],
+  "tokenHeaders": ["X-Consul-Token"],
   [...]
 }
 ```
