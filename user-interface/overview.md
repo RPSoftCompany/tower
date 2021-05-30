@@ -5,7 +5,7 @@ Towers user interface is exposed as a web application and, by default, you can f
 
 ### Ideology
 
-Tower user interface is based on the idea, that almost everything done by user should be saved automaticaly. In other words, when you change something in Tower, those changes will be saved without clicking on any button. Of course this way of thinking may be a problem when user is not caution. Therefore Tower puts great emphasis on the control and user permissions. So in case of any issue, you will know, who, when and how changed the configuration and you will be able to revert it with one click.
+Tower user interface is based on the idea, that almost everything done by the user should be saved automaticaly. In other words, when you change something in Tower, those changes will be saved without clicking on any button. Of course this way of thinking may be a problem when user is not caution. Therefore Tower puts great emphasis on the control and user permissions. So in case of any issue, you will know, who, when and how changed the configuration and you will be able to revert it with one click.
 
 ### Basics
 

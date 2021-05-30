@@ -4,7 +4,7 @@ description: 'On this page, you can find Tower templates for different technolog
 
 # Templates
 
-### TIBCO
+## TIBCO
 
 **TIBCO Flogo® Enterprise**
 
@@ -44,8 +44,45 @@ After that, create your configuration file for Flogo \(according to the Tibco [d
     "key_prefix": "Environment/Application",
     "acl_token": "<<accessToken>>"
 }
-
 ```
 
+#### TIBCO BusinessWorks**®** Container Edition
 
+To use Tower with Tibco BusinessWorks Container Edition you will need to use Spring Cloud Config Server like API. To do so, just create a new REST API url via REST API Configuration page. The provided URL must contain the BW Application name and BW profile. In my case it's **/{Application}/{Environment}**.
+
+```javascript
+{
+    "name": "%%Application%%",
+    "profiles": [
+        "%%Environment%%"
+    ],
+    "label": "main",
+    "version": "%%version%%",
+    "state": null,
+    "propertySources": [
+        {
+            "name": "http://tower/%%Application%%/%%Environment%%",
+            "source": {
+              %%forEach var in variables%%
+                "%%var.name%%":"%%var.value%%"
+              %%forEach END%%
+            }
+        }
+    ]
+}
+```
+
+On your BW application side, you will need to set the additional environment variables:
+
+```javascript
+SPRING_CLOUD_CONFIG_SERVER_URL=<<TOWERS_URL>>/v1
+APP_CONFIG_PROFILE=<<BW_PROFILE>>?access_token=<<TOWER_ACCESS_TOKEN>>
+
+example:
+SPRING_CLOUD_CONFIG_SERVER_URL=http://localhost:5000/v1
+APP_CONFIG_PROFILE=profile?access_token=E2SQHJDY12Es4M5cI04ONNyZCcK9DiJWqATIiA471djXXElQpnOHF4dTlNCbH8Yh
+```
+
+Where in SPRING\_CLOUD\_CONFIG\_SERVER\_URL variable you will need to set to your Towers URL adding '/v1' at the end \(like in the example\).  
+For the APPCONFIG\_PROFILE variable, you will need to set the BWPROFILE to the configuration profile your application uses and the TOWER\_ACCESS\_TOKEN to the Towers token \(technical or regular one\).
 
