@@ -139,7 +139,6 @@ app.start = () => {
     return server.listen(app.get('port'), function() {
         const baseUrl = (httpOnly ? 'http://' : 'https://') + app.get('host') + ':' + app.get('port');
         app.emit('started');
-        // const baseUrl = app.get('url').replace(/\/$/, '');
         console.log('Web server listening at: %s', baseUrl);
         if (app.get('loopback-component-explorer')) {
             const explorerPath = app.get('loopback-component-explorer').mountPath;

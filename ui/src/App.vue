@@ -94,14 +94,14 @@
         return this.$store.state.error.text
       },
     },
-    async created () {
+    async beforeCreate () {
       const response = await this.axios.get(
         `${this.$store.state.mainUrl}/configurations/initialized`,
       )
 
       if (response.status === 200) {
         this.$store.state.initialized = response.data
-        if (!this.$store.state.initialized) {
+        if (this.$store.state.initialized === false) {
           this.$router.push('/initialize')
         }
       }

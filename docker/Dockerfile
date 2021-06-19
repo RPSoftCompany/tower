@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-ARG VERSION=1.10.0
+ARG VERSION=1.11.1
 
 LABEL TOWER_VERSION=${VERSION}
 
@@ -19,7 +19,7 @@ RUN chown -R tower:tower .
 
 USER tower
 
-RUN wget https://github.com/RPSoftCompany/tower/releases/download/${VERSION}/tower-${VERSION}.zip
+RUN wget -q https://github.com/RPSoftCompany/tower/releases/download/${VERSION}/tower-${VERSION}.zip
 RUN unzip tower-${VERSION}.zip
 RUN mv tower/* .
 

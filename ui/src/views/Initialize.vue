@@ -80,9 +80,21 @@
       },
       rules: {
         exists: v => !!v || 'Required',
-        fullLength: v => v.length === 32 || 'Encyrption key must be 32 characters long',
+        fullLength: v => v.length === 32 || 'Encryption key must be 32 characters long',
       },
     }),
+    async beforeCreate () {
+      const response = await this.axios.get(
+        `${this.$store.state.mainUrl}/configurations/initialized`,
+      )
+
+      if (response.status === 200) {
+        this.$store.state.initialized = response.data
+        if (this.$store.state.initialized === true) {
+          await this.$router.push('/login')
+        }
+      }
+    },
     methods: {
       validate () {
         return this.$refs.form.validate()
@@ -96,7 +108,7 @@
           `${this.$store.state.mainUrl}/configurations/initialize?secret=${this.encryption.key}`,
         )
 
-        this.$router.push('/login')
+        await this.$router.push('/login')
       },
     },
   }

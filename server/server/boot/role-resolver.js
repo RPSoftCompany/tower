@@ -35,7 +35,7 @@ module.exports = function(app) {
                 let headerToken = null;
                 for (const header of app.get('AuthorizationHeaders')) {
                     if (!headerToken) {
-                        headerToken = context.req.headers[header];
+                        headerToken = context.req.headers[header.toLowerCase()];
                     }
                 }
 
