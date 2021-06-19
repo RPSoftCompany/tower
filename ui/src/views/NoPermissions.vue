@@ -38,10 +38,18 @@
           </div>
           <v-divider />
           <v-card-text
-            style="color:red"
-            class="text-center"
+            class="text-center error--text"
           >
-            <b>Yes have not enough permissions to access Tower</b>
+            <b>You have not enough permission to access Tower</b>
+            <v-btn
+              class="mt-2"
+              data-cy="goBackToLogin"
+              color="primary"
+              block
+              @click="$router.push('/login')"
+            >
+              Go back to login page
+            </v-btn>
           </v-card-text>
         </v-card>
       </v-col>

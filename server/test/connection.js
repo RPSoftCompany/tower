@@ -38,7 +38,7 @@ describe('Connection', () => {
                 const configuration = await axios.patch(`${url}/connections`, {
                     'system': 'LDAP',
                     'url': 'string',
-                    'bindCredentials': '',
+                    'bindCredentials': 'bind',
                     'enabled': true,
                     'id': ldapId,
                 }, {
@@ -91,7 +91,7 @@ describe('Connection', () => {
                 const configuration = await axios.patch(`${url}/connections`, {
                     'system': 'LDAP',
                     'url': 'string',
-                    'bindCredentials': '',
+                    'bindCredentials': 'bind',
                     'enabled': false,
                     'id': ldapId,
                 }, {

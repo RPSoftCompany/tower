@@ -1,6 +1,18 @@
 #!/bin/bash
 
 # =============================
+# secret
+# =============================
+
+__SECRET=${TOWER_SECRET}
+if [ ! -z "${__SECRET}" ]
+then
+  export NON_SAFE="true"
+
+  echo $__SECRET > secret
+fi
+
+# =============================
 # config.json
 # =============================
 

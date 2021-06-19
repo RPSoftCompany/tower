@@ -131,6 +131,19 @@
       },
     },
     async beforeCreate () {
+      const response = await this.axios.get(
+        `${this.$store.state.mainUrl}/configurations/initialized`,
+      )
+
+      if (response.status === 200) {
+        this.$store.state.initialized = response.data
+        if (this.$store.state.initialized === false) {
+          await this.$router.push('/initialize')
+        }
+
+        return
+      }
+
       let token = this.$cookie.get('token')
       if (token) {
         token = JSON.parse(token)
@@ -143,7 +156,7 @@
         this.$store.commit('setUserRoles', roles.data)
 
         if (token.user.newUser) {
-          this.$router.push('/changePassword')
+          await this.$router.push('/changePassword')
         } else {
           let path = this.getUserStartPath(roles.data)
 
@@ -151,7 +164,7 @@
             path = 'noPermissions'
           }
 
-          this.$router.push(`/${path}`)
+          await this.$router.push(`/${path}`)
         }
       }
     },
@@ -220,15 +233,17 @@
             this.$store.commit('setUserRoles', roles.data)
 
             if (user.data.user.newUser) {
-              this.$router.push('/changePassword')
+              await this.$router.push('/changePassword')
+              return
             } else {
               let path = this.getUserStartPath(roles.data)
 
-              if (path === null) {
+              if (!path) {
                 path = 'noPermissions'
               }
 
-              this.$router.push(`/${path}`)
+              await this.$router.push(`/${path}`)
+              return
             }
           } else {
             validUser = false
