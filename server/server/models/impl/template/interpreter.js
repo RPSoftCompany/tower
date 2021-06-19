@@ -784,4 +784,3 @@ module.exports = class Interpreter extends InterpreterCommon {
         return ifSt === 0 && forSt === 0;
     }
 };
-
