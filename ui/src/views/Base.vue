@@ -113,8 +113,8 @@
                 v-model="rules.filter"
                 :label="
                   rules.caseSensitive
-                    ? 'Filter (case sensitive)'
-                    : 'Filter (case insensitive)'
+                    ? 'Search (case sensitive)'
+                    : 'Search (case insensitive)'
                 "
                 :append-icon="
                   rules.caseSensitive
@@ -178,8 +178,8 @@
                   v-model="restrictions.filter"
                   :label="
                     restrictions.caseSensitive
-                      ? 'Filter (case sensitive)'
-                      : 'Filter (case insensitive)'
+                      ? 'Search (case sensitive)'
+                      : 'Search (case insensitive)'
                   "
                   :append-icon="
                     restrictions.caseSensitive
@@ -319,24 +319,6 @@
         }
         return `Choose ${this.base.name}`
       },
-      variablesList () {
-        if (
-          this.variables.filter === undefined ||
-          this.variables.filter === null ||
-          this.variables.filter === ''
-        ) {
-          return this.variables.items
-        }
-        return this.variables.items.filter(el => {
-          if (this.variables.caseSensitive) {
-            return el.name.includes(this.variables.filter)
-          } else {
-            return el.name
-              .toUpperCase()
-              .includes(this.variables.filter.toUpperCase())
-          }
-        })
-      },
       isEditable () {
         let editable = false
 
@@ -368,14 +350,10 @@
           return this.rules.items.filter(el => {
             if (this.rules.caseSensitive) {
               return el.targetValue.includes(this.rules.filter) ||
-                el.targetType.includes(this.rules.filter) ||
-                el.conditionType.includes(this.rules.filter) ||
                 el.conditionValue.includes(this.rules.filter) ||
                 el.error.includes(this.rules.filter)
             } else {
               return el.targetValue.toUpperCase().includes(upperFilter) ||
-                el.targetType.toUpperCase().includes(upperFilter) ||
-                el.conditionType.toUpperCase().includes(upperFilter) ||
                 el.conditionValue.toUpperCase().includes(upperFilter) ||
                 el.error.toUpperCase().includes(upperFilter)
             }

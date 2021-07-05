@@ -73,6 +73,12 @@
       "property": "getUserRoles"
     },
     {
+      "principalType": "ROLE",
+      "principalId": "$authenticated",
+      "permission": "ALLOW",
+      "property": "getUserConstantVariablePermission"
+    },
+    {
       "accessType": "*",
       "principalType": "ROLE",
       "principalId": "groupSolver",

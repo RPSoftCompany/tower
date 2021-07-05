@@ -62,7 +62,21 @@ module.exports = class BaseConfiguration {
         this.log('debug', 'createConstantVariable', 'STARTED');
 
         const baseConfiguration = this.app.models.baseConfiguration;
+        const Roles = this.app.models.Role;
         const ConfModelInstance = this.app.get('ConfModelInstance');
+
+        const member = this.app.get('MemberInstance');
+        const userId = options.accessToken.userId;
+        const userRoles = await member.getUserRoles(userId);
+
+        if (!(userRoles.includes('constantVariable.modify') || userRoles.includes('admin'))) {
+            this.log('debug', 'findWithPermissions', 'FINISHED');
+            throw new HttpErrors.Unauthorized();
+        }
+
+        const roles = await Roles.find( {where: {
+            name: /^constantVariable./,
+        }});
 
         const allBases = await baseConfiguration.find();
         let baseExists = false;
@@ -96,6 +110,18 @@ module.exports = class BaseConfiguration {
                     constantVariable[base.name], options.accessToken.userId)) {
                     this.log('debug', 'createConstantVariable', 'FINISHED');
                     throw new HttpErrors.Unauthorized();
+                }
+
+                const roleFound = roles.find( (el) => {
+                    return el.name === `constantVariable.${base.name}.${constantVariable[base.name]}.modify`;
+                });
+
+                if (roleFound) {
+                    if (!userRoles.includes(`constantVariable.${base.name}.${constantVariable[base.name]}.modify`)
+                        || userRoles.includes('admin')) {
+                        this.log('debug', 'createConstantVariable', 'FINISHED');
+                        throw new HttpErrors.Unauthorized();
+                    }
                 }
             }
         }
@@ -187,15 +213,6 @@ module.exports = class BaseConfiguration {
                     }
                 }
                 if (execute === true) {
-                    // const configuration = {
-                    //     variables: item.variables,
-                    //     version: item.version,
-                    // };
-                    //
-                    // bases.forEach((key) => {
-                    //     configuration[key.name] = item._id[key.name];
-                    // });
-
                     await this.app.models.connection.findSCPConnectionsAndCopy(fullConfig);
                     this.app.hookSingleton.executeAdvancedHook('afterUpdate', 'Configuration', item._id);
                 }

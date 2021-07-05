@@ -114,6 +114,7 @@
       },
       async modifyPermission (data) {
         const roleName = `configurationModel.${data.item.base}.${data.item.name}`
+        const constName = `constantVariable.${data.item.base}.${data.item.name}`
         if (data.value === true) {
           await this.axios.post(`${this.$store.state.mainUrl}/Roles`, {
             name: `${roleName}.view`,
@@ -122,16 +123,21 @@
           await this.axios.post(`${this.$store.state.mainUrl}/Roles`, {
             name: `${roleName}.modify`,
           })
+
+          await this.axios.post(`${this.$store.state.mainUrl}/Roles`, {
+            name: `${constName}.modify`,
+          })
         } else {
           const rolesResponse = await this.axios.get(
-            `${this.$store.state.mainUrl}/Roles?filter={"order":"name ASC","where":{"name":{"like":"${roleName}."}}}`,
+            `${this.$store.state.mainUrl}/Roles?filter={"order":"name ASC","where":{"name":{"regexp":` +
+              `"^(configurationModel|constantVariable).${data.item.base}.${data.item.name}.(view|modify)$"}}}`,
           )
 
-          rolesResponse.data.forEach(async role => {
-            await this.axios.delete(
+          for (const role of rolesResponse.data) {
+            this.axios.delete(
               `${this.$store.state.mainUrl}/Roles/${role.id}`,
             )
-          })
+          }
         }
       },
       modifyAllPermissions (data) {

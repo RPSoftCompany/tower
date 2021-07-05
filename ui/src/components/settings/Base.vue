@@ -67,6 +67,42 @@
         />
       </div>
     </template>
+    <v-dialog
+      v-model="deleteDialog"
+      persistent
+      width="30%"
+    >
+      <v-card>
+        <v-card-title class="error">
+          Are you sure?
+        </v-card-title>
+
+        <v-card-text class="subtitle-1">
+          <br>
+          Are you sure you want to remove this Base Model?<br>
+          Deleting this object may destroy saved configurations.
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            text
+            @click="objectToDelete = null; deleteDialog = false"
+          >
+            No
+          </v-btn>
+          <v-btn
+            color="error"
+            text
+            @click="deleteBase"
+          >
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <div class="d-flex justify-center">
       <div class="halfWidth">
         <v-text-field
@@ -123,7 +159,7 @@
         <v-btn
           icon
           :data-cy="`removeBase-${item.name}`"
-          @click="deleteBase(item)"
+          @click="showDeleteDialog(item)"
         >
           <v-icon>
             {{ allMdi.mdiDelete }}
@@ -222,6 +258,9 @@
       allMdi: allMdi,
 
       appendText: null,
+
+      deleteDialog: false,
+      objectToDelete: null,
     }),
     computed: {
       paginationLength () {
@@ -316,10 +355,17 @@
         this.$eventHub.$emit('updateIcons')
         await this.resetData()
       },
-      async deleteBase (item) {
+      showDeleteDialog (item) {
+        this.deleteDialog = true
+        this.objectToDelete = item
+      },
+      async deleteBase () {
         await this.axios.delete(
-          `${this.$store.state.mainUrl}/baseConfigurations/${item.id}`,
+          `${this.$store.state.mainUrl}/baseConfigurations/${this.objectToDelete.id}`,
         )
+
+        this.objectToDelete = null
+        this.deleteDialog = false
 
         this.$eventHub.$emit('updateIcons')
         await this.resetData()

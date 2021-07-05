@@ -128,8 +128,8 @@
             v-model="configuration.filter.filter"
             :label="
               configuration.filter.caseSensitive
-                ? 'Filter (case sensitive)'
-                : 'Filter (case insensitive)'
+                ? 'Search (case sensitive)'
+                : 'Search (case insensitive)'
             "
             :append-icon="
               configuration.filter.caseSensitive

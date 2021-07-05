@@ -125,7 +125,7 @@
         clearable
         autocomplete="off"
         return-object
-        @change="fillNextArray(base.sequenceNumber + 1, bases.baseValues[base.sequenceNumber])"
+        @change="fillNextArray(base.sequenceNumber, bases.baseValues[base.sequenceNumber])"
       />
     </div>
     <div
@@ -160,8 +160,8 @@
           v-model="configuration.filter.filter"
           :label="
             configuration.filter.caseSensitive
-              ? 'Filter (case sensitive)'
-              : 'Filter (case insensitive)'
+              ? 'Search (case sensitive)'
+              : 'Search (case insensitive)'
           "
           :append-icon="
             configuration.filter.caseSensitive
@@ -177,7 +177,70 @@
             configuration.filter.caseSensitive = !configuration.filter
               .caseSensitive
           "
-        />
+        >
+          <template
+            v-if="configuration.showSaveButton"
+            slot="append-outer"
+          >
+            <div
+              class="text-center mt-n2"
+            >
+              <v-menu
+                offset-y
+                :close-on-content-click="false"
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    style="height: 39px"
+                    outlined
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    Filter&nbsp;<v-icon v-text="icons.mdiChevronDown" />
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item-group
+                    multiple
+                  >
+                    <v-list-item
+                      @click="configuration.showConstantVariables =
+                        !configuration.showConstantVariables"
+                    >
+                      <template v-slot:default="{active}">
+                        <v-list-item-action>
+                          <v-checkbox
+                            :input-value="active"
+                          />
+                        </v-list-item-action>
+
+                        <v-list-item-content>
+                          <v-list-item-title>Show constant variables</v-list-item-title>
+                        </v-list-item-content>
+                      </template>
+                    </v-list-item>
+                    <v-list-item
+                      :disabled="configuration.maxVersion === -1 || configuration.editMode === true"
+                      @click="configuration.showHistory = !configuration.showHistory"
+                    >
+                      <template v-slot:default="{active}">
+                        <v-list-item-action>
+                          <v-checkbox
+                            :input-value="active"
+                          />
+                        </v-list-item-action>
+
+                        <v-list-item-content>
+                          <v-list-item-title>Show history</v-list-item-title>
+                        </v-list-item-content>
+                      </template>
+                    </v-list-item>
+                  </v-list-item-group>
+                </v-list>
+              </v-menu>
+            </div>
+          </template>
+        </v-text-field>
         <div
           class="text-center text-h5 font-weight-thin pt-2"
           style="width: 33%; margin-top: -1px"
@@ -224,7 +287,6 @@
           <template v-slot:activator="{ on }">
             <v-icon
               style="max-height: 24px;"
-              :disabled="configuration.editModeDisabled"
               class="mr-3 mt-3"
               data-cy="configurationEditMode"
               @click="changeEditMode"
@@ -251,7 +313,7 @@
           </div>
         </div>
         <div
-          v-if="configuration.maxVersion >= 0 && configuration.editMode === false"
+          v-if="configuration.maxVersion >= 0 && configuration.editMode === false && configuration.showHistory === true"
           class="d-flex justify-space-between thirdWidth"
         >
           <div class="d-flex align-center">
@@ -351,6 +413,8 @@
                 :draft="isCurrentConfigurationDraft"
                 :draft-versions="configuration.draftVersions"
                 :is-new="item.isNew"
+                :is-constant-variable="item.isConstantVariable"
+                :show-history="configuration.showHistory"
               />
             </v-lazy>
           </v-form>
@@ -413,7 +477,7 @@
           </v-lazy>
         </v-responsive>
       </div>
-      <v-divider />
+      <v-divider v-if="constantVariables.editable === true" />
       <div
         v-if="configuration.showSaveButton"
         class="d-flex flex-row justify-space-around mt-2"
@@ -478,7 +542,7 @@
 <script>
   import {
     mdiFormatLetterCaseLower, mdiFormatLetterCase, mdiPackageUp,
-    mdiSquareEditOutline, mdiPencil, mdiChevronLeft, mdiChevronRight,
+    mdiSquareEditOutline, mdiPencil, mdiChevronLeft, mdiChevronRight, mdiChevronDown,
     mdiFileUpload, mdiReply, mdiStarOutline, mdiStar,
   } from '@mdi/js'
   import configurationRow from '../components/configuration/configurationRow'
@@ -539,6 +603,8 @@
       },
       configuration: {
         promoted: [],
+        showConstantVariables: true,
+        showHistory: true,
         showSaveButton: false,
         configInfo: null,
         loading: false,
@@ -567,6 +633,7 @@
         mdiPencil,
         mdiChevronLeft,
         mdiChevronRight,
+        mdiChevronDown,
         mdiFileUpload,
         mdiReply,
         mdiStarOutline,
@@ -647,8 +714,17 @@
         }
 
         if (this.configuration.maxVersion >= 0) {
-          if (this.configuration.versions[this.configuration.maxVersion].variables.length !==
-            this.configuration.items.length) {
+          const left = this.configuration.versions[this.configuration.maxVersion].variables.filter(el => {
+            return !this.configuration.currentGlobals.find(constant => {
+              return constant.name === el.name
+            })
+          })
+
+          const right = this.configuration.items.filter(el => {
+            return el.isConstantVariable === false
+          })
+
+          if (left.length !== right.length) {
             return true
           }
         }
@@ -660,10 +736,12 @@
               return history.name === el.name
             })
 
-            if (!prev || el.value !== prev.value) {
-              different = true
-            } else if (prev && prev.type !== el.type) {
-              different = true
+            if (el.isConstantVariable === false || (el.isConstantVariable === true && el.forcedValue === false)) {
+              if (!prev || el.value !== prev.value) {
+                different = true
+              } else if (prev && prev.type !== el.type) {
+                different = true
+              }
             }
           }
         })
@@ -674,6 +752,12 @@
         const filter = this.configuration.filter.filter
 
         let allItems = [...this.configuration.items]
+
+        if (this.configuration.showConstantVariables === false) {
+          allItems = allItems.filter(el => {
+            return el.isConstantVariable !== true
+          })
+        }
 
         if (this.configuration.versions.length > 0 && allItems.length > 0 && this.configuration.editMode === false) {
           const currentVersion = this.configuration.versions[this.configuration.shownVersion]
@@ -689,7 +773,6 @@
                 const newObject = {}
                 Object.assign(newObject, variable)
                 newObject.deleted = true
-                allItems.push(newObject)
               }
             })
           }
@@ -799,32 +882,47 @@
         this.configuration.showSaveButton = false
         this.configuration.editMode = undefined
         this.configuration.items = []
+        this.configuration.showConstantVariables = true
+        this.constantVariables.items = []
         this.configuration.configInfo = 'Constant Variables'
 
-        this.filterPanel.show = sequenceNumber > 0 && this.bases.baseValues[0]?.id !== undefined
-        this.constantVariables.show = sequenceNumber > 0 && this.bases.baseValues[0]?.id !== undefined
+        this.filterPanel.show = sequenceNumber >= 0 && this.bases.baseValues[0]?.id !== undefined
 
-        this.constantVariables.editable = this.isConstEditable(sequenceNumber)
+        this.constantVariables.editable = await this.isConstEditable(sequenceNumber)
 
         this.configuration.maxVersion = -1
         this.configuration.items = []
 
-        if (!value && this.bases.baseItems[sequenceNumber]) {
-          for (let i = sequenceNumber; i < this.bases.items.length; i++) {
+        let allFilled = true
+        let firstUnfilled = -1
+        for (const item of this.bases.items) {
+          if (!this.bases.baseValues[item.sequenceNumber] || !this.bases.baseValues[item.sequenceNumber].name) {
+            allFilled = false
+            if (firstUnfilled === -1) {
+              firstUnfilled = item.sequenceNumber
+            }
+          }
+        }
+
+        if (allFilled === false) {
+          this.constantVariables.show = true
+          for (let i = sequenceNumber + 1; i <= this.bases.items.length; i++) {
+            this.bases.baseValues[i] = undefined
             this.bases.baseItems[i] = undefined
           }
 
+          await this.getBases(firstUnfilled)
           this.$forceUpdate()
-          return
-        }
-
-        if (sequenceNumber >= this.bases.items.length && value) {
+        } else {
           this.constantVariables.show = false
           this.$forceUpdate()
           await this.getConfiguration()
-          return
         }
-
+      },
+      //* *******************
+      // Get Bases
+      //* *******************
+      async getBases (sequenceNumber) {
         if (this.bases.items[sequenceNumber] === undefined) {
           return
         }
@@ -838,7 +936,6 @@
         const response = await this.axios.get(
           `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${baseName}"}}`,
         )
-
         if (response.status === 200) {
           this.bases.baseItems[sequenceNumber] = response.data
         }
@@ -1092,6 +1189,7 @@
           return global.name === el.name
         })
 
+        let isConstantVariable = false
         let value = el.value
         let type = el.type
         let forcedValue = false
@@ -1099,6 +1197,7 @@
         if (foundGlobal !== undefined) {
           value = foundGlobal.forced === true ? foundGlobal.value : value
           type = foundGlobal.forced === true ? foundGlobal.type : type
+          isConstantVariable = true
           el.addIfAbsent = foundGlobal.addIfAbsent
           forcedValue = foundGlobal.forced
           if (forcedValue) {
@@ -1107,10 +1206,10 @@
         }
 
         const itemRules = rules.filter(rule => {
-          if (rule.targetRegEx) {
+          if (rule && rule.targetRegEx) {
             const regEx = new RegExp(rule.targetValue)
             return regEx.test(el.name)
-          } else {
+          } else if (rule) {
             return rule.targetValue === el.name
           }
         })
@@ -1142,6 +1241,7 @@
           addIfAbsent: el.addIfAbsent,
           draft: false,
           isNew: isNew,
+          isConstantVariable: isConstantVariable,
         }
 
         this.configuration.items.push(item)
@@ -1267,9 +1367,9 @@
           this.constantVariables.items = response.data[0].variables
         }
       },
-      isConstEditable (sequenceNumber) {
+      async isConstEditable (sequenceNumber) {
         let editable = false
-        let seq = sequenceNumber - 1
+        let seq = sequenceNumber
 
         if (!this.bases.baseValues[seq]?.id) {
           seq--
@@ -1286,6 +1386,17 @@
             editable = true
           } else if (!this.$store.state.userRoles.includes(`${prefix}.view`)) {
             editable = true
+          }
+        }
+
+        if (editable === true) {
+          const response = await this.axios.get(`${this.$store.state.mainUrl}` +
+            '/members/getUserConstantVariablePermission' +
+            `?base=${this.bases.baseValues[seq].base}&model=${this.bases.baseValues[seq].name}`)
+          if (response.status === 200) {
+            if (response.data === 'view') {
+              editable = false
+            }
           }
         }
 
@@ -1444,9 +1555,9 @@
           if (line.includes(separator)) {
             const split = line.split(separator)
             const name = split[0]
-            const value = split[1]
+            const value = split[1] ? split[1] : ''
 
-            if (name && value) {
+            if (name) {
               importedMap.set(name, value)
             }
           }

@@ -702,4 +702,50 @@ module.exports = class Member {
 
         return token.id;
     }
+
+    /**
+     * getUserConstantVariablePermission
+     *
+     * @param {string} userId User Id
+     * @param {string} base base
+     * @param {string} model model
+     *
+     * @return {string} returns permission
+     */
+    async getUserConstantVariablePermission(userId, base, model) {
+        this.log('debug', 'getUserConstantVariablePermission', 'STARTED');
+
+        let permission = 'view';
+
+        const userRoles = await this.getUserRoles(userId);
+        const roles = await this.getRolesFromCache();
+
+        let found = userRoles.find( (el) => {
+            return el === 'constantVariable.modify';
+        });
+
+        if (found) {
+            permission = 'modify';
+        }
+
+        found = roles.find( (el) => {
+            return el.name === `constantVariable.${base}.${model}.modify`;
+        });
+
+        if (found) {
+            const perm = userRoles.find( (el) => {
+                return el === `constantVariable.${base}.${model}.modify`;
+            });
+
+            if (perm) {
+                permission = 'modify';
+            } else {
+                permission = 'view';
+            }
+        }
+
+        this.log('debug', 'getTechnicalUserToken', 'FINISHED');
+
+        return permission;
+    }
 };

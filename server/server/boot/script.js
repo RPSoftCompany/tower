@@ -52,9 +52,12 @@ module.exports = async (app) => {
     {
         name: 'configurationModel.modify',
     },
+    {
+        name: 'constantVariable.modify',
+    },
     ];
 
-    for (role of rolesList) {
+    for (const role of rolesList) {
         const newRole = await Role.upsertWithWhere({
             name: role.name,
         }, role);
@@ -67,7 +70,7 @@ module.exports = async (app) => {
                 },
             });
 
-            if (mapped === null || mapped == undefined) {
+            if (mapped) {
                 await newRole.principals.create({
                     principalType: RoleMapping.USER,
                     principalId: admin.id,

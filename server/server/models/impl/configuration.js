@@ -321,7 +321,7 @@ module.exports = class Configuration {
 
                 newObject[base.name] = config[base.name];
             }
-        };
+        }
 
         this.app.hookSingleton.executeAdvancedHook('beforeCreate', 'Configuration', basesObj);
 
@@ -413,11 +413,20 @@ module.exports = class Configuration {
             variable._id = i;
         });
 
+        const newVariables = [];
+        config.variables.forEach( (el) => {
+            newVariables.push({
+                name: el.name,
+                value: el.value,
+                type: el.type,
+            });
+        });
+
+        newObject.variables = newVariables;
+
         if (this.app.fullEncryption) {
-            const allVariables = JSON.stringify(config.variables);
+            const allVariables = JSON.stringify(newObject.variables);
             newObject.variables = this.encryptPassword(allVariables);
-        } else {
-            newObject.variables = config.variables;
         }
 
         const configuration = this.app.models.configuration;

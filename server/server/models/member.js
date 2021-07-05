@@ -70,7 +70,7 @@ module.exports = (Member) => {
     };
 
     Member.getUserRoles = async (options) => {
-        if (options.accessToken === null || options.accessToken === undefined) {
+        if (!options.accessToken) {
             throw new HttpErrors.Unauthorized('Unauthorized');
         }
 
@@ -113,6 +113,16 @@ module.exports = (Member) => {
 
     Member.getTechnicalUserToken = async (userId) => {
         return await member.getTechnicalUserToken(userId);
+    };
+
+    Member.getUserConstantVariablePermission = async (options, base, model) => {
+        if (!options.accessToken) {
+            throw new HttpErrors.Unauthorized('Unauthorized');
+        }
+
+        const userId = options.accessToken.userId;
+
+        return await member.getUserConstantVariablePermission(userId, base, model);
     };
 
     // ====================================================
@@ -284,6 +294,31 @@ module.exports = (Member) => {
         description: 'Get technical user token',
         returns: {
             arg: 'accessToken',
+            type: 'string',
+            root: true,
+        },
+    });
+
+    Member.remoteMethod('getUserConstantVariablePermission', {
+        http: {verb: 'GET', status: 200, path: '/getUserConstantVariablePermission'},
+        accepts: [{
+            arg: 'options',
+            type: 'object',
+            http: 'optionsFromRequest',
+        }, {
+            arg: 'base',
+            type: 'string',
+            required: true,
+            http: {source: 'query'},
+        }, {
+            arg: 'model',
+            type: 'string',
+            required: true,
+            http: {source: 'query'},
+        }],
+        description: 'Get user constant variable permission',
+        returns: {
+            arg: 'permission',
             type: 'string',
             root: true,
         },

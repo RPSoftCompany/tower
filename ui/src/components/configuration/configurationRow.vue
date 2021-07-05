@@ -22,17 +22,20 @@
     class="d-flex flex-row justify-space-around"
   >
     <div
-      :style="
-        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
-      "
+      :style="minWidth "
       class="px-2 text-center configRow_history"
-      v-text="local_name"
-    />
+    >
+      <v-icon
+        v-if="isConstantVariable"
+        class="float-left mb-1"
+        v-text="icons.mdiAlphaCBox"
+      /><span :class="isConstantVariable ? 'ml-n6' : undefined">
+        {{ local_name }}
+      </span>
+    </div>
     <div
-      v-if="currentVersionValue !== null || deleted"
-      :style="
-        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
-      "
+      v-if="(currentVersionValue !== null || deleted) && showHistory"
+      :style="minWidth"
       :class="{ configRow_draft : draft, 'font-weight-light': draft, 'font-italic': draft,
                 configRow_pre : local_type !== 'list'}"
       class="px-2 text-center configRow_history"
@@ -46,9 +49,7 @@
       v-if="local_type === 'string'"
       v-model="local_value"
       :data-cy="`configRow_${local_name}`"
-      :style="
-        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
-      "
+      :style="minWidth"
       :rules="local_rules"
       :disabled="deleted"
       :readonly="forcedValue"
@@ -64,9 +65,7 @@
       v-else-if="local_type === 'Vault'"
       v-model="local_value"
       :data-cy="`configRow_${local_name}`"
-      :style="
-        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
-      "
+      :style="minWidth "
       :disabled="deleted"
       :rules="local_rules"
       :readonly="forcedValue"
@@ -83,9 +82,7 @@
       v-model="local_value"
       :data-cy="`configRow_${local_name}`"
       :disabled="deleted"
-      :style="
-        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
-      "
+      :style="minWidth"
       :rules="local_rules"
       :readonly="forcedValue"
       :hint="forceCause"
@@ -102,9 +99,7 @@
       v-model="local_value"
       :data-cy="`configRow_${local_name}`"
       :disabled="deleted"
-      :style="
-        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
-      "
+      :style="minWidth"
       :type="pass_locked ? 'password' : 'text'"
       :append-icon="pass_locked ? icons.mdiLock : icons.mdiLockOpen"
       :rules="local_rules"
@@ -123,9 +118,7 @@
       v-model="local_value"
       :data-cy="`configRow_${local_name}`"
       :disabled="deleted"
-      :style="
-        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
-      "
+      :style="minWidth"
       class="px-2 mt-4 configRow_field thirdWidth"
       :rules="local_rules"
       :error-messages="errorMessage"
@@ -136,17 +129,12 @@
       multiple
       chips
       deletable-chips
-      append-icon
       persistent-hint
       @change="change"
     />
     <div
       v-else-if="local_type === 'boolean'"
-      :style="
-        currentVersionValue !== null || deleted
-          ? 'min-width:33.33%'
-          : 'min-width:50%'
-      "
+      :style="minWidth"
       class="px-2 configRow_field thirdWidth"
     >
       <v-checkbox
@@ -170,9 +158,7 @@
       v-model="local_value"
       :data-cy="`configRow_${local_name}`"
       :disabled="deleted"
-      :style="
-        currentVersionValue !== null || deleted ? 'min-width:33.33%' : 'min-width:50%'
-      "
+      :style="minWidth"
       :rules="local_rules"
       :readonly="forcedValue"
       :error-messages="errorMessage"
@@ -188,7 +174,7 @@
 </template>
 
 <script>
-  import { mdiLock, mdiLockOpen } from '@mdi/js'
+  import { mdiLock, mdiLockOpen, mdiAlphaCBox } from '@mdi/js'
 
   export default {
     name: 'CongiurationRow',
@@ -242,11 +228,20 @@
         type: Boolean,
         default: false,
       },
+      isConstantVariable: {
+        type: Boolean,
+        default: false,
+      },
+      showHistory: {
+        type: Boolean,
+        default: true,
+      },
     },
     data: attrs => ({
       icons: {
         mdiLock,
         mdiLockOpen,
+        mdiAlphaCBox,
       },
       local_name: attrs.name,
       local_value: attrs.getLocalValue(),
@@ -258,6 +253,17 @@
       pass_locked: true,
     }),
     computed: {
+      minWidth () {
+        if (this.showHistory === false) {
+          return 'min-width:50%'
+        }
+
+        if (this.currentVersionValue || this.deleted) {
+          return 'min-width:33%'
+        }
+
+        return 'min-width:50%'
+      },
       getClass () {
         return this.different ? 'configRow_different' : 'configRow_noColor'
       },
