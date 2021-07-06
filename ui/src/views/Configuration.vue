@@ -1344,15 +1344,16 @@
       // Constant Variables
       //* *******************
       async getConstantVariables (sequenceNumber) {
-        if (sequenceNumber === 0 || this.bases.baseValues[sequenceNumber - 1] === undefined) {
+        if (sequenceNumber === 0 || this.bases.baseValues[sequenceNumber] === undefined) {
           return
         }
 
         this.configuration.configInfo = 'Constant Variables'
 
         const objectFilter = {}
-        for (let i = 0; i < sequenceNumber; i++) {
-          objectFilter[this.bases.baseValues[i].base] = this.bases.baseValues[i].name
+        for (let i = 0; i < this.bases.items.length; i++) {
+          const value = this.bases.baseValues[i]?.name ? this.bases.baseValues[i].name : { eq: null }
+          objectFilter[this.bases.items[i].name] = value
         }
 
         const filter = {
