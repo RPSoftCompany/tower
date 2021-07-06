@@ -207,10 +207,10 @@
                       @click="configuration.showConstantVariables =
                         !configuration.showConstantVariables"
                     >
-                      <template v-slot:default="{active}">
+                      <template v-slot:default="{}">
                         <v-list-item-action>
                           <v-checkbox
-                            :input-value="active"
+                            :input-value="configuration.showConstantVariables"
                           />
                         </v-list-item-action>
 
@@ -223,10 +223,10 @@
                       :disabled="configuration.maxVersion === -1 || configuration.editMode === true"
                       @click="configuration.showHistory = !configuration.showHistory"
                     >
-                      <template v-slot:default="{active}">
+                      <template v-slot:default="{}">
                         <v-list-item-action>
                           <v-checkbox
-                            :input-value="active"
+                            :input-value="configuration.showHistory"
                           />
                         </v-list-item-action>
 
@@ -603,7 +603,7 @@
       },
       configuration: {
         promoted: [],
-        showConstantVariables: true,
+        showConstantVariables: false,
         showHistory: true,
         showSaveButton: false,
         configInfo: null,
@@ -707,9 +707,13 @@
         return different
       },
       differentThanPrevVersion () {
+        const itemsWithoutConstants = this.configuration.items.filter(el => {
+          return el.isConstantVariable === false
+        })
+
         if (this.configuration.versions.length === 0 && this.configuration.items.length === 0) {
           return false
-        } else if (this.configuration.versions.length === 0 && this.configuration.items.length > 0) {
+        } else if (this.configuration.versions.length === 0 && itemsWithoutConstants.length > 0) {
           return true
         }
 
@@ -882,7 +886,8 @@
         this.configuration.showSaveButton = false
         this.configuration.editMode = undefined
         this.configuration.items = []
-        this.configuration.showConstantVariables = true
+        this.configuration.showConstantVariables = false
+        this.configuration.showHistory = true
         this.constantVariables.items = []
         this.configuration.configInfo = 'Constant Variables'
 
@@ -892,6 +897,13 @@
 
         this.configuration.maxVersion = -1
         this.configuration.items = []
+
+        if (sequenceNumber < this.bases.items.length - 1) {
+          for (let i = sequenceNumber + 1; i < this.bases.items.length; i++) {
+            this.bases.baseValues[i] = undefined
+            this.bases.baseItems[i] = undefined
+          }
+        }
 
         let allFilled = true
         let firstUnfilled = -1
@@ -1022,6 +1034,10 @@
         this.configuration.items = []
         this.configuration.maxVersion = history.length - 1
         this.configuration.shownVersion = history.length - 1
+
+        if (history.length === 0) {
+          this.configuration.showHistory = false
+        }
 
         globalVariables.forEach(global => {
           if (global.addIfAbsent === true) {

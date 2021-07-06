@@ -34,7 +34,7 @@
       </span>
     </div>
     <div
-      v-if="(currentVersionValue !== null || deleted) && showHistory"
+      v-if="showHistory === true"
       :style="minWidth"
       :class="{ configRow_draft : draft, 'font-weight-light': draft, 'font-italic': draft,
                 configRow_pre : local_type !== 'list'}"
@@ -254,11 +254,7 @@
     }),
     computed: {
       minWidth () {
-        if (this.showHistory === false) {
-          return 'min-width:50%'
-        }
-
-        if (this.currentVersionValue || this.deleted) {
+        if (this.showHistory === true) {
           return 'min-width:33%'
         }
 

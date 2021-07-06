@@ -27,7 +27,7 @@ module.exports = async (app) => {
         },
     });
 
-    if (admin === null || admin === undefined) {
+    if (!admin) {
         admin = await Member.create({
             username: 'admin',
             email: 'admin@admin.com',
@@ -85,7 +85,7 @@ module.exports = async (app) => {
         },
     });
 
-    if (ldap === null) {
+    if (!ldap) {
         await connection.create({
             system: 'LDAP',
             enabled: false,
@@ -98,7 +98,7 @@ module.exports = async (app) => {
         },
     });
 
-    if (vault === null) {
+    if (!vault) {
         await connection.create({
             system: 'Vault',
             enabled: false,
@@ -111,7 +111,7 @@ module.exports = async (app) => {
         },
     });
 
-    if (wasBooted === null) {
+    if (!wasBooted) {
         await v1.create([{
             booted: true,
         }]);
