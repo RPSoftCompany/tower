@@ -57,12 +57,20 @@ module.exports = async (app) => {
     },
     ];
 
-    for (const role of rolesList) {
-        const newRole = await Role.upsertWithWhere({
-            name: role.name,
-        }, role);
+    const allRoles = await Role.find();
 
-        if (newRole.name === 'admin') {
+    for (const role of rolesList) {
+        const found = allRoles.find( (el) => {
+            return el.name === role.name;
+        });
+
+        let newRole;
+
+        if (!found) {
+            newRole = await Role.create(role);
+        }
+
+        if (newRole && newRole.name === 'admin') {
             const mapped = await RoleMapping.findOne({
                 where: {
                     principalType: RoleMapping.USER,

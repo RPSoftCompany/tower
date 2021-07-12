@@ -17,7 +17,7 @@
 const HttpErrors = require('http-errors');
 const {authenticate} = require('ldap-authentication');
 const ConfigurationClass = require('./configuration.js');
-
+const random = require('random');
 
 module.exports = class Member {
     /**
@@ -189,7 +189,7 @@ module.exports = class Member {
             },
         });
 
-        if (this.ldapServer && credentials.username !== 'admin' && user === null) {
+        if (this.ldapServer && credentials.username !== 'admin' && !user) {
             try {
                 const configuration = new ConfigurationClass(this.app);
                 await configuration.createCrypt();
@@ -233,7 +233,7 @@ module.exports = class Member {
                     display: credentials.display,
                     technicalUser: false,
                 });
-            };
+            }
 
             if (user.display !== credentials.display) {
                 user.display = credentials.display;
@@ -277,7 +277,7 @@ module.exports = class Member {
             this.log('debug', 'login', 'FINISHED');
 
             return output;
-        } else if (user !== null) {
+        } else if (user) {
             const member = await User.findOne({
                 where: {
                     username: credentials.username,
@@ -305,7 +305,7 @@ module.exports = class Member {
                 user = await User.login(credentials, include);
             } catch (e) {
                 if (e.code !== undefined && e.code === 'LOGIN_FAILED') {
-                    await this.sleep(1000);
+                    await this.sleep(random.int(500, 1000));
                 }
                 throw e;
             }

@@ -19,6 +19,41 @@
     ref="variableValidationForm"
     class="d-flex"
   >
+    <v-dialog
+      v-model="deleteDialog"
+      persistent
+      width="30%"
+    >
+      <v-card>
+        <v-card-title class="error">
+          Are you sure?
+        </v-card-title>
+
+        <v-card-text class="subtitle-1">
+          <br>
+          Are you sure you want to remove <b>{{ variableName }}</b> Constant Variable?
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            text
+            @click="deleteDialog = false"
+          >
+            No
+          </v-btn>
+          <v-btn
+            color="error"
+            text
+            @click="deleteConstant"
+          >
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-row class="mr-3">
       <v-col
         cols="4"
@@ -183,32 +218,32 @@
     props: {
       name: {
         type: String,
-        default: null,
+        default: null
       },
       type: {
         type: String,
-        default: 'string',
+        default: 'string'
       },
       value: {
         type: [String, Number, Boolean, Array],
-        default: null,
+        default: null
       },
       forced: {
         type: Boolean,
-        default: true,
+        default: true
       },
       addifabsent: {
         type: Boolean,
-        default: true,
+        default: true
       },
       isNew: {
         type: Boolean,
-        default: false,
+        default: false
       },
       editable: {
         type: Boolean,
-        default: true,
-      },
+        default: true
+      }
     },
     data: props => ({
       variableName: props.name,
@@ -225,7 +260,7 @@
       pass_locked: true,
 
       rules: {
-        required: value => !!value || 'Required',
+        required: value => !!value || 'Required'
       },
 
       icons: {
@@ -234,8 +269,10 @@
         mdiPlus,
         mdiMinus,
         mdiLock,
-        mdiLockOpen,
+        mdiLockOpen
       },
+
+      deleteDialog: false
     }),
     watch: {
       variableType (actual, prev) {
@@ -248,7 +285,7 @@
             this.variableValue = null
           }
         }
-      },
+      }
     },
     methods: {
       reset () {
@@ -272,15 +309,18 @@
                 type: this.variableType,
                 value: this.variableValue,
                 forced: this.variableForced,
-                addIfAbsent: this.variableAddIfAbsent,
+                addIfAbsent: this.variableAddIfAbsent
               }
 
               this.$emit('addVariable', all)
             }
           })
         } else {
-          this.$emit('deleteVariable', this.variableName)
+          this.deleteDialog = true
         }
+      },
+      deleteConstant () {
+        this.$emit('deleteVariable', this.variableName)
       },
       onChange () {
         const all = {
@@ -288,12 +328,12 @@
           type: this.variableType,
           value: this.variableValue,
           forced: this.variableForced,
-          addIfAbsent: this.variableAddIfAbsent,
+          addIfAbsent: this.variableAddIfAbsent
         }
 
         this.$emit('change', all)
-      },
-    },
+      }
+    }
   }
 </script>
 

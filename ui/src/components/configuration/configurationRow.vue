@@ -181,67 +181,67 @@
     props: {
       name: {
         type: String,
-        required: true,
+        required: true
       },
       value: {
         type: [String, Boolean, Number, Array],
-        default: '',
+        default: ''
       },
       type: {
         type: String,
-        required: true,
+        required: true
       },
       rules: {
         type: Array,
         required: false,
         default: () => {
           return []
-        },
+        }
       },
       deleted: {
         type: Boolean,
-        default: false,
+        default: false
       },
       currentVersionValue: {
         type: [String, Boolean, Number, Array],
         default: null,
-        required: false,
+        required: false
       },
       currentVersionType: {
         type: String,
         default: undefined,
-        required: false,
+        required: false
       },
       forcedValue: {
         type: Boolean,
-        default: false,
+        default: false
       },
       forceCause: {
         type: String,
-        default: null,
+        default: null
       },
       isNew: {
         type: Boolean,
-        default: false,
+        default: false
       },
       draft: {
         type: Boolean,
-        default: false,
+        default: false
       },
       isConstantVariable: {
         type: Boolean,
-        default: false,
+        default: false
       },
       showHistory: {
         type: Boolean,
-        default: true,
-      },
+        default: true
+      }
     },
     data: attrs => ({
       icons: {
         mdiLock,
         mdiLockOpen,
-        mdiAlphaCBox,
+        mdiAlphaCBox
       },
       local_name: attrs.name,
       local_value: attrs.getLocalValue(),
@@ -250,7 +250,7 @@
 
       errorMessage: [],
 
-      pass_locked: true,
+      pass_locked: true
     }),
     computed: {
       minWidth () {
@@ -297,12 +297,12 @@
         }
 
         return this.currentVersionValue !== this.local_value
-      },
+      }
     },
     watch: {
       value () {
         this.local_value = this.getLocalValue()
-      },
+      }
     },
     mounted () {
       this.createLocalRules()
@@ -348,8 +348,8 @@
             this.errorMessage = output
           }
         })
-      },
-    },
+      }
+    }
   }
 </script>
 

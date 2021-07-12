@@ -75,7 +75,7 @@
     components: {
       drawer,
       toolbar,
-      footerElement,
+      footerElement
     },
     data: () => ({}),
     computed: {
@@ -92,11 +92,11 @@
       },
       errorText () {
         return this.$store.state.error.text
-      },
+      }
     },
     async beforeCreate () {
       const response = await this.axios.get(
-        `${this.$store.state.mainUrl}/configurations/initialized`,
+        `${this.$store.state.mainUrl}/configurations/initialized`
       )
 
       if (response.status === 200) {
@@ -125,13 +125,16 @@
             }
             this.$store.commit('setError', e.response.data.error.message)
           }
-        },
+        }
       )
-    },
+    }
   }
 </script>
 
 <style>
+html {
+  overflow: auto;
+}
 .fade-enter-active,
 .fade-leave-active {
   transition-duration: 0.3s;

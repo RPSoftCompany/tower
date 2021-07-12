@@ -12,7 +12,8 @@
     },
     "sequenceNumber": {
       "type": "number",
-      "required": true
+      "required": true,
+      "index": true
     },
     "icon": {
       "type": "string"
