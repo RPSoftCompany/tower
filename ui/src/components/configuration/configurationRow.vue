@@ -18,158 +18,174 @@
   <div
     :class="{configRow_crossed: deleted, 'font-weight-light': deleted, 'font-italic': deleted,
              'configRow_different': different}"
-    :style="local_type === 'boolean' ? 'height:70px' : ''"
+    :style="local_type === 'boolean' ? 'height:71px' : ''"
     class="d-flex flex-row justify-space-around"
   >
-    <div
-      :style="minWidth "
-      class="px-2 text-center configRow_history"
-    >
-      <v-icon
-        v-if="isConstantVariable"
-        class="float-left mb-1"
-        v-text="icons.mdiAlphaCBox"
-      /><span :class="isConstantVariable ? 'ml-n6' : undefined">
-        {{ local_name }}
-      </span>
-    </div>
-    <div
-      v-if="showHistory === true"
-      :style="minWidth"
-      :class="{ configRow_draft : draft, 'font-weight-light': draft, 'font-italic': draft,
-                configRow_pre : local_type !== 'list'}"
-      class="px-2 text-center configRow_history"
-      v-text="
-        local_type === 'password' && pass_locked
-          ? '••••••••'
-          : deleted === true ? local_value : currentVersionValue
-      "
-    />
-    <v-text-field
-      v-if="local_type === 'string'"
-      v-model="local_value"
-      :data-cy="`configRow_${local_name}`"
-      :style="minWidth"
-      :rules="local_rules"
-      :disabled="deleted"
-      :readonly="forcedValue"
-      :hint="forceCause"
-      class="px-2 configRow_field thirdWidth"
-      autocomplete="off"
-      :error-messages="errorMessage"
-      label="value"
-      persistent-hint
-      @input="change"
-    />
-    <v-text-field
-      v-else-if="local_type === 'Vault'"
-      v-model="local_value"
-      :data-cy="`configRow_${local_name}`"
-      :style="minWidth "
-      :disabled="deleted"
-      :rules="local_rules"
-      :readonly="forcedValue"
-      :hint="forceCause"
-      :error-messages="errorMessage"
-      class="px-2 configRow_field thirdWidth"
-      autocomplete="off"
-      label="value"
-      persistent-hint
-      @input="change"
-    />
-    <v-textarea
-      v-else-if="local_type === 'text'"
-      v-model="local_value"
-      :data-cy="`configRow_${local_name}`"
-      :disabled="deleted"
-      :style="minWidth"
-      :rules="local_rules"
-      :readonly="forcedValue"
-      :hint="forceCause"
-      :error-messages="errorMessage"
-      class="px-2 configRow_field thirdWidth"
-      autocomplete="off"
-      rows="1"
-      label="value"
-      persistent-hint
-      @input="change"
-    />
-    <v-text-field
-      v-else-if="local_type === 'password'"
-      v-model="local_value"
-      :data-cy="`configRow_${local_name}`"
-      :disabled="deleted"
-      :style="minWidth"
-      :type="pass_locked ? 'password' : 'text'"
-      :append-icon="pass_locked ? icons.mdiLock : icons.mdiLockOpen"
-      :rules="local_rules"
-      :readonly="forcedValue"
-      :hint="forceCause"
-      :error-messages="errorMessage"
-      class="px-2 configRow_field thirdWidth"
-      autocomplete="off"
-      label="value"
-      persistent-hint
-      @input="change"
-      @click:append="pass_locked = !pass_locked"
-    />
-    <v-combobox
-      v-else-if="local_type === 'list'"
-      v-model="local_value"
-      :data-cy="`configRow_${local_name}`"
-      :disabled="deleted"
-      :style="minWidth"
-      class="px-2 mt-4 configRow_field thirdWidth"
-      :rules="local_rules"
-      :error-messages="errorMessage"
-      :readonly="forcedValue"
-      :hint="forceCause"
-      dense
-      label="List"
-      multiple
-      chips
-      deletable-chips
-      persistent-hint
-      @change="change"
-    />
-    <div
-      v-else-if="local_type === 'boolean'"
-      :style="minWidth"
-      class="px-2 configRow_field thirdWidth"
-    >
-      <v-checkbox
-        v-model="local_value"
-        :data-cy="`configRow_${local_name}`"
-        :rules="local_rules"
-        :disabled="deleted"
-        :readonly="forcedValue"
-        :hint="forceCause"
-        :error-messages="errorMessage"
-        color="lightblack"
-        class="align-center justify-center"
-        style="margin-top: 20px; width: 100%"
-        ripple
-        persistent-hint
-        @change="change"
+    <v-row class="ma-0">
+      <v-col
+        :cols="showHistory === true ? 4 : 6"
+        class="pl-2 py-0 d-flex text-center align-center justify-center"
+      >
+        <v-icon
+          v-if="isConstantVariable"
+          class="mb-1"
+          style="width: 24px"
+          v-text="icons.mdiAlphaCBox"
+        />
+        <div
+          style="flex-wrap: wrap; word-break: break-all; flex: 1;"
+        >
+          <div
+            :class="isConstantVariable ? 'mr-6' : undefined"
+            class="align-center text-center text-wrap"
+          >
+            {{ local_name }}
+          </div>
+        </div>
+      </v-col>
+      <v-col
+        v-if="showHistory === true"
+        :cols="4"
+        :class="{ configRow_draft : draft, 'font-weight-light': draft, 'font-italic': draft,
+                  configRow_pre : local_type !== 'list'}"
+        class="px-2 py-0 text-center configRow_history"
+        v-text="
+          local_type === 'password' && pass_locked
+            ? '••••••••'
+            : deleted === true ? local_value : currentVersionValue
+        "
       />
-    </div>
-    <v-text-field
-      v-else-if="local_type === 'number'"
-      v-model="local_value"
-      :data-cy="`configRow_${local_name}`"
-      :disabled="deleted"
-      :style="minWidth"
-      :rules="local_rules"
-      :readonly="forcedValue"
-      :error-messages="errorMessage"
-      :hint="forceCause"
-      class="px-2 configRow_field thirdWidth"
-      autocomplete="off"
-      label="value"
-      type="number"
-      persistent-hint
-      @input="change"
-    />
+      <v-col
+        class="py-0"
+        :cols="showHistory === true ? 4 : 6"
+      >
+        <v-text-field
+          v-if="local_type === 'string'"
+          v-model="local_value"
+          :data-cy="`configRow_${local_name}`"
+          :rules="local_rules"
+          :disabled="deleted"
+          :readonly="forcedValue"
+          :hint="forceCause"
+          class="pr-2 thirdWidth"
+          autocomplete="off"
+          :error-messages="errorMessage"
+          label="value"
+          persistent-hint
+          @input="change"
+        />
+        <v-text-field
+          v-else-if="local_type === 'Vault'"
+          v-model="local_value"
+          :data-cy="`configRow_${local_name}`"
+          :disabled="deleted"
+          :rules="local_rules"
+          :readonly="forcedValue"
+          :hint="forceCause"
+          :error-messages="errorMessage"
+          class="pr-2 thirdWidth"
+          autocomplete="off"
+          label="value"
+          persistent-hint
+          @input="change"
+        />
+        <v-textarea
+          v-else-if="local_type === 'text'"
+          v-model="local_value"
+          :data-cy="`configRow_${local_name}`"
+          :disabled="deleted"
+          :rules="local_rules"
+          :readonly="forcedValue"
+          :hint="forceCause"
+          :error-messages="errorMessage"
+          class="pr-2 thirdWidth"
+          autocomplete="off"
+          rows="1"
+          label="value"
+          persistent-hint
+          @input="change"
+        />
+        <v-text-field
+          v-else-if="local_type === 'password'"
+          v-model="local_value"
+          :data-cy="`configRow_${local_name}`"
+          :disabled="deleted"
+          :type="pass_locked ? 'password' : 'text'"
+          :append-icon="pass_locked ? icons.mdiLock : icons.mdiLockOpen"
+          :rules="local_rules"
+          :readonly="forcedValue"
+          :hint="forceCause"
+          :error-messages="errorMessage"
+          class="pr-2 thirdWidth"
+          autocomplete="off"
+          label="value"
+          persistent-hint
+          @input="change"
+          @click:append="pass_locked = !pass_locked"
+        />
+        <v-combobox
+          v-else-if="local_type === 'list'"
+          v-model="local_value"
+          :data-cy="`configRow_${local_name}`"
+          :disabled="deleted"
+          class="pr-2 mt-4 thirdWidth"
+          :rules="local_rules"
+          :error-messages="errorMessage"
+          :readonly="forcedValue"
+          :hint="forceCause"
+          dense
+          label="List"
+          multiple
+          chips
+          deletable-chips
+          persistent-hint
+          @change="change"
+        />
+        <div
+          v-else-if="local_type === 'boolean'"
+          class="pr-2 thirdWidth"
+        >
+          <v-checkbox
+            v-model="local_value"
+            :data-cy="`configRow_${local_name}`"
+            :rules="local_rules"
+            :disabled="deleted"
+            :readonly="forcedValue"
+            :hint="forceCause"
+            :error-messages="errorMessage"
+            color="lightblack"
+            class="align-center justify-center"
+            style="margin-top: 20px; width: 100%"
+            ripple
+            persistent-hint
+            @change="change"
+          />
+        </div>
+        <v-text-field
+          v-else-if="local_type === 'number'"
+          v-model="local_value"
+          :data-cy="`configRow_${local_name}`"
+          :disabled="deleted"
+          :rules="local_rules"
+          :readonly="forcedValue"
+          :error-messages="errorMessage"
+          :hint="forceCause"
+          class="pr-2 thirdWidth"
+          autocomplete="off"
+          label="value"
+          type="number"
+          persistent-hint
+          @input="change"
+        />
+      </v-col>
+      <v-col
+        :cols="12"
+        class="pa-0"
+        color="red"
+      >
+        <v-divider />
+      </v-col>
+    </v-row>
   </div>
 </template>
 
@@ -354,18 +370,6 @@
 </script>
 
 <style>
-.configRow_history {
-  padding-top: 22px;
-  border-bottom: solid;
-  border-width: 1px;
-  border-color: rgba(0,0,0,0.05);
-}
-
-.configRow_field {
-  border-bottom: solid;
-  border-width: 1px;
-  border-color: rgba(0,0,0,0.05);
-}
 
 .configRow_draft {
   background: rgba(155, 163, 158, 0.3);
@@ -373,6 +377,12 @@
 
 .configRow_crossed {
   text-decoration: line-through;
+}
+
+.configRow_history {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .configRow_different {
