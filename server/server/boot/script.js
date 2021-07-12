@@ -27,7 +27,7 @@ module.exports = async (app) => {
         },
     });
 
-    if (admin === null || admin === undefined) {
+    if (!admin) {
         admin = await Member.create({
             username: 'admin',
             email: 'admin@admin.com',
@@ -52,14 +52,25 @@ module.exports = async (app) => {
     {
         name: 'configurationModel.modify',
     },
+    {
+        name: 'constantVariable.modify',
+    },
     ];
 
-    for (role of rolesList) {
-        const newRole = await Role.upsertWithWhere({
-            name: role.name,
-        }, role);
+    const allRoles = await Role.find();
 
-        if (newRole.name === 'admin') {
+    for (const role of rolesList) {
+        const found = allRoles.find( (el) => {
+            return el.name === role.name;
+        });
+
+        let newRole;
+
+        if (!found) {
+            newRole = await Role.create(role);
+        }
+
+        if (newRole && newRole.name === 'admin') {
             const mapped = await RoleMapping.findOne({
                 where: {
                     principalType: RoleMapping.USER,
@@ -67,7 +78,7 @@ module.exports = async (app) => {
                 },
             });
 
-            if (mapped === null || mapped == undefined) {
+            if (mapped) {
                 await newRole.principals.create({
                     principalType: RoleMapping.USER,
                     principalId: admin.id,
@@ -82,7 +93,7 @@ module.exports = async (app) => {
         },
     });
 
-    if (ldap === null) {
+    if (!ldap) {
         await connection.create({
             system: 'LDAP',
             enabled: false,
@@ -95,7 +106,7 @@ module.exports = async (app) => {
         },
     });
 
-    if (vault === null) {
+    if (!vault) {
         await connection.create({
             system: 'Vault',
             enabled: false,
@@ -108,7 +119,7 @@ module.exports = async (app) => {
         },
     });
 
-    if (wasBooted === null) {
+    if (!wasBooted) {
         await v1.create([{
             booted: true,
         }]);

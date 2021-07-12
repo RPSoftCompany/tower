@@ -173,7 +173,7 @@
         this.role.current = []
         this.role.prev = []
         this.role.items.forEach(role => {
-          if (this.group.current !== undefined) {
+          if (this.group.current) {
             if (this.group.current.roles.includes(role.name)) {
               this.role.current.push(role)
               this.role.prev.push(role)

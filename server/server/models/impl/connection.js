@@ -374,6 +374,11 @@ module.exports = class Connection {
     async findSCPConnectionsAndCopy(configuration) {
         this.log('debug', 'findSCPConnectionsForSCP', 'STARTED');
 
+        if (!configuration) {
+            this.log('debug', 'findSCPConnectionsForSCP', 'FINISHED');
+            return;
+        }
+
         const Connection = this.app.models.connection;
         const RestConfiguration = this.app.models.restConfiguration;
         const V1model = new V1(this.app, 'v1');

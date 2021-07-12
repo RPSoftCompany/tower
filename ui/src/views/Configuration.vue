@@ -125,7 +125,7 @@
         clearable
         autocomplete="off"
         return-object
-        @change="fillNextArray(base.sequenceNumber + 1, bases.baseValues[base.sequenceNumber])"
+        @change="fillNextArray(base.sequenceNumber)"
       />
     </div>
     <div
@@ -160,8 +160,8 @@
           v-model="configuration.filter.filter"
           :label="
             configuration.filter.caseSensitive
-              ? 'Filter (case sensitive)'
-              : 'Filter (case insensitive)'
+              ? 'Search (case sensitive)'
+              : 'Search (case insensitive)'
           "
           :append-icon="
             configuration.filter.caseSensitive
@@ -177,7 +177,70 @@
             configuration.filter.caseSensitive = !configuration.filter
               .caseSensitive
           "
-        />
+        >
+          <template
+            v-if="configuration.showSaveButton"
+            slot="append-outer"
+          >
+            <div
+              class="text-center mt-n2"
+            >
+              <v-menu
+                offset-y
+                :close-on-content-click="false"
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    style="height: 39px"
+                    outlined
+                    v-bind="attrs"
+                    v-on="on"
+                  >
+                    Filter&nbsp;<v-icon v-text="icons.mdiChevronDown" />
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item-group
+                    multiple
+                  >
+                    <v-list-item
+                      @click="configuration.showConstantVariables =
+                        !configuration.showConstantVariables"
+                    >
+                      <template v-slot:default="{}">
+                        <v-list-item-action>
+                          <v-checkbox
+                            :input-value="configuration.showConstantVariables"
+                          />
+                        </v-list-item-action>
+
+                        <v-list-item-content>
+                          <v-list-item-title>Show constant variables</v-list-item-title>
+                        </v-list-item-content>
+                      </template>
+                    </v-list-item>
+                    <v-list-item
+                      :disabled="configuration.maxVersion === -1 || configuration.editMode === true"
+                      @click="configuration.showHistory = !configuration.showHistory"
+                    >
+                      <template v-slot:default="{}">
+                        <v-list-item-action>
+                          <v-checkbox
+                            :input-value="configuration.showHistory"
+                          />
+                        </v-list-item-action>
+
+                        <v-list-item-content>
+                          <v-list-item-title>Show history</v-list-item-title>
+                        </v-list-item-content>
+                      </template>
+                    </v-list-item>
+                  </v-list-item-group>
+                </v-list>
+              </v-menu>
+            </div>
+          </template>
+        </v-text-field>
         <div
           class="text-center text-h5 font-weight-thin pt-2"
           style="width: 33%; margin-top: -1px"
@@ -224,7 +287,6 @@
           <template v-slot:activator="{ on }">
             <v-icon
               style="max-height: 24px;"
-              :disabled="configuration.editModeDisabled"
               class="mr-3 mt-3"
               data-cy="configurationEditMode"
               @click="changeEditMode"
@@ -251,7 +313,7 @@
           </div>
         </div>
         <div
-          v-if="configuration.maxVersion >= 0 && configuration.editMode === false"
+          v-if="configuration.maxVersion >= 0 && configuration.editMode === false && configuration.showHistory === true"
           class="d-flex justify-space-between thirdWidth"
         >
           <div class="d-flex align-center">
@@ -351,6 +413,8 @@
                 :draft="isCurrentConfigurationDraft"
                 :draft-versions="configuration.draftVersions"
                 :is-new="item.isNew"
+                :is-constant-variable="item.isConstantVariable"
+                :show-history="configuration.showHistory"
               />
             </v-lazy>
           </v-form>
@@ -382,6 +446,7 @@
                 :added="true"
                 :rules="item.rules"
                 :add-if-absent="item.addIfAbsent"
+                :is-constant-variable="item.isConstantVariable"
                 @changed="variableTypeChange"
                 @delete="removeConfigurationRow"
               />
@@ -413,7 +478,7 @@
           </v-lazy>
         </v-responsive>
       </div>
-      <v-divider />
+      <v-divider v-if="constantVariables.editable === true" />
       <div
         v-if="configuration.showSaveButton"
         class="d-flex flex-row justify-space-around mt-2"
@@ -477,9 +542,18 @@
 
 <script>
   import {
-    mdiFormatLetterCaseLower, mdiFormatLetterCase, mdiPackageUp,
-    mdiSquareEditOutline, mdiPencil, mdiChevronLeft, mdiChevronRight,
-    mdiFileUpload, mdiReply, mdiStarOutline, mdiStar,
+    mdiChevronDown,
+    mdiChevronLeft,
+    mdiChevronRight,
+    mdiFileUpload,
+    mdiFormatLetterCase,
+    mdiFormatLetterCaseLower,
+    mdiPackageUp,
+    mdiPencil,
+    mdiReply,
+    mdiSquareEditOutline,
+    mdiStar,
+    mdiStarOutline
   } from '@mdi/js'
   import configurationRow from '../components/configuration/configurationRow'
   import { filterData, SearchType } from 'filter-data'
@@ -492,22 +566,22 @@
     components: {
       NewConfigurationRow,
       configurationRow,
-      constantVariable,
+      constantVariable
     },
     data: () => ({
       bases: {
         items: [],
         loading: true,
         baseValues: {},
-        baseItems: {},
+        baseItems: {}
       },
       filterPanel: {
-        show: false,
+        show: false
       },
       constantVariables: {
         show: false,
         editable: true,
-        items: [],
+        items: []
       },
       promotionDialog: {
         show: false,
@@ -515,17 +589,17 @@
         headers: [
           {
             text: 'Configuration',
-            value: 'text',
+            value: 'text'
           },
           {
             text: 'Version',
-            value: 'version',
+            value: 'version'
           },
           {
             text: 'Effective date',
-            value: 'effectiveDate',
-          },
-        ],
+            value: 'effectiveDate'
+          }
+        ]
       },
       importDialog: {
         show: false,
@@ -535,10 +609,12 @@
         separators: [{ text: 'Semicolon (;)', value: ';' },
                      { text: 'Comma (,)', value: ',' },
                      { text: 'Tab (    )', value: '\t' },
-                     { text: 'Space ( )', value: ' ' }],
+                     { text: 'Space ( )', value: ' ' }]
       },
       configuration: {
         promoted: [],
+        showConstantVariables: true,
+        showHistory: true,
         showSaveButton: false,
         configInfo: null,
         loading: false,
@@ -556,8 +632,8 @@
         currentRules: [],
         filter: {
           filter: '',
-          caseSensitive: false,
-        },
+          caseSensitive: false
+        }
       },
       icons: {
         mdiFormatLetterCaseLower,
@@ -567,11 +643,12 @@
         mdiPencil,
         mdiChevronLeft,
         mdiChevronRight,
+        mdiChevronDown,
         mdiFileUpload,
         mdiReply,
         mdiStarOutline,
-        mdiStar,
-      },
+        mdiStar
+      }
     }),
     computed: {
       saveButtonText () {
@@ -640,15 +717,36 @@
         return different
       },
       differentThanPrevVersion () {
+        const itemsWithoutConstants = this.configuration.items.filter(el => {
+          return el.isConstantVariable === false
+        })
+
         if (this.configuration.versions.length === 0 && this.configuration.items.length === 0) {
           return false
-        } else if (this.configuration.versions.length === 0 && this.configuration.items.length > 0) {
+        } else if (this.configuration.versions.length === 0 && itemsWithoutConstants.length > 0) {
           return true
         }
 
         if (this.configuration.maxVersion >= 0) {
-          if (this.configuration.versions[this.configuration.maxVersion].variables.length !==
-            this.configuration.items.length) {
+          const left = this.configuration.versions[this.configuration.maxVersion].variables.filter(el => {
+            return !this.configuration.currentGlobals.find(constant => {
+              if (constant.name === el.name) {
+                return constant.addIfAbsent !== false
+              }
+
+              return false
+            })
+          })
+
+          const right = this.configuration.items.filter(el => {
+            if (el.isConstantVariable === true) {
+              return el.addIfAbsent === false
+            }
+
+            return true
+          })
+
+          if (left.length !== right.length) {
             return true
           }
         }
@@ -660,10 +758,12 @@
               return history.name === el.name
             })
 
-            if (!prev || el.value !== prev.value) {
-              different = true
-            } else if (prev && prev.type !== el.type) {
-              different = true
+            if (el.isConstantVariable === false || (el.isConstantVariable === true && el.forcedValue === false)) {
+              if (!prev || el.value !== prev.value) {
+                different = true
+              } else if (prev && prev.type !== el.type) {
+                different = true
+              }
             }
           }
         })
@@ -674,6 +774,12 @@
         const filter = this.configuration.filter.filter
 
         let allItems = [...this.configuration.items]
+
+        if (this.configuration.showConstantVariables === false && this.configuration.editMode === false) {
+          allItems = allItems.filter(el => {
+            return el.isConstantVariable !== true
+          })
+        }
 
         if (this.configuration.versions.length > 0 && allItems.length > 0 && this.configuration.editMode === false) {
           const currentVersion = this.configuration.versions[this.configuration.shownVersion]
@@ -689,7 +795,6 @@
                 const newObject = {}
                 Object.assign(newObject, variable)
                 newObject.deleted = true
-                allItems.push(newObject)
               }
             })
           }
@@ -700,15 +805,15 @@
             {
               key: ['name', 'value', 'currentVersionValue'],
               value: filter,
-              type: SearchType.LK,
-            },
+              type: SearchType.LK
+            }
           ]
 
           allItems = filterData(allItems, searchConditions,
                                 { caseSensitive: this.configuration.filter.caseSensitive })
         }
 
-        sort(allItems).asc(u => u.name)
+        sort(allItems).asc(u => u.name.toLowerCase())
 
         return allItems
       },
@@ -721,8 +826,8 @@
             {
               key: ['name', 'value'],
               value: filter,
-              type: SearchType.LK,
-            },
+              type: SearchType.LK
+            }
           ]
 
           allItems = filterData(allItems, searchConditions,
@@ -748,12 +853,12 @@
           const draft = this.configuration.versions[this.configuration.shownVersion].draft === true ? '[ DRAFT ]' : ''
           return `Version #${this.configuration.shownVersion + 1} - ${versionLabel} ${draft}`
         }
-      },
+      }
     },
     watch: {
       currentVersion (actual) {
         this.assignCurrentVersionValues(actual)
-      },
+      }
     },
     async mounted () {
       await this.setBaseItems()
@@ -782,7 +887,7 @@
       async setBaseItems () {
         this.bases.loading = true
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         if (response.status === 200) {
@@ -795,56 +900,78 @@
 
         this.bases.loading = false
       },
-      async fillNextArray (sequenceNumber, value) {
+      async fillNextArray (sequenceNumber) {
         this.configuration.showSaveButton = false
         this.configuration.editMode = undefined
         this.configuration.items = []
+        this.configuration.showConstantVariables = true
+        this.configuration.showHistory = true
+        this.constantVariables.items = []
         this.configuration.configInfo = 'Constant Variables'
 
-        this.filterPanel.show = sequenceNumber > 0 && this.bases.baseValues[0]?.id !== undefined
-        this.constantVariables.show = sequenceNumber > 0 && this.bases.baseValues[0]?.id !== undefined
+        this.filterPanel.show = sequenceNumber >= 0 && this.bases.baseValues[0]?.id !== undefined
 
-        this.constantVariables.editable = this.isConstEditable(sequenceNumber)
+        this.constantVariables.editable = await this.isConstEditable(sequenceNumber)
 
         this.configuration.maxVersion = -1
         this.configuration.items = []
 
-        if (!value && this.bases.baseItems[sequenceNumber]) {
-          for (let i = sequenceNumber; i < this.bases.items.length; i++) {
+        if (sequenceNumber < this.bases.items.length - 1) {
+          for (let i = sequenceNumber + 1; i < this.bases.items.length; i++) {
+            this.bases.baseValues[i] = undefined
+            this.bases.baseItems[i] = undefined
+          }
+        }
+
+        let allFilled = true
+        let firstUnfilled = -1
+        for (const item of this.bases.items) {
+          if (!this.bases.baseValues[item.sequenceNumber] || !this.bases.baseValues[item.sequenceNumber].name) {
+            allFilled = false
+            if (firstUnfilled === -1) {
+              firstUnfilled = item.sequenceNumber
+            }
+          }
+        }
+
+        if (allFilled === false) {
+          this.constantVariables.show = true
+          for (let i = sequenceNumber + 1; i <= this.bases.items.length; i++) {
+            this.bases.baseValues[i] = undefined
             this.bases.baseItems[i] = undefined
           }
 
+          await this.getBases(firstUnfilled)
           this.$forceUpdate()
-          return
-        }
-
-        if (sequenceNumber >= this.bases.items.length && value) {
+        } else {
           this.constantVariables.show = false
           this.$forceUpdate()
           await this.getConfiguration()
-          return
         }
-
+      },
+      //* *******************
+      // Get Bases
+      //* *******************
+      async getBases (sequenceNumber) {
         if (this.bases.items[sequenceNumber] === undefined) {
           return
         }
 
         this.bases.baseValues[sequenceNumber] = {
-          loading: true,
+          loading: true
         }
 
         const baseName = this.bases.items[sequenceNumber].name
 
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${baseName}"}}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${baseName}"}}`
         )
-
         if (response.status === 200) {
           this.bases.baseItems[sequenceNumber] = response.data
         }
 
         this.bases.baseValues[sequenceNumber] = {
-          loading: false,
+          loading: false
         }
 
         await this.getConstantVariables(sequenceNumber)
@@ -867,7 +994,7 @@
 
         const filter = {
           where: {},
-          order: 'version DESC',
+          order: 'version DESC'
         }
 
         const constWhere = {}
@@ -883,7 +1010,7 @@
         await this.getPromoted()
 
         const configuration = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurations?filter=${JSON.stringify(filter)}`,
+          `${this.$store.state.mainUrl}/configurations?filter=${JSON.stringify(filter)}`
         )
 
         const constVariablesRes = await this.axios.get(`${this.$store.state.mainUrl
@@ -926,6 +1053,10 @@
         this.configuration.maxVersion = history.length - 1
         this.configuration.shownVersion = history.length - 1
 
+        if (history.length === 0) {
+          this.configuration.showHistory = false
+        }
+
         globalVariables.forEach(global => {
           if (global.addIfAbsent === true) {
             const found = items.find(item => {
@@ -937,7 +1068,7 @@
                 name: global.name,
                 value: global.value,
                 type: global.type,
-                isNew: true,
+                isNew: true
               })
             }
           }
@@ -963,7 +1094,7 @@
             text: text,
             configuration: promoted,
             version: promoted.version,
-            effectiveDate: promoted.effectiveDate,
+            effectiveDate: promoted.effectiveDate
           })
         })
       },
@@ -986,7 +1117,7 @@
 
         const candidates = await this.axios.post(
           `${this.$store.state.mainUrl}/configurations/promotionCandidates`,
-          objectFilter,
+          objectFilter
         )
 
         if (candidates.status === 200 && candidates.data) {
@@ -1026,7 +1157,7 @@
               items.push({
                 name: item.name,
                 value: item.value,
-                type: item.type,
+                type: item.type
               })
             })
 
@@ -1034,7 +1165,7 @@
               variables: items,
               promoted: false,
               description: '',
-              draft: this.configuration.saveAsDraft,
+              draft: this.configuration.saveAsDraft
             }
 
             for (let i = 0; i < this.bases.items.length; i++) {
@@ -1044,7 +1175,7 @@
 
             await this.axios.post(
               `${this.$store.state.mainUrl}/configurations`,
-              conf,
+              conf
             )
 
             this.configuration.items = []
@@ -1058,7 +1189,7 @@
             this.configuration.loading = false
             this.$store.commit(
               'setError',
-              'Your configuration is invalid. Please review and correct it.',
+              'Your configuration is invalid. Please review and correct it.'
             )
 
             this.configuration.saving = false
@@ -1092,13 +1223,17 @@
           return global.name === el.name
         })
 
+        let isConstantVariable = false
         let value = el.value
         let type = el.type
         let forcedValue = false
+        let globalValue = null
         let forcedCause
         if (foundGlobal !== undefined) {
           value = foundGlobal.forced === true ? foundGlobal.value : value
           type = foundGlobal.forced === true ? foundGlobal.type : type
+          globalValue = foundGlobal.value
+          isConstantVariable = true
           el.addIfAbsent = foundGlobal.addIfAbsent
           forcedValue = foundGlobal.forced
           if (forcedValue) {
@@ -1107,10 +1242,10 @@
         }
 
         const itemRules = rules.filter(rule => {
-          if (rule.targetRegEx) {
+          if (rule && rule.targetRegEx) {
             const regEx = new RegExp(rule.targetValue)
             return regEx.test(el.name)
-          } else {
+          } else if (rule) {
             return rule.targetValue === el.name
           }
         })
@@ -1119,11 +1254,7 @@
           return el.name === hist.name
         })
 
-        if (currentVersionValue) {
-          isNew = false
-        } else {
-          isNew = true
-        }
+        isNew = !currentVersionValue
 
         const historyValue = history.length > 0 ? '' : undefined
 
@@ -1140,8 +1271,10 @@
           forcedValue: forcedValue,
           forcedCause: forcedCause,
           addIfAbsent: el.addIfAbsent,
+          globalValue: globalValue,
           draft: false,
           isNew: isNew,
+          isConstantVariable: isConstantVariable
         }
 
         this.configuration.items.push(item)
@@ -1244,20 +1377,21 @@
       // Constant Variables
       //* *******************
       async getConstantVariables (sequenceNumber) {
-        if (sequenceNumber === 0 || this.bases.baseValues[sequenceNumber - 1] === undefined) {
+        if (sequenceNumber === 0 || this.bases.baseValues[sequenceNumber] === undefined) {
           return
         }
 
         this.configuration.configInfo = 'Constant Variables'
 
         const objectFilter = {}
-        for (let i = 0; i < sequenceNumber; i++) {
-          objectFilter[this.bases.baseValues[i].base] = this.bases.baseValues[i].name
+        for (let i = 0; i < this.bases.items.length; i++) {
+          objectFilter[this.bases.items[i].name] = this.bases.baseValues[i]?.name
+              ? this.bases.baseValues[i].name : { eq: null }
         }
 
         const filter = {
           where: objectFilter,
-          order: 'effectiveDate DESC',
+          order: 'effectiveDate DESC'
         }
 
         const response = await this.axios.get(
@@ -1267,9 +1401,9 @@
           this.constantVariables.items = response.data[0].variables
         }
       },
-      isConstEditable (sequenceNumber) {
+      async isConstEditable (sequenceNumber) {
         let editable = false
-        let seq = sequenceNumber - 1
+        let seq = sequenceNumber
 
         if (!this.bases.baseValues[seq]?.id) {
           seq--
@@ -1289,6 +1423,17 @@
           }
         }
 
+        if (editable === true) {
+          const response = await this.axios.get(`${this.$store.state.mainUrl}` +
+            '/members/getUserConstantVariablePermission' +
+            `?base=${this.bases.baseValues[seq].base}&model=${this.bases.baseValues[seq].name}`)
+          if (response.status === 200) {
+            if (response.data === 'view') {
+              editable = false
+            }
+          }
+        }
+
         return editable
       },
       async addConstantVariable (data) {
@@ -1305,7 +1450,7 @@
         this.constantVariables.items.push(data)
 
         const post = {
-          variables: [...this.constantVariables.items],
+          variables: [...this.constantVariables.items]
         }
 
         for (let i = 0; i < this.bases.items.length; i++) {
@@ -1323,7 +1468,7 @@
         })
 
         const post = {
-          variables: [],
+          variables: []
         }
 
         this.constantVariables.items.forEach(el => {
@@ -1332,7 +1477,7 @@
             value: el.value,
             type: el.type,
             forced: el.forced,
-            addIfAbsent: el.addIfAbsent,
+            addIfAbsent: el.addIfAbsent
           })
         })
 
@@ -1356,7 +1501,7 @@
         })
 
         const post = {
-          variables: [],
+          variables: []
         }
 
         this.constantVariables.items.forEach(el => {
@@ -1365,7 +1510,7 @@
             value: el.value,
             type: el.type,
             forced: el.forced,
-            addIfAbsent: el.addIfAbsent,
+            addIfAbsent: el.addIfAbsent
           })
         })
 
@@ -1419,7 +1564,7 @@
             items.push({
               name: name,
               value: obj[name],
-              type: type,
+              type: type
             })
           })
 
@@ -1444,9 +1589,9 @@
           if (line.includes(separator)) {
             const split = line.split(separator)
             const name = split[0]
-            const value = split[1]
+            const value = split[1] ? split[1] : ''
 
-            if (name && value) {
+            if (name) {
               importedMap.set(name, value)
             }
           }
@@ -1460,7 +1605,7 @@
             items.push({
               name: k,
               value: v,
-              type: 'string',
+              type: 'string'
             })
           })
 
@@ -1469,19 +1614,12 @@
             this.closeImportDialog()
           })
         }
-      },
-    },
+      }
+    }
   }
 </script>
 
 <style scoped>
-.configurationTitle {
-  height: 40px;
-  color: lightgray;
-  margin-bottom: 10px;
-  margin-top: 0px;
-  cursor: default;
-}
 .thirdWidth {
   max-width: 32%;
   width: 32%;

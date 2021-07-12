@@ -34,6 +34,7 @@
           autocomplete="off"
           label="Variable Name"
           :error-messages="errorMessage"
+          :prepend-icon="isConstantVariable === true ? icons.mdiAlphaCBox : undefined"
           @input="removeErrorMessage"
           @keyup.enter="iconClicked"
         />
@@ -63,46 +64,50 @@
 </template>
 
 <script>
-  import { mdiLock, mdiLockOpen, mdiMinus, mdiPlus } from '@mdi/js'
+  import { mdiLock, mdiLockOpen, mdiMinus, mdiPlus, mdiAlphaCBox } from '@mdi/js'
 
   export default {
     name: 'NewConfigurationRow',
     props: {
       name: {
         type: String,
-        default: null,
+        default: null
       },
       value: {
         type: [String, Boolean, Number, Array],
-        default: null,
+        default: null
       },
       type: {
         type: String,
-        default: 'string',
+        default: 'string'
       },
       added: {
         type: Boolean,
-        default: false,
+        default: false
       },
       rules: {
         type: Array,
         default: () => { return [] },
-        required: false,
+        required: false
       },
       allTypeRules: {
         type: Array,
         default: () => { return [] },
-        required: false,
+        required: false
       },
       disabled: {
         type: Boolean,
         default: false,
-        required: false,
+        required: false
       },
       addIfAbsent: {
         type: Boolean,
-        default: false,
+        default: false
       },
+      isConstantVariable: {
+        type: Boolean,
+        default: false
+      }
     },
     data: attrs => ({
       icons: {
@@ -110,6 +115,7 @@
         mdiLockOpen,
         mdiMinus,
         mdiPlus,
+        mdiAlphaCBox
       },
       local_name: attrs.name,
       local_value: attrs.value,
@@ -124,8 +130,8 @@
       pass_locked: true,
 
       local_rules: {
-        required: value => !!value || 'Required',
-      },
+        required: value => !!value || 'Required'
+      }
     }),
     watch: {
       local_type (actual, prev) {
@@ -165,7 +171,7 @@
             }
           }
         })
-      },
+      }
     },
     mounted () {
       if (this.rules.length > 0) {
@@ -195,14 +201,14 @@
       iconClicked () {
         if (this.added) {
           this.$emit('delete', {
-            name: this.local_name,
+            name: this.local_name
           })
         } else {
           if (this.$refs.newConfigForm.validate()) {
             this.$emit('add-row', {
               name: this.local_name,
               type: this.local_type,
-              _this: this,
+              _this: this
             })
           }
         }
@@ -210,7 +216,7 @@
       changed () {
         this.$emit('changed', {
           name: this.local_name,
-          type: this.local_type,
+          type: this.local_type
         })
       },
       reset () {
@@ -226,8 +232,8 @@
       },
       valid () {
         return this.$refs.newConfigForm.validate()
-      },
-    },
+      }
+    }
   }
 </script>
 

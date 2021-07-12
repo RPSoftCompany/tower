@@ -10,7 +10,8 @@
     "effectiveDate": {
       "type": "date",
       "required": true,
-      "default": "$now"
+      "default": "$now",
+      "index": true
     },
     "createdBy": {
       "type": "string",

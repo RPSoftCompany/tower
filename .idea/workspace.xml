@@ -2,18 +2,25 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e16bfb61-4cb0-49e0-8a6e-5dbd8447af86" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/tower.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/tower.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/explorer/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/dist/explorer/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/dockerStart.sh" beforeDir="false" afterPath="$PROJECT_DIR$/docker/dockerStart.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/explorer/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/explorer/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/drawer.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/drawer.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Initialize.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Initialize.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Login.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/NoPermissions.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/NoPermissions.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/boot/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/boot/script.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/configuration.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/configuration.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/connection.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/connection.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/constantVariable.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/constantVariable.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/member.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/member.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/member.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/member.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/member.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/member.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/.env" beforeDir="false" afterPath="$PROJECT_DIR$/ui/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Group.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Group.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Archive.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Archive.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Base.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Configuration.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Configuration.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -42,7 +49,7 @@
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
-  <component name="RunManager" selected="npm.build">
+  <component name="RunManager" selected="npm.dev">
     <configuration name="build" type="js.build_tools.npm" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/ui/package.json" />
       <command value="run" />
@@ -90,10 +97,14 @@
       <workItem from="1609690511230" duration="498000" />
       <workItem from="1610903993690" duration="638000" />
       <workItem from="1610907232913" duration="3013000" />
+      <workItem from="1625419181864" duration="15055000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
 </project>
