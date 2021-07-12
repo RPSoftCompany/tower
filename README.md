@@ -8,8 +8,6 @@ The biggest advantage of Tower is its flexibility. Other configuration servers f
 
 But, of course, that's not the only feature you can find in Tower. This tools enables you to create custom rules to validate your configuration, promote configuration, set default values or even force it. Advanced permission functionality gives you full flexibility of assigning different roles to different users in your organization. And yes, you can connect your LDAP to Tower.
 
-But enought of this, let us show you how to install and start Tower.
-
 For more information go to our [documentation](https://rpsoft.gitbook.io/tower/)
 
 
