@@ -193,7 +193,7 @@
   export default {
     name: 'HooksSettings',
     components: {
-      'prism-editor': PrismEditor,
+      'prism-editor': PrismEditor
     },
     data: () => ({
       models: [],
@@ -202,7 +202,7 @@
       icons: {
         mdiDelete,
         mdiPlus,
-        mdiFileDocument,
+        mdiFileDocument
       },
 
       headersDialog: false,
@@ -210,20 +210,20 @@
       currentEntry: null,
       newHeader: {
         name: null,
-        value: null,
+        value: null
       },
 
       hooksModel: {
         Configuration: [],
         ConfigurationModel: [],
-        ConstantVariable: [],
+        ConstantVariable: []
       },
 
       hooks: {
         Configuration: {
           afterCreate: [],
           afterUpdate: [],
-          beforeCreate: [],
+          beforeCreate: []
         },
         ConfigurationModel: {
           afterAddRule: [],
@@ -237,14 +237,14 @@
           beforeDelete: [],
           beforeModifyRule: [],
           beforeRemoveRule: [],
-          beforeUpsert: [],
+          beforeUpsert: []
         },
         ConstantVariable: {
-          variableChanged: [],
-        },
+          variableChanged: []
+        }
       },
 
-      newHookUrl: null,
+      newHookUrl: null
     }),
     async mounted () {
       await this.resetData()
@@ -279,7 +279,7 @@
         } else {
           this.currentHook.headers.push({
             name: this.newHeader.name,
-            value: this.newHeader.value,
+            value: this.newHeader.value
           })
         }
 
@@ -295,9 +295,9 @@
         return highlight(
           code,
           {
-            ...languages.markup,
+            ...languages.markup
           },
-          'markup',
+          'markup'
         )
       },
       updateEditor (_id) {
@@ -305,7 +305,7 @@
       },
       async resetData () {
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/hooks?filter={"order":"model ASC"}`,
+          `${this.$store.state.mainUrl}/hooks?filter={"order":"model ASC"}`
         )
 
         const modelSet = new Set()
@@ -344,8 +344,8 @@
             url: this.newHookUrl,
             template: '{}',
             method: 'GET',
-            description: '',
-          },
+            description: ''
+          }
         )
 
         await this.resetData()
@@ -354,7 +354,7 @@
       },
       async removeHook ({ id }, { _id }) {
         await this.axios.delete(
-          `${this.$store.state.mainUrl}/hooks/${id}/hookObject/${_id}`,
+          `${this.$store.state.mainUrl}/hooks/${id}/hookObject/${_id}`
         )
 
         await this.resetData()
@@ -362,11 +362,11 @@
       async modifyHook ({ id }, hook) {
         await this.axios.put(
           `${this.$store.state.mainUrl}/hooks/${id}/hookObject`,
-          hook,
+          hook
         )
 
         await this.resetData()
-      },
-    },
+      }
+    }
   }
 </script>

@@ -124,76 +124,76 @@
       targetValue: {
         type: String,
         default: undefined,
-        required: false,
+        required: false
       },
       targetType: {
         type: String,
         default: 'name',
-        required: false,
+        required: false
       },
       targetRegEx: {
         type: Boolean,
         default: false,
-        required: false,
+        required: false
       },
       conditionValue: {
         type: String,
         default: undefined,
-        required: false,
+        required: false
       },
       conditionType: {
         type: String,
         default: 'value',
-        required: false,
+        required: false
       },
       conditionRegEx: {
         type: Boolean,
         default: false,
-        required: false,
+        required: false
       },
       errorMessage: {
         type: String,
         default: null,
-        required: false,
+        required: false
       },
       newRule: {
         type: Boolean,
         default: true,
-        required: false,
+        required: false
       },
       ruleId: {
         type: String,
         default: null,
-        required: false,
-      },
+        required: false
+      }
     },
     data: () => ({
       icons: {
         mdiPlus,
         mdiMinus,
         mdiRegex,
-        mdiFormatLetterCase,
+        mdiFormatLetterCase
       },
       condition: {
         types: ['type', 'value'],
         type: 'value',
         value: null,
-        regex: false,
+        regex: false
       },
       target: {
         types: ['name', 'type'],
         type: 'name',
         value: null,
-        regex: false,
+        regex: false
       },
       error: {
-        message: null,
+        message: null
       },
       rules: {
-        required: [value => !!value || 'Required'],
+        required: [value => !!value || 'Required']
       },
       isNew: false,
-      wantValidation: true,
+      wantValidation: true
     }),
     mounted () {
       this.target.value = this.targetValue === undefined ? null : this.targetValue
@@ -221,7 +221,7 @@
               conditionValue: this.condition.value,
               conditionType: this.condition.type,
               conditionRegEx: this.condition.regex,
-              errorMessage: this.error.message,
+              errorMessage: this.error.message
             })
 
             this.$refs.form.reset()
@@ -241,7 +241,7 @@
               conditionValue: this.condition.value,
               conditionType: this.condition.type,
               conditionRegEx: this.condition.regex,
-              errorMessage: this.error.message,
+              errorMessage: this.error.message
             })
           }
         } else {
@@ -257,7 +257,7 @@
       },
       removeRule () {
         this.$emit('delete_rule', {
-          id: this.ruleId,
+          id: this.ruleId
         })
       },
       resetValidation () {
@@ -268,7 +268,7 @@
       },
       reset () {
         this.$refs.form.reset()
-      },
-    },
+      }
+    }
   }
 </script>

@@ -72,8 +72,8 @@
     name: 'ProfileButton',
     data: () => ({
       icons: {
-        mdiAccount,
-      },
+        mdiAccount
+      }
     }),
     computed: {
       isLdapUser () {
@@ -84,11 +84,12 @@
           return this.$store.state.user.user.display
         }
         return this.$store.state.user.username
-      },
+      }
     },
     methods: {
       logout () {
-        this.$cookie.delete('token')
+        this.$cookie.delete('token', { domain: window.location.hostname,
+                                       samesite: 'Lax' })
         this.$store.commit('setUserData', null)
         this.$store.commit('setUserRoles', [])
 
@@ -96,8 +97,8 @@
       },
       changePass () {
         this.$router.push('/changePassword')
-      },
-    },
+      }
+    }
   }
 </script>
 

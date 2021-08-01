@@ -107,22 +107,22 @@
     name: 'GroupsSettings',
     components: {
       uiCard,
-      gif,
+      gif
     },
     data: () => ({
       icons: {
-        mdiPlus,
+        mdiPlus
       },
       group: {
         current: null,
         items: [],
-        text: null,
+        text: null
       },
       role: {
         current: null,
         prev: [],
-        items: [],
-      },
+        items: []
+      }
     }),
     computed: {
       noDataText () {
@@ -132,7 +132,7 @@
         } else {
           return 'Type name and press <kbd>+</kbd> button to create new group'
         }
-      },
+      }
     },
     async mounted () {
       await this.resetData()
@@ -142,13 +142,13 @@
         this.role.prev = []
         this.group.current = null
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/Groups?filter={"order":"name ASC"}`,
+          `${this.$store.state.mainUrl}/Groups?filter={"order":"name ASC"}`
         )
 
         this.group.items = response.data
 
         const roleResponse = await this.axios.get(
-          `${this.$store.state.mainUrl}/Roles?filter={"order":"name ASC"}`,
+          `${this.$store.state.mainUrl}/Roles?filter={"order":"name ASC"}`
         )
 
         this.role.items = roleResponse.data
@@ -161,8 +161,8 @@
           `${this.$store.state.mainUrl}/Groups`,
           {
             name: this.group.text,
-            roles: [],
-          },
+            roles: []
+          }
         )
 
         this.$refs.groupSelect.isMenuActive = false
@@ -205,8 +205,8 @@
         }
 
         this.role.prev = change
-      },
-    },
+      }
+    }
   }
 </script>
 

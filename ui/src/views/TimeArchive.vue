@@ -175,7 +175,7 @@
   export default {
     name: 'TimeArchive',
     components: {
-      comparisonTable,
+      comparisonTable
     },
     data: () => ({
       values: [],
@@ -198,16 +198,16 @@
         mdiFormatLetterCase,
         mdiFormatLetterCaseLower,
         mdiCalendar,
-        mdiClockOutline,
+        mdiClockOutline
       },
 
       configuration: {
         items: [],
         filter: {
           caseSensitive: false,
-          filter: null,
-        },
-      },
+          filter: null
+        }
+      }
     }),
     computed: {
       configInfo () {
@@ -225,11 +225,11 @@
         } else {
           return '24hr'
         }
-      },
+      }
     },
     async created () {
       const response = await this.axios.get(
-        `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+        `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
       )
 
       this.baseArray = response.data
@@ -245,7 +245,7 @@
     methods: {
       async getArrayFromBase (base, sequenceNumber) {
         const array = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${base}"}}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${base}"}}`
         )
 
         array.data.sort((a, b) => {
@@ -315,7 +315,7 @@
         const d = new Date(`${date}T${time}`)
 
         const configuration = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurations/findByDate?filter={${filter}}&date=${d.toUTCString()}`,
+          `${this.$store.state.mainUrl}/configurations/findByDate?filter={${filter}}&date=${d.toUTCString()}`
         )
 
         if (configuration.data.effectiveDate === undefined) {
@@ -324,7 +324,7 @@
           return true
         } else {
           const details = await this.axios.get(
-            `${this.$store.state.mainUrl}/members/getUserDetails?userId=${configuration.data.createdBy}`,
+            `${this.$store.state.mainUrl}/members/getUserDetails?userId=${configuration.data.createdBy}`
           )
 
           if (details.data[0] !== null) {
@@ -368,8 +368,8 @@
         await this.getConfiguration(this.date, this.time, this.configToTimeChange, filter)
 
         this.dialog = false
-      },
-    },
+      }
+    }
   }
 </script>
 

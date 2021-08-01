@@ -49,7 +49,7 @@ describe('Configuration Model', () => {
                         },
                     ],
                     'restrictions': [
-                        'string',
+                        {'__id': '123', 'string': 'string'},
                     ],
                     'base': 'string',
                     'options': {
@@ -92,11 +92,11 @@ describe('Configuration Model', () => {
                         },
                     ],
                     'restrictions': [
-                        'string',
+                        {'__id': '123', 'string': 'string'},
                     ],
                     'base': 'string',
                     'options': {
-                        'hasRestrictions': false,
+                        'hasRestrictions': true,
                     },
                     'id': id,
                 }, {
@@ -124,11 +124,11 @@ describe('Configuration Model', () => {
                         },
                     ],
                     'restrictions': [
-                        'string',
+                        {'__id': '123', 'string': 'string'},,
                     ],
                     'base': 'string',
                     'options': {
-                        'hasRestrictions': false,
+                        'hasRestrictions': true,
                     },
                     'id': id,
                 }, {
@@ -153,8 +153,21 @@ describe('Configuration Model', () => {
 
         describe('POST/{id}/restriction', () => {
             it(`should return 204`, async () => {
-                const configuration = await axios.post(`${url}/configurationModels/${id}/restriction?restriction=asdf`,
-                    undefined, {
+                const configuration = await axios.post(`${url}/configurationModels/${id}/restriction`,
+                    {'__id': '123', 'string': 'string'},
+                    {
+                        headers: {Authorization: token},
+                    });
+
+                should(configuration.status).equal(204);
+            });
+        });
+
+        describe('PATCH/{id}/restriction', () => {
+            it(`should return 204`, async () => {
+                const configuration = await axios.patch(`${url}/configurationModels/${id}/restriction`,
+                    {'__id': '123', 'string': 'string2'},
+                    {
                         headers: {Authorization: token},
                     });
 
@@ -165,7 +178,7 @@ describe('Configuration Model', () => {
         describe('DELETE/{id}/restriction', () => {
             it(`should return 204`, async () => {
                 const configuration = await axios.delete(`${url}/configurationModels/${
-                    id}/restriction?restriction=asdf`, {
+                    id}/restriction?restrictionId=123`, {
                     headers: {Authorization: token},
                 });
 

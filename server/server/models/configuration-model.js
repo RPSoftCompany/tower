@@ -132,8 +132,12 @@ module.exports = function(Configurationmodel) {
         return await configModel.addRestriction(modelId, restriction, options);
     };
 
-    Configurationmodel.removeRestriction = async (modelId, restriction, options) => {
-        return await configModel.removeRestriction(modelId, restriction, options);
+    Configurationmodel.removeRestriction = async (modelId, restrictionId, options) => {
+        return await configModel.removeRestriction(modelId, restrictionId, options);
+    };
+
+    Configurationmodel.modifyRestriction = async (modelId, restriction, options) => {
+        return await configModel.modifyRestriction(modelId, restriction, options);
     };
 
     // ====================================================
@@ -240,21 +244,32 @@ module.exports = function(Configurationmodel) {
         http: {path: '/:id/restriction', status: 200, verb: 'POST'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'restriction', type: 'string', required: true,
-                http: {source: 'query'}},
+            {arg: 'restriction', type: 'object', required: true,
+                http: {source: 'body'}},
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
-        description: 'Adds resriction to given configuration model',
+        description: 'Adds restriction to given configuration model',
     });
 
     Configurationmodel.remoteMethod('removeRestriction', {
         http: {path: '/:id/restriction', status: 200, verb: 'DELETE'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'restriction', type: 'string', required: true,
+            {arg: 'restrictionId', type: 'string', required: true,
                 http: {source: 'query'}},
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
-        description: 'Removes resriction from given configuration model',
+        description: 'Removes restriction from given configuration model',
+    });
+
+    Configurationmodel.remoteMethod('modifyRestriction', {
+        http: {path: '/:id/restriction', status: 200, verb: 'PATCH'},
+        accepts: [
+            {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
+            {arg: 'restriction', type: 'object', required: true,
+                http: {source: 'body'}},
+            {arg: 'options', type: 'object', http: 'optionsFromRequest'},
+        ],
+        description: 'Modifies restriction in given configuration model',
     });
 };

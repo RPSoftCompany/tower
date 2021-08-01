@@ -11,49 +11,49 @@ const router = new Router({
     {
       path: '/timearchive',
       name: 'Time Archive',
-      component: () => import('./views/TimeArchive.vue'),
+      component: () => import('./views/TimeArchive.vue')
     },
     {
       path: '/archive',
       name: 'Version Archive',
-      component: () => import('./views/Archive.vue'),
+      component: () => import('./views/Archive.vue')
     },
     {
       path: '/configuration',
       name: 'Configuration',
-      component: () => import('./views/Configuration.vue'),
+      component: () => import('./views/Configuration.vue')
     },
     {
       path: '/login',
       name: 'Login',
-      component: () => import('./views/Login.vue'),
+      component: () => import('./views/Login.vue')
     },
     {
       path: '/base/:name',
       name: 'Base',
-      component: () => import('./views/Base.vue'),
+      component: () => import('./views/Base.vue')
     },
     {
       path: '/settings',
       name: 'Settings',
-      component: Settings,
+      component: Settings
     },
     {
       path: '/noPermissions',
       name: 'noPermissions',
-      component: () => import('./views/NoPermissions.vue'),
+      component: () => import('./views/NoPermissions.vue')
     },
     {
       path: '/changePassword',
       name: 'changePassword',
-      component: () => import('./views/ChangePassword.vue'),
+      component: () => import('./views/ChangePassword.vue')
     },
     {
       path: '/initialize',
       name: 'Initialize',
-      component: () => import('./views/Initialize.vue'),
-    },
-  ],
+      component: () => import('./views/Initialize.vue')
+    }
+  ]
 })
 
 router.beforeEach((to, from, next) => {

@@ -296,7 +296,7 @@
               "
             />
           </template>
-          <span>Change mode</span>
+          <span v-text="configuration.editMode === true ? 'Edit mode' : 'Design mode'" />
         </v-tooltip>
       </div>
       <v-divider
@@ -490,7 +490,7 @@
         >
           <v-col
             cols="4"
-            class="pa-0"
+            class="pa-0 pt-2"
           >
             <v-checkbox
               v-model="configuration.saveAsDraft"
@@ -500,7 +500,7 @@
           </v-col>
           <v-col
             cols="4"
-            class="pa-0"
+            class="pa-0 my-5"
             style="display: flex; justify-content: center"
           >
             <v-btn
@@ -685,7 +685,8 @@
         }
 
         if (this.configuration.versions[this.configuration.maxVersion]) {
-          return this.configuration.versions[this.configuration.maxVersion].draft
+          return this.configuration.versions[this.configuration.maxVersion].draft &&
+            this.configuration.saveAsDraft === false
         }
 
         return false
@@ -795,6 +796,7 @@
                 const newObject = {}
                 Object.assign(newObject, variable)
                 newObject.deleted = true
+                allItems.push(newObject)
               }
             })
           }
@@ -964,7 +966,7 @@
         const baseName = this.bases.items[sequenceNumber].name
 
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${baseName}"}}`
+          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${baseName}"},"order":"name asc"}`
         )
         if (response.status === 200) {
           this.bases.baseItems[sequenceNumber] = response.data

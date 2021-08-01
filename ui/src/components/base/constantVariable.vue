@@ -18,6 +18,7 @@
   <v-form
     ref="variableValidationForm"
     class="d-flex"
+    autocomplete="new-password"
   >
     <v-dialog
       v-model="deleteDialog"
@@ -128,7 +129,6 @@
             multiple
             chips
             deletable-chips
-            append-icon
             persistent-hint
             @change="onChange"
           />
@@ -139,6 +139,7 @@
             :disabled="!editable"
             :type="pass_locked ? 'password' : 'text'"
             :append-icon="pass_locked ? icons.mdiLock : icons.mdiLockOpen"
+            autocomplete="new-password"
             label="Value"
             @change="onChange"
             @click:append="pass_locked = !pass_locked"

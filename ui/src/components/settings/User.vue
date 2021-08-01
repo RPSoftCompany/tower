@@ -171,32 +171,32 @@
     name: 'User',
     components: {
       uiCard,
-      gif,
+      gif
     },
     data: () => ({
       user: {
         items: [],
         current: null,
         text: null,
-        token: null,
+        token: null
       },
 
       icons: {
-        mdiPlus,
+        mdiPlus
       },
 
       groups: {
         items: [],
-        current: null,
+        current: null
       },
 
       dialog: {
         show: false,
         text: null,
-        title: null,
+        title: null
       },
 
-      newPassword: 'changeme',
+      newPassword: 'changeme'
     }),
     computed: {
       noDataText () {
@@ -206,7 +206,7 @@
         } else {
           return 'Type name and press <kbd>+</kbd> button to create new user'
         }
-      },
+      }
     },
     mounted () {
       this.resetData()
@@ -217,11 +217,11 @@
         this.groups.current = null
 
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/members?filter={"where":{"username":{"neq":"admin"}}}`,
+          `${this.$store.state.mainUrl}/members?filter={"where":{"username":{"neq":"admin"}}}`
         )
 
         const groupsRes = await this.axios.get(
-          `${this.$store.state.mainUrl}/groups`,
+          `${this.$store.state.mainUrl}/groups`
         )
 
         this.groups.items = groupsRes.data
@@ -239,8 +239,8 @@
             newUser: true,
             technicalUser: false,
             password: this.newPassword,
-            groups: [],
-          },
+            groups: []
+          }
         )
 
         response.data.display = this.user.text
@@ -271,7 +271,7 @@
         this.user.token = null
         if (this.user.current.technicalUser) {
           const response = await this.axios.get(
-            `${this.$store.state.mainUrl}/members/getTechnicalUserToken?userId=${this.user.current.id}`,
+            `${this.$store.state.mainUrl}/members/getTechnicalUserToken?userId=${this.user.current.id}`
           )
 
           this.user.token = response.data
@@ -285,18 +285,18 @@
 
         await this.axios.patch(
           `${this.$store.state.mainUrl}/members`,
-          this.user.current,
+          this.user.current
         )
       },
       async onTechnicalChange () {
         await this.axios.post(
           `${this.$store.state.mainUrl}/members/setAsTechnicalUser?isTechUser=${
-            this.user.current.technicalUser}&userId=${this.user.current.id}`,
+            this.user.current.technicalUser}&userId=${this.user.current.id}`
         )
 
         await this.setToken()
-      },
-    },
+      }
+    }
   }
 </script>
 

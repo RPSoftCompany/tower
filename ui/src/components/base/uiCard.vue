@@ -48,17 +48,17 @@
     props: {
       flat: {
         type: Boolean,
-        default: false,
-      },
+        default: false
+      }
     },
     data: () => ({
       icons: {
         mdiHelpCircleOutline: mdiHelpCircleOutline,
         mdiHelpCircle: mdiHelpCircle,
-        mdiClose: mdiClose,
+        mdiClose: mdiClose
       },
-      show: false,
-    }),
+      show: false
+    })
   }
 </script>
 

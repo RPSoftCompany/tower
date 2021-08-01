@@ -241,7 +241,7 @@
     components: {
       draggable,
       uiCard,
-      gif,
+      gif
     },
     data: () => ({
       items: [],
@@ -260,7 +260,7 @@
       appendText: null,
 
       deleteDialog: false,
-      objectToDelete: null,
+      objectToDelete: null
     }),
     computed: {
       paginationLength () {
@@ -280,7 +280,7 @@
       },
       paginatedIcons () {
         return this.filteredIcons.slice((this.iconsPage - 1) * this.iconsPerPage, this.iconsPage * this.iconsPerPage)
-      },
+      }
     },
     mounted () {
       this.resetData()
@@ -294,7 +294,7 @@
       async resetData () {
         this.loading = true
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         this.items = response.data
@@ -309,7 +309,7 @@
 
         await this.axios.post(
           `${this.$store.state.mainUrl}/baseConfigurations/changeSequence`,
-          changedItem,
+          changedItem
         )
 
         this.$eventHub.$emit('updateIcons')
@@ -325,7 +325,7 @@
 
         await this.axios.put(
           `${this.$store.state.mainUrl}/baseConfigurations`,
-          currentItem,
+          currentItem
         )
 
         this.currentIconItem.icon = `${this.allMdi[icon]}`
@@ -342,14 +342,14 @@
         const rand = Math.floor(Math.random() * keys.length + 1)
         const newBase = {
           name: this.appendText,
-          icon: `${this.allMdi[keys[rand]]}`,
+          icon: `${this.allMdi[keys[rand]]}`
         }
 
         this.appendText = ''
 
         await this.axios.post(
           `${this.$store.state.mainUrl}/baseConfigurations`,
-          newBase,
+          newBase
         )
 
         this.$eventHub.$emit('updateIcons')
@@ -361,7 +361,7 @@
       },
       async deleteBase () {
         await this.axios.delete(
-          `${this.$store.state.mainUrl}/baseConfigurations/${this.objectToDelete.id}`,
+          `${this.$store.state.mainUrl}/baseConfigurations/${this.objectToDelete.id}`
         )
 
         this.objectToDelete = null
@@ -369,8 +369,8 @@
 
         this.$eventHub.$emit('updateIcons')
         await this.resetData()
-      },
-    },
+      }
+    }
   }
 </script>
 

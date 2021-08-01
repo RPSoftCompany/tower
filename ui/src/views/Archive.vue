@@ -152,7 +152,7 @@
   export default {
     name: 'Archive',
     components: {
-      comparisonTable,
+      comparisonTable
     },
     data: () => ({
       values: [],
@@ -168,13 +168,13 @@
         mdiFormatLetterCase,
         mdiFormatLetterCaseLower,
         mdiStar,
-        mdiStarOutline,
+        mdiStarOutline
       },
 
       promote: {
         show: false,
         promoted: false,
-        configuration: null,
+        configuration: null
       },
 
       configuration: {
@@ -185,9 +185,9 @@
         configInfo: 'Find your configuration',
         filter: {
           caseSensitive: false,
-          filter: null,
-        },
-      },
+          filter: null
+        }
+      }
     }),
     computed: {
       configInfo () {
@@ -196,12 +196,12 @@
         } else {
           return 'Find your configuration'
         }
-      },
+      }
     },
     async created () {
       this.configuration.loading = true
       const response = await this.axios.get(
-        `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+        `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
       )
 
       this.configuration.loading = false
@@ -242,7 +242,7 @@
         this.baseArray[sequenceNumber].loading = true
 
         const array = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${base}"}}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${base}"}}`
         )
 
         array.data.sort((a, b) => {
@@ -297,7 +297,7 @@
         filter = filter.substring(0, filter.length - 1)
 
         const configuration = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurations?filter={"where":{${filter}},"order":"version ASC"}`,
+          `${this.$store.state.mainUrl}/configurations?filter={"where":{${filter}},"order":"version ASC"}`
         )
 
         if (configuration.data.length > 0) {
@@ -309,7 +309,7 @@
             this.configurationVersions.push({
               version: config.version,
               effectiveDate: config.effectiveDate,
-              full: `#${config.version} - ${date}`,
+              full: `#${config.version} - ${date}`
             })
           })
         }
@@ -328,7 +328,7 @@
         filter += `"version":${this.configuration.version.version}`
 
         const configuration = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurations?filter={"where":{${filter}},"order":"version ASC"}`,
+          `${this.$store.state.mainUrl}/configurations?filter={"where":{${filter}},"order":"version ASC"}`
         )
 
         this.configuration.version = null
@@ -345,7 +345,7 @@
 
           if (found === undefined) {
             const details = await this.axios.get(
-              `${this.$store.state.mainUrl}/members/getUserDetails?userId=${configuration.data[0].createdBy}`,
+              `${this.$store.state.mainUrl}/members/getUserDetails?userId=${configuration.data[0].createdBy}`
             )
 
             if (details.status === 200) {
@@ -382,7 +382,7 @@
           ? this.promote.configuration.id : this.promote.configuration.data[0].id
 
         const configuration = await this.axios.post(
-          `${this.$store.state.mainUrl}/configurations/${id}/promote`,
+          `${this.$store.state.mainUrl}/configurations/${id}/promote`
         )
 
         if (this.promote.configuration.data === undefined) {
@@ -392,8 +392,8 @@
         }
 
         this.canPromote(configuration)
-      },
-    },
+      }
+    }
   }
 </script>
 

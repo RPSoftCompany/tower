@@ -24,25 +24,25 @@
     props: {
       src: {
         type: String,
-        required: true,
+        required: true
       },
       alt: {
         type: String,
-        required: true,
+        required: true
       },
       shown: {
         type: Boolean,
         required: false,
-        default: false,
-      },
+        default: false
+      }
     },
     data: pros => ({
       show: pros.shown,
       icons: {
         mdiChevronDown: mdiChevronDown,
-        mdiChevronUp: mdiChevronUp,
-      },
-    }),
+        mdiChevronUp: mdiChevronUp
+      }
+    })
   }
 </script>
 

@@ -25,14 +25,12 @@
     >
       <v-col
         cols="12"
-        sm="4"
-        style="max-width:389px;"
+        style="max-width:424px;"
       >
         <v-card :class="cardClass">
           <img
-            width="349"
+            width="384"
             src="@/assets/tower.png"
-            class="towerImage"
           >
           <v-card-text>
             <v-form
@@ -42,6 +40,7 @@
               <v-text-field
                 v-model="login"
                 data-cy="login"
+                autocomplete="Tower login username"
                 :prepend-icon="icons.mdiAccount"
                 :rules="rules.login"
                 :disabled="loginInputsDisabled"
@@ -50,11 +49,13 @@
                 name="login"
                 type="text"
                 required
+                @focus="invalidLogin = false"
                 @keyup.enter="submit"
               />
               <v-text-field
                 v-model="pass"
                 data-cy="password"
+                autocomplete="Tower login password"
                 :prepend-icon="icons.mdiLock"
                 :rules="rules.pass"
                 :disabled="loginInputsDisabled"
@@ -62,6 +63,7 @@
                 name="password"
                 type="password"
                 required
+                @focus="invalidLogin = false"
                 @keyup.enter="submit"
               />
             </v-form>
@@ -98,7 +100,7 @@
     data: () => ({
       icons: {
         mdiAccount,
-        mdiLock,
+        mdiLock
       },
 
       login: '',
@@ -109,15 +111,15 @@
       errorText: null,
 
       form: {
-        valid: false,
+        valid: false
       },
 
       rules: {
         login: [v => !!v || 'User is required'],
-        pass: [v => !!v || 'Password is required'],
+        pass: [v => !!v || 'Password is required']
       },
 
-      invalidLogin: false,
+      invalidLogin: false
     }),
     computed: {
       cardClass () {
@@ -128,29 +130,29 @@
         }
 
         return styleClass
-      },
+      }
     },
     async beforeCreate () {
       const response = await this.axios.get(
-        `${this.$store.state.mainUrl}/configurations/initialized`,
+        `${this.$store.state.mainUrl}/configurations/initialized`
       )
 
       if (response.status === 200) {
         this.$store.state.initialized = response.data
         if (this.$store.state.initialized === false) {
           await this.$router.push('/initialize')
+          return
         }
-
-        return
       }
 
-      let token = this.$cookie.get('token')
+      let token = this.$cookie.get('token', { domain: window.location.hostname,
+                                              samesite: 'Lax' })
       if (token) {
         token = JSON.parse(token)
         this.$store.commit('setUserData', token)
 
         const roles = await this.axios.get(
-          `${this.$store.state.mainUrl}/members/getUserRoles`,
+          `${this.$store.state.mainUrl}/members/getUserRoles`
         )
 
         this.$store.commit('setUserRoles', roles.data)
@@ -212,11 +214,11 @@
             `${this.$store.state.mainUrl}/members/login?include=user`,
             {
               username: this.login,
-              password: this.pass,
+              password: this.pass
             },
             {
-              timeout: 10000,
-            },
+              timeout: 10000
+            }
           )
 
           if (user !== undefined) {
@@ -224,10 +226,12 @@
 
             this.$store.commit('setUserData', user.data)
 
-            this.$cookie.set('token', JSON.stringify(user.data), { expires: `${user.data.ttl}s` })
+            this.$cookie.set('token', JSON.stringify(user.data), { expires: `${user.data.ttl}s`,
+                                                                   domain: window.location.hostname,
+                                                                   samesite: 'Lax' })
 
             const roles = await this.axios.get(
-              `${this.$store.state.mainUrl}/members/getUserRoles`,
+              `${this.$store.state.mainUrl}/members/getUserRoles`
             )
 
             this.$store.commit('setUserRoles', roles.data)
@@ -257,16 +261,12 @@
             this.errorText = 'Invalid user or password'
           }
         }
-      },
-    },
+      }
+    }
   }
 </script>
 
 <style lang="scss" scoped>
-.towerImage {
-  margin-left: 4px;
-}
-
 .makeItEven {
   margin-top: 0px !important;
   margin-bottom: 30px !important;
