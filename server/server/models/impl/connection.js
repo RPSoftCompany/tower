@@ -141,13 +141,13 @@ module.exports = class Connection {
             });
 
             if (tempConn.system === 'LDAP') {
-                tempConn.url = connection.url !== undefined ? connection.url : tempConn.url;
+                tempConn.url = connection.url ? connection.url : tempConn.url;
                 tempConn.bindDN = connection.bindDN ? connection.bindDN : tempConn.bindDN;
                 tempConn.bindCredentials = connection.bindCredentials ?
                     connection.bindCredentials : tempConn.bindCredentials;
                 tempConn.searchBase = connection.searchBase ?
                     connection.searchBase : tempConn.searchBase;
-                tempConn.enabled = connection.enabled ?
+                tempConn.enabled = connection.enabled !== undefined ?
                     connection.enabled : tempConn.enabled;
                 tempConn.usernameAttribute = connection.usernameAttribute ?
                     connection.usernameAttribute : tempConn.usernameAttribute;

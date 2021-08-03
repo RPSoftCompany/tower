@@ -683,7 +683,7 @@
 
         response.data.forEach(el => {
           const temp = el
-          temp.enabled = temp.enabled === undefined ? false : temp.enabled
+          temp.enabled = temp.enabled ? temp.enabled : false
 
           if (temp.system === 'LDAP') {
             this.ldap.enabled = temp.enabled
@@ -778,7 +778,7 @@
         )
       },
       async updateLdap () {
-        if (this.$refs.ldapForm.validate() && this.checkIfLdapValuesFilled()) {
+        if ((this.$refs.ldapForm.validate() && this.checkIfLdapValuesFilled()) || this.ldap.enabled === false) {
           await this.axios.patch(
             `${this.$store.state.mainUrl}/connections`,
             {
