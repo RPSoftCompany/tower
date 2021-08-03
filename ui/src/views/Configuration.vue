@@ -104,48 +104,59 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <div class="d-flex">
-      <v-progress-linear
-        v-if="bases.loading"
-        :height="3"
-        indeterminate
-      />
-      <v-autocomplete
+    <v-progress-linear
+      v-if="bases.loading"
+      :height="3"
+      indeterminate
+    />
+    <v-row
+      v-if="bases.items.length > 0"
+      no-gutters
+    >
+      <v-col
         v-for="base of bases.items"
         :key="base.name"
-        :ref="`baseConf_${base.name}`"
-        v-model="bases.baseValues[base.sequenceNumber]"
-        :prepend-icon="base.icon"
-        :label="base.name"
-        :items="bases.baseItems[base.sequenceNumber]"
-        :loading="baseLoading(base.sequenceNumber)"
-        :data-cy="`configuration_base_${base.name}`"
-        class="pa-2"
-        item-text="name"
-        clearable
-        autocomplete="off"
-        return-object
-        @change="fillNextArray(base.sequenceNumber)"
-      />
-    </div>
-    <div
-      v-if="bases.items.length === 0 && bases.loading === false"
+        class="pa-0"
+      >
+        <v-autocomplete
+          :ref="`baseConf_${base.name}`"
+          v-model="bases.baseValues[base.sequenceNumber]"
+          :prepend-icon="base.icon"
+          :label="base.name"
+          :items="bases.baseItems[base.sequenceNumber]"
+          :loading="baseLoading(base.sequenceNumber)"
+          :data-cy="`configuration_base_${base.name}`"
+          class="pa-2"
+          item-text="name"
+          clearable
+          autocomplete="off"
+          return-object
+          @change="fillNextArray(base.sequenceNumber)"
+        />
+      </v-col>
+    </v-row>
+    <v-row
+      class="d-flex"
     >
       <div
-        class="text-center text-h4 font-weight-light mt-5"
-        style="width: 100%"
+        v-if="bases.items.length === 0 && bases.loading === false"
       >
-        You need to configure your base items first
+        <div
+          class="text-center text-h4 font-weight-light mt-5"
+          style="width: 100%"
+        >
+          You need to configure your base items first
+        </div>
+        <div
+          class="text-center text-subtitle-1 font-weight-thin"
+          style="width: 100%"
+        >
+          Go to <router-link :to="{name: 'Settings', hash: '#base'}">
+            Settings > Base Models
+          </router-link>
+        </div>
       </div>
-      <div
-        class="text-center text-subtitle-1 font-weight-thin"
-        style="width: 100%"
-      >
-        Go to <router-link :to="{name: 'Settings', hash: '#base'}">
-          Settings > Base Models
-        </router-link>
-      </div>
-    </div>
+    </v-row>
     <v-progress-linear
       v-if="configuration.loading"
       :height="3"
@@ -538,6 +549,7 @@
       </div>
     </v-card>
   </div>
+  </v-container>
 </template>
 
 <script>
