@@ -314,8 +314,6 @@
 
         const d = new Date(`${date}T${time}`)
 
-        console.log(d.toISOString())
-
         const configuration = await this.axios.get(
           `${this.$store.state.mainUrl}/configurations/findByDate?filter={${filter}}&date=${d.toISOString()}`
         )
