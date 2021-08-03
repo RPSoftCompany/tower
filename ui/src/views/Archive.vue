@@ -43,43 +43,50 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <div class="d-flex">
-      <v-autocomplete
+    <v-row
+      v-if="baseArray.length > 0"
+      no-gutters
+    >
+      <v-col
         v-for="base of baseArray"
         :key="base.name"
-        v-model="values[base.sequenceNumber]"
-        :disabled="configuration.items.length > 3"
-        :prepend-icon="base.icon"
-        :label="base.name"
-        :loading="base.loading"
-        :items="arrayOfArrays[base.sequenceNumber]"
-        class="pa-2"
-        item-text="name"
-        clearable
-        autocomplete="off"
-        return-object
-        @change="fillNextArray(base.sequenceNumber)"
-      />
-      <v-autocomplete
-        v-if="baseArray.length > 0"
-        ref="versionCombo"
-        v-model="configuration.version"
-        :disabled="configuration.items.length > 3"
-        :loading="configuration.loadingVersions"
-        :items="configurationVersions"
-        :prepend-icon="icons.mdiNumeric"
-        class="pa-2"
-        autocomplete="off"
-        label="version"
-        item-text="full"
-        clearable
-        return-object
-        @change="getConfiguration"
-      />
-    </div>
-    <div class="headline font-weight-light text-center configurationTitle">
-      {{ configInfo }}
-    </div>
+        class="pa-0"
+      >
+        <v-autocomplete
+
+          v-model="values[base.sequenceNumber]"
+          :disabled="configuration.items.length > 3"
+          :prepend-icon="base.icon"
+          :label="base.name"
+          :loading="base.loading"
+          :items="arrayOfArrays[base.sequenceNumber]"
+          class="pa-2"
+          item-text="name"
+          clearable
+          autocomplete="off"
+          return-object
+          @change="fillNextArray(base.sequenceNumber)"
+        />
+      </v-col>
+      <v-col>
+        <v-autocomplete
+          v-if="baseArray.length > 0"
+          ref="versionCombo"
+          v-model="configuration.version"
+          :disabled="configuration.items.length > 3"
+          :loading="configuration.loadingVersions"
+          :items="configurationVersions"
+          :prepend-icon="icons.mdiNumeric"
+          class="pa-2"
+          autocomplete="off"
+          label="version"
+          item-text="full"
+          clearable
+          return-object
+          @change="getConfiguration"
+        />
+      </v-col>
+    </v-row>
     <v-progress-linear
       :active="configuration.loading"
       :height="3"

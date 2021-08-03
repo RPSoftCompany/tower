@@ -93,28 +93,32 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <div class="d-flex">
-      <v-autocomplete
+    <v-row
+      v-if="baseArray.length > 0"
+      no-gutters
+    >
+      <v-col
         v-for="base of baseArray"
-        ref="base"
         :key="base.name"
-        v-model="values[base.sequenceNumber]"
-        :loading="loading"
-        :disabled="configuration.items.length > 3"
-        :prepend-icon="base.icon"
-        :label="base.name"
-        :items="arrayOfArrays[base.sequenceNumber]"
-        class="pa-2"
-        item-text="name"
-        clearable
-        autocomplete="off"
-        return-object
-        @change="fillNextArray(base.sequenceNumber)"
-      />
-    </div>
-    <div class="headline font-weight-light text-center configurationTitle">
-      {{ configInfo }}
-    </div>
+        class="pa-0"
+      >
+        <v-autocomplete
+          ref="base"
+          v-model="values[base.sequenceNumber]"
+          :loading="loading"
+          :disabled="configuration.items.length > 3"
+          :prepend-icon="base.icon"
+          :label="base.name"
+          :items="arrayOfArrays[base.sequenceNumber]"
+          class="pa-2"
+          item-text="name"
+          clearable
+          autocomplete="off"
+          return-object
+          @change="fillNextArray(base.sequenceNumber)"
+        />
+      </v-col>
+    </v-row>
     <transition
       name="slowfade"
       mode="out-in"
