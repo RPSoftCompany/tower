@@ -93,28 +93,32 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <div class="d-flex">
-      <v-autocomplete
+    <v-row
+      v-if="baseArray.length > 0"
+      no-gutters
+    >
+      <v-col
         v-for="base of baseArray"
-        ref="base"
         :key="base.name"
-        v-model="values[base.sequenceNumber]"
-        :loading="loading"
-        :disabled="configuration.items.length > 3"
-        :prepend-icon="base.icon"
-        :label="base.name"
-        :items="arrayOfArrays[base.sequenceNumber]"
-        class="pa-2"
-        item-text="name"
-        clearable
-        autocomplete="off"
-        return-object
-        @change="fillNextArray(base.sequenceNumber)"
-      />
-    </div>
-    <div class="headline font-weight-light text-center configurationTitle">
-      {{ configInfo }}
-    </div>
+        class="pa-0"
+      >
+        <v-autocomplete
+          ref="base"
+          v-model="values[base.sequenceNumber]"
+          :loading="loading"
+          :disabled="configuration.items.length > 3"
+          :prepend-icon="base.icon"
+          :label="base.name"
+          :items="arrayOfArrays[base.sequenceNumber]"
+          class="pa-2"
+          item-text="name"
+          clearable
+          autocomplete="off"
+          return-object
+          @change="fillNextArray(base.sequenceNumber)"
+        />
+      </v-col>
+    </v-row>
     <transition
       name="slowfade"
       mode="out-in"
@@ -175,7 +179,7 @@
   export default {
     name: 'TimeArchive',
     components: {
-      comparisonTable,
+      comparisonTable
     },
     data: () => ({
       values: [],
@@ -198,16 +202,16 @@
         mdiFormatLetterCase,
         mdiFormatLetterCaseLower,
         mdiCalendar,
-        mdiClockOutline,
+        mdiClockOutline
       },
 
       configuration: {
         items: [],
         filter: {
           caseSensitive: false,
-          filter: null,
-        },
-      },
+          filter: null
+        }
+      }
     }),
     computed: {
       configInfo () {
@@ -225,11 +229,11 @@
         } else {
           return '24hr'
         }
-      },
+      }
     },
     async created () {
       const response = await this.axios.get(
-        `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+        `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
       )
 
       this.baseArray = response.data
@@ -245,7 +249,7 @@
     methods: {
       async getArrayFromBase (base, sequenceNumber) {
         const array = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${base}"}}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${base}"}}`
         )
 
         array.data.sort((a, b) => {
@@ -315,7 +319,7 @@
         const d = new Date(`${date}T${time}`)
 
         const configuration = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurations/findByDate?filter={${filter}}&date=${d.toUTCString()}`,
+          `${this.$store.state.mainUrl}/configurations/findByDate?filter={${filter}}&date=${d.toISOString()}`
         )
 
         if (configuration.data.effectiveDate === undefined) {
@@ -324,14 +328,14 @@
           return true
         } else {
           const details = await this.axios.get(
-            `${this.$store.state.mainUrl}/members/getUserDetails?userId=${configuration.data.createdBy}`,
+            `${this.$store.state.mainUrl}/members/getUserDetails?userId=${configuration.data.createdBy}`
           )
 
           if (details.data[0] !== null) {
             configuration.data.createdByUser = details.data.username
           }
 
-          configuration.data.effectiveDate = `${d.toUTCString()}`
+          configuration.data.effectiveDate = `${d.toISOString()}`
           configuration.data.__filter = filter
 
           if (index !== undefined) {
@@ -368,8 +372,8 @@
         await this.getConfiguration(this.date, this.time, this.configToTimeChange, filter)
 
         this.dialog = false
-      },
-    },
+      }
+    }
   }
 </script>
 

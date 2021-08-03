@@ -552,7 +552,7 @@
       icons: {
         mdiRegex,
         mdiPencil,
-        mdiDelete,
+        mdiDelete
       },
 
       ldap: {
@@ -577,8 +577,8 @@
             /^ldap[s]*:\/\/.+/.test(value) ||
             value === '' ||
             "Invalid URL, eg. 'ldap://localhost:389'",
-          required: value => !!value || 'Required.',
-        },
+          required: value => !!value || 'Required.'
+        }
       },
       Vault: {
         url: null,
@@ -592,18 +592,18 @@
           headers: [{
                       text: 'Model',
                       align: 'left',
-                      value: 'name',
+                      value: 'name'
                     },
                     {
                       text: 'Token',
                       align: 'left',
-                      value: 'token',
+                      value: 'token'
                     }],
           items: {},
-          filter: {},
+          filter: {}
         },
 
-        urlHint: "eg. 'http://localhost:8200'",
+        urlHint: "eg. 'http://localhost:8200'"
       },
       scp: {
         restTemplates: [],
@@ -617,9 +617,9 @@
         connections: [],
         availableBases: {},
         rules: {
-          required: value => !!value || 'Required.',
-        },
-      },
+          required: value => !!value || 'Required.'
+        }
+      }
     }),
     async mounted () {
       await this.resetData()
@@ -629,21 +629,21 @@
         this.Vault.bases = []
 
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/connections`,
+          `${this.$store.state.mainUrl}/connections`
         )
 
         this.scp.connections = []
 
         const basesResponse = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         const allBasesResponse = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC"}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC"}`
         )
 
         const restConfigurationsResponse = await this.axios.get(
-          `${this.$store.state.mainUrl}/restConfigurations?filter={"order":"url ASC"}`,
+          `${this.$store.state.mainUrl}/restConfigurations?filter={"order":"url ASC"}`
         )
 
         this.scp.restTemplates = restConfigurationsResponse.data
@@ -656,23 +656,23 @@
           this.scp.newItem[base.name] = null
           this.scp.headers.push({
             text: base.name,
-            value: base.name,
+            value: base.name
           })
         }
 
         this.scp.headers.push({
           text: 'Path',
-          value: 'path',
+          value: 'path'
         })
         this.scp.headers.push({
           text: 'Template',
-          value: 'template.url',
+          value: 'template.url'
         })
         this.scp.headers.push({
           text: 'Actions',
           value: 'actions',
           sortable: false,
-          align: 'end',
+          align: 'end'
         })
 
         allBasesResponse.data.forEach(el => {
@@ -683,7 +683,7 @@
 
         response.data.forEach(el => {
           const temp = el
-          temp.enabled = temp.enabled === undefined ? false : temp.enabled
+          temp.enabled = temp.enabled ? temp.enabled : false
 
           if (temp.system === 'LDAP') {
             this.ldap.enabled = temp.enabled
@@ -713,7 +713,7 @@
               authTypeRadio: temp.authType === 'userpass' ? 1 : 0,
               password: temp.password,
               key: temp.key,
-              items: temp.items,
+              items: temp.items
             }
 
             this.scp.connections.push(item)
@@ -723,19 +723,19 @@
         basesResponse.data.forEach(el => {
           this.Vault.bases.push(el)
           this.Vault.tokens[el.name] = {
-            items: [],
+            items: []
           }
         })
 
         const modelsResponse = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC"}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC"}`
         )
 
         modelsResponse.data.forEach(el => {
           this.Vault.tokens[el.base].items.push({
             base: el.base,
             name: el.name,
-            token: null,
+            token: null
           })
         })
 
@@ -752,8 +752,8 @@
           const response = await this.axios.get(
             `${this.$store.state.mainUrl}/connections/testConnection?type=LDAP`,
             {
-              timeout: 10000,
-            },
+              timeout: 10000
+            }
           )
 
           if (response) {
@@ -778,7 +778,7 @@
         )
       },
       async updateLdap () {
-        if (this.$refs.ldapForm.validate() && this.checkIfLdapValuesFilled()) {
+        if ((this.$refs.ldapForm.validate() && this.checkIfLdapValuesFilled()) || this.ldap.enabled === false) {
           await this.axios.patch(
             `${this.$store.state.mainUrl}/connections`,
             {
@@ -789,8 +789,8 @@
               searchBase: this.ldap.searchBase,
               enabled: this.ldap.enabled,
               usernameAttribute: this.ldap.usernameAttribute,
-              displayAttribute: this.ldap.displayAttribute,
-            },
+              displayAttribute: this.ldap.displayAttribute
+            }
           )
         }
       },
@@ -799,8 +799,8 @@
           const response = await this.axios.get(
             `${this.$store.state.mainUrl}/connections/testConnection?type=Vault`,
             {
-              timeout: 10000,
-            },
+              timeout: 10000
+            }
           )
 
           if (response) {
@@ -826,8 +826,8 @@
               globalToken: this.Vault.token,
               enabled: this.Vault.enabled,
               useGlobalToken: this.Vault.switch,
-              tokens: this.Vault.tokens.items,
-            },
+              tokens: this.Vault.tokens.items
+            }
           )
         }
       },
@@ -858,7 +858,7 @@
             name: 'New connection',
             id: -1,
             authTypeRadio: 0,
-            items: [],
+            items: []
           })
         }
 
@@ -892,7 +892,7 @@
         items.map(el => {
           el.template = {
             id: el.template.id,
-            url: el.template.url,
+            url: el.template.url
           }
         })
 
@@ -904,11 +904,11 @@
           host: connection.host,
           password: connection.password,
           items: items,
-          username: connection.username,
+          username: connection.username
         }
 
         const response = await this.axios.patch(
-          `${this.$store.state.mainUrl}/connections`, patchConnection,
+          `${this.$store.state.mainUrl}/connections`, patchConnection
         )
 
         if (response.status === 200) {
@@ -1011,8 +1011,8 @@
 
         this.scp.addItemDialog = false
         this.saveSCPConnection(connection)
-      },
-    },
+      }
+    }
   }
 </script>
 

@@ -104,48 +104,59 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <div class="d-flex">
-      <v-progress-linear
-        v-if="bases.loading"
-        :height="3"
-        indeterminate
-      />
-      <v-autocomplete
+    <v-progress-linear
+      v-if="bases.loading"
+      :height="3"
+      indeterminate
+    />
+    <v-row
+      v-if="bases.items.length > 0"
+      no-gutters
+    >
+      <v-col
         v-for="base of bases.items"
         :key="base.name"
-        :ref="`baseConf_${base.name}`"
-        v-model="bases.baseValues[base.sequenceNumber]"
-        :prepend-icon="base.icon"
-        :label="base.name"
-        :items="bases.baseItems[base.sequenceNumber]"
-        :loading="baseLoading(base.sequenceNumber)"
-        :data-cy="`configuration_base_${base.name}`"
-        class="pa-2"
-        item-text="name"
-        clearable
-        autocomplete="off"
-        return-object
-        @change="fillNextArray(base.sequenceNumber)"
-      />
-    </div>
-    <div
-      v-if="bases.items.length === 0 && bases.loading === false"
+        class="pa-0"
+      >
+        <v-autocomplete
+          :ref="`baseConf_${base.name}`"
+          v-model="bases.baseValues[base.sequenceNumber]"
+          :prepend-icon="base.icon"
+          :label="base.name"
+          :items="bases.baseItems[base.sequenceNumber]"
+          :loading="baseLoading(base.sequenceNumber)"
+          :data-cy="`configuration_base_${base.name}`"
+          class="pa-2"
+          item-text="name"
+          clearable
+          autocomplete="off"
+          return-object
+          @change="fillNextArray(base.sequenceNumber)"
+        />
+      </v-col>
+    </v-row>
+    <v-row
+      class="d-flex"
     >
       <div
-        class="text-center text-h4 font-weight-light mt-5"
-        style="width: 100%"
+        v-if="bases.items.length === 0 && bases.loading === false"
       >
-        You need to configure your base items first
+        <div
+          class="text-center text-h4 font-weight-light mt-5"
+          style="width: 100%"
+        >
+          You need to configure your base items first
+        </div>
+        <div
+          class="text-center text-subtitle-1 font-weight-thin"
+          style="width: 100%"
+        >
+          Go to <router-link :to="{name: 'Settings', hash: '#base'}">
+            Settings > Base Models
+          </router-link>
+        </div>
       </div>
-      <div
-        class="text-center text-subtitle-1 font-weight-thin"
-        style="width: 100%"
-      >
-        Go to <router-link :to="{name: 'Settings', hash: '#base'}">
-          Settings > Base Models
-        </router-link>
-      </div>
-    </div>
+    </v-row>
     <v-progress-linear
       v-if="configuration.loading"
       :height="3"
@@ -296,7 +307,7 @@
               "
             />
           </template>
-          <span>Change mode</span>
+          <span v-text="configuration.editMode === true ? 'Edit mode' : 'Design mode'" />
         </v-tooltip>
       </div>
       <v-divider
@@ -490,7 +501,7 @@
         >
           <v-col
             cols="4"
-            class="pa-0"
+            class="pa-0 pt-2"
           >
             <v-checkbox
               v-model="configuration.saveAsDraft"
@@ -500,7 +511,7 @@
           </v-col>
           <v-col
             cols="4"
-            class="pa-0"
+            class="pa-0 my-5"
             style="display: flex; justify-content: center"
           >
             <v-btn
@@ -538,6 +549,7 @@
       </div>
     </v-card>
   </div>
+  </v-container>
 </template>
 
 <script>
@@ -685,7 +697,8 @@
         }
 
         if (this.configuration.versions[this.configuration.maxVersion]) {
-          return this.configuration.versions[this.configuration.maxVersion].draft
+          return this.configuration.versions[this.configuration.maxVersion].draft &&
+            this.configuration.saveAsDraft === false
         }
 
         return false
@@ -795,6 +808,7 @@
                 const newObject = {}
                 Object.assign(newObject, variable)
                 newObject.deleted = true
+                allItems.push(newObject)
               }
             })
           }
@@ -964,10 +978,33 @@
         const baseName = this.bases.items[sequenceNumber].name
 
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${baseName}"}}`
+          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${baseName}"},"order":"name asc"}`
         )
         if (response.status === 200) {
-          this.bases.baseItems[sequenceNumber] = response.data
+          const allBases = {}
+          for (let baseI in this.bases.baseValues) {
+            if (this.bases.baseValues[baseI]?.name) {
+              allBases[this.bases.baseValues[baseI].base] = this.bases.baseValues[baseI].name
+            }
+          }
+
+          this.bases.baseItems[sequenceNumber] = response.data.filter(el => {
+            if (sequenceNumber > 0 && el.options?.hasRestrictions && el.options.hasRestrictions === true) {
+              const found = el.restrictions.find(restriction => {
+                let match = true
+                for (let key in allBases) {
+                  if (restriction[key] && restriction[key] !== allBases[key]) {
+                    match = false
+                  }
+                }
+
+                return match
+              })
+              return !!found
+            }
+
+            return true
+          })
         }
 
         this.bases.baseValues[sequenceNumber] = {

@@ -332,9 +332,9 @@ module.exports = class BaseConfiguration {
             throw new HttpErrors.BadRequest('Invalid filter');
         }
 
-        if (date !== undefined) {
+        if (date) {
             where.effectiveDate = {
-                le: new Date(date),
+                lt: new Date(date),
             };
         }
 

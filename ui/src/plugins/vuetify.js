@@ -8,11 +8,11 @@ export default new Vuetify({
     themes: {
       light: {
         primary: '#f2a52a',
-        secondary: '#525252',
-      },
-    },
+        secondary: '#525252'
+      }
+    }
   },
   icons: {
-    iconfont: 'mdiSvg',
-  },
+    iconfont: 'mdiSvg'
+  }
 })

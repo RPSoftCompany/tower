@@ -320,6 +320,9 @@ module.exports = class Configuration {
                 }
 
                 newObject[base.name] = config[base.name];
+            } else {
+                this.log('debug', 'createConfiguration', 'FINISHED');
+                throw new HttpErrors.BadRequest(`${config[base.name]} model can't be empty`);
             }
         }
 
@@ -327,9 +330,8 @@ module.exports = class Configuration {
 
         let rules = [];
 
-        for (let i = 1; i < allBases.length; i++) {
-            const base = allBases[i];
-            const parent = allBases[i - 1];
+        for (let i = 0; i < allBases.length; i++) {
+            const parent = allBases[i];
             const model = await configModel.findOneWithPermissions({
                 where: {
                     base: parent.name,
@@ -341,12 +343,28 @@ module.exports = class Configuration {
                 rules = [...rules, ...model.rules];
                 if (model.options !== null) {
                     if (model.options.hasRestrictions) {
-                        if (!model.restrictions.includes(config[base.name])) {
+                        let anyMatch = false;
+                        for (const restriction of model.restrictions) {
+                            let match = true;
+                            for (const base of allBases) {
+                                if (restriction[base.name] && restriction[base.name] !== config[base.name]) {
+                                    match = false;
+                                }
+                            }
+                            if (match === true) {
+                                anyMatch = true;
+                            }
+                        }
+                        if (anyMatch === false) {
                             this.log('debug', 'createConfiguration', 'FINISHED');
-                            throw new HttpErrors.BadRequest(`Model restrictions forbids this configuration`);
+                            throw new HttpErrors.BadRequest(`${model.name} model restriction forbids ` +
+                                `this configuration`);
                         }
                     }
                 }
+            } else {
+                this.log('debug', 'createConfiguration', 'FINISHED');
+                throw new HttpErrors.BadRequest(`Invalid value for model ${parent.name}`);
             }
         }
 
@@ -614,7 +632,7 @@ module.exports = class Configuration {
             return {};
         }
 
-        const variables = await constVariable.findForDate(filter, date, options);
+        const variables = await constVariable.findForDate(filter, givenDate, options);
 
         candConfig.variables.map((variable) => {
             const constVariable = variables.find( (el) => {

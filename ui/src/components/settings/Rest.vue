@@ -35,7 +35,8 @@
       <br><span class="font-weight-medium">v1</span> will serve you all your configuration variables regardless the url.
       <br><span class="font-weight-medium">v2</span> response, on the other hand, can be reduced to only the variables
       you want.
-      <br>You can read more about both of them in the Tower documentation.
+      <br>You can read more about both of them in the Tower
+      <a href="https://rpsoft.gitbook.io/tower/rest-templates/how-to">documentation</a>
       <v-divider class="my-2" />
       <div class="text-h5 font-weight-medium">
         New REST API url
@@ -66,7 +67,8 @@
         alt="Remove URL"
       />
       <v-divider class="my-2" />
-      You can read more about REST URLs and templates in Tower documentation.
+      You can read more about REST URLs and templates in Tower
+      <a href="https://rpsoft.gitbook.io/tower/rest-templates/templates">documentation</a>
     </template>
     <v-dialog
       v-model="deleteDialog.show"
@@ -372,7 +374,7 @@
       draggable,
       uiCard,
       gif,
-      'prism-editor': PrismEditor,
+      'prism-editor': PrismEditor
     },
     data: (props) => ({
       panel: null,
@@ -381,7 +383,7 @@
 
       deleteDialog: {
         show: false,
-        id: null,
+        id: null
       },
 
       bases: [],
@@ -389,15 +391,15 @@
       icons: {
         mdiDotsVertical,
         mdiPlus,
-        mdiDelete,
+        mdiDelete
       },
 
       newItem: {
-        url: null,
+        url: null
       },
       rules: {
         validateUrl: props.validateUrl,
-        required: (value) => !!value || 'Required.',
+        required: (value) => !!value || 'Required.'
       },
 
       newRowValid: true,
@@ -408,9 +410,9 @@
         newRowValid: true,
 
         newItem: {
-          url: null,
-        },
-      },
+          url: null
+        }
+      }
     }),
     computed: {
       addDisabled () {
@@ -447,7 +449,7 @@
         text = text.slice(0, -1)
 
         return text
-      },
+      }
     },
     mounted () {
       this.resetData()
@@ -457,9 +459,9 @@
         return highlight(
           code,
           {
-            ...languages.markup,
+            ...languages.markup
           },
-          'markup',
+          'markup'
         )
       },
       highlighterJson (code) {
@@ -467,9 +469,9 @@
           code,
           {
             ...languages.markup,
-            ...languages.json,
+            ...languages.json
           },
-          'markup',
+          'markup'
         )
       },
       highlighterXml (code) {
@@ -477,14 +479,14 @@
           code,
           {
             ...languages.markup,
-            ...languages.xml,
+            ...languages.xml
           },
-          'markup',
+          'markup'
         )
       },
       async resetData () {
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/restConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/restConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         if (response.status === 200 && response.data) {
@@ -498,7 +500,7 @@
         }
 
         const responseBase = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         this.bases = responseBase.data
@@ -539,12 +541,12 @@
         const newConfig = {
           url: this.newItem.url,
           template: '{\n%%forEach var in variables%%\n\t"%%var.name%%":"%%var.value%%"\n%%forEach END%%\n}',
-          returnType: 'json',
+          returnType: 'json'
         }
 
         await this.axios.post(
           `${this.$store.state.mainUrl}/restConfigurations`,
-          newConfig,
+          newConfig
         )
 
         this.newItem.url = null
@@ -558,12 +560,12 @@
           url: this.v2.newItem.url,
           template: '{\n%%forEach var in variables%%\n\t"%%var.name%%":"%%var.value%%"\n%%forEach END%%\n}',
           returnType: 'json',
-          type: 'v2',
+          type: 'v2'
         }
 
         await this.axios.post(
           `${this.$store.state.mainUrl}/restConfigurations`,
-          newConfig,
+          newConfig
         )
 
         this.v2.newItem.url = null
@@ -589,12 +591,12 @@
         if (type === 'v1') {
           await this.axios.put(
             `${this.$store.state.mainUrl}/restConfigurations`,
-            this.items[i],
+            this.items[i]
           )
         } else {
           await this.axios.put(
             `${this.$store.state.mainUrl}/restConfigurations`,
-            this.v2.items[i],
+            this.v2.items[i]
           )
         }
       },
@@ -608,7 +610,7 @@
 
         await this.axios.post(
           `${this.$store.state.mainUrl}/restConfigurations/changeSequence`,
-          changedItem,
+          changedItem
         )
       },
       showDeleteDialog (i, type) {
@@ -622,12 +624,12 @@
       },
       async deleteUrl () {
         await this.axios.delete(
-          `${this.$store.state.mainUrl}/restConfigurations/${this.deleteDialog.id}`,
+          `${this.$store.state.mainUrl}/restConfigurations/${this.deleteDialog.id}`
         )
 
         await this.resetData()
-      },
-    },
+      }
+    }
   }
 </script>
 

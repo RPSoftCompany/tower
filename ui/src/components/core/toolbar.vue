@@ -47,7 +47,7 @@
   export default {
     name: 'Toolbar',
     components: {
-      profileButton,
+      profileButton
     },
     computed: {
       route () {
@@ -55,8 +55,8 @@
           return this.$route.params.name
         }
         return this.$route.name
-      },
-    },
+      }
+    }
   }
 </script>
 

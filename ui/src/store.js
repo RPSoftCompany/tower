@@ -16,10 +16,10 @@ export default new Vuex.Store({
 
     error: {
       text: '',
-      show: false,
+      show: false
     },
 
-    initialized: false,
+    initialized: false
   },
   mutations: {
     setUserData (state, user) {
@@ -34,6 +34,6 @@ export default new Vuex.Store({
     },
     closeError (state) {
       state.error.show = false
-    },
-  },
+    }
+  }
 })

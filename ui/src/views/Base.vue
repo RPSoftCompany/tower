@@ -17,6 +17,35 @@
 <template>
   <div>
     <v-dialog
+      v-model="restrictions.invalidRestrictionDialog"
+      width="500"
+    >
+      <v-card>
+        <v-card-title class="headline red">
+          Invalid Restriction
+        </v-card-title>
+
+        <v-card-text
+          class="mt-3"
+        >
+          Restriction must have at least one model chosen
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="red"
+            text
+            @click="restrictions.invalidRestrictionDialog = false"
+          >
+            Ok
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
       v-model="deleteDialog.show"
       width="500"
       data-cy="deleteDialog"
@@ -101,7 +130,9 @@
           class="elevation-1"
         >
           <v-tab>Rules</v-tab>
-          <v-tab>Restrictions</v-tab>
+          <v-tab v-if="base && base.sequenceNumber && base.sequenceNumber !== 0">
+            Restrictions
+          </v-tab>
         </v-tabs>
         <v-tabs-items
           v-model="currentTab"
@@ -172,43 +203,92 @@
                 class="px-4"
                 @change="modifyOptions"
               />
-              <v-card class="restrictionList ma-4">
-                <v-text-field
-                  v-if="restrictions.hasRestrictions"
-                  v-model="restrictions.filter"
-                  :label="
-                    restrictions.caseSensitive
-                      ? 'Search (case sensitive)'
-                      : 'Search (case insensitive)'
-                  "
-                  :append-icon="
-                    restrictions.caseSensitive
-                      ? icons.mdiFormatLetterCaseLower
-                      : icons.mdiFormatLetterCase
-                  "
-                  outlined
-                  clearable
-                  dense
-                  class="px-4 pt-4"
-                  @click:append="
-                    restrictions.caseSensitive = !restrictions.caseSensitive
-                  "
+              <v-card
+                v-if="restrictions.hasRestrictions === true"
+                class="pa-4"
+              >
+                <v-row
+                  v-for="restriction of restrictions.items"
+                  :key="restriction.__id"
+                  class="d-flex"
+                >
+                  <v-col
+                    v-for="base of restrictions.bases.items"
+                    :key="base.name"
+                    class="pa-0"
+                  >
+                    <v-autocomplete
+                      v-model="restriction[base.name]"
+                      :items="restrictions.bases.baseItemNames[base.name]"
+                      :prepend-icon="base.icon"
+                      :label="base.name"
+                      class="pa-2"
+                      autocomplete="off"
+                      placeholder="ANY"
+                      persistent-placeholder
+                      clearable
+                      @change="modifyRestrictions(restriction.__id)"
+                    />
+                  </v-col>
+                  <v-col
+                    cols="1"
+                    md="auto"
+                  >
+                    <v-btn
+                      icon
+                      fab
+                      small
+                      @click="deleteRestriction(restriction.__id)"
+                    >
+                      <v-icon>
+                        {{ icons.mdiMinus }}
+                      </v-icon>
+                    </v-btn>
+                  </v-col>
+                </v-row>
+                <v-divider
+                  v-if="restrictions.items.length > 0"
+                  class="pb-3"
                 />
-                <v-data-table
-                  v-if="restrictions.hasRestrictions"
-                  v-model="restrictions.table.selected"
-                  :headers="restrictions.table.headers"
-                  :items="restrictions.table.items"
-                  :disabled="!isEditable"
-                  :hide-default-footer="true"
-                  :single-select="false"
-                  :search="restrictions.filter"
-                  :custom-filter="restrictionList"
-                  show-select
-                  class="elevation-1"
-                  @item-selected="modifyRestriction"
-                  @toggle-select-all="modifyAllRestrictions"
-                />
+                <v-row class="mt-2">
+                  <v-col
+                    v-for="base of restrictions.bases.items"
+                    :key="base.name"
+                    class="pa-0"
+                  >
+                    <v-autocomplete
+
+                      v-model="restrictions.bases.baseValues[base.name]"
+                      :items="restrictions.bases.baseItems[base.sequenceNumber]"
+                      :prepend-icon="base.icon"
+                      :label="base.name"
+                      class="pa-2"
+                      item-text="name"
+                      autocomplete="off"
+                      return-object
+                      placeholder="ANY"
+                      persistent-placeholder
+                      clearable
+                      @change="checkIfEnableAddRestrictions"
+                    />
+                  </v-col>
+                  <v-col
+                    cols="1"
+                    md="auto"
+                  >
+                    <v-btn
+                      icon
+                      fab
+                      small
+                      :disabled="!restrictions.canAddRestriction"
+                      @click="addRestriction"
+                    >
+                      <v-icon>
+                        {{ icons.mdiPlus }}
+                      </v-icon>
+                    </v-btn>
+                  </v-col>
+                </v-row>
               </v-card>
               <v-divider />
             </v-card>
@@ -223,21 +303,27 @@
   import rule from '../components/base/advancedRule'
   import {
     mdiPlus,
+    mdiMinus,
     mdiDelete,
     mdiFormatLetterCase,
-    mdiFormatLetterCaseLower,
+    mdiFormatLetterCaseLower
   } from '@mdi/js'
 
   export default {
     name: 'Base',
     components: { 'v-rule': rule },
     data: () => ({
-      base: null,
+      base: {
+        name: null,
+        sequenceNumber: null,
+        id: null,
+        icon: null
+      },
       models: [],
 
       deleteDialog: {
         show: false,
-        loading: false,
+        loading: false
       },
 
       currentModel: null,
@@ -249,39 +335,39 @@
 
       icons: {
         mdiPlus,
+        mdiMinus,
         mdiDelete,
         mdiFormatLetterCase,
-        mdiFormatLetterCaseLower,
+        mdiFormatLetterCaseLower
       },
       rules: {
         items: [],
         filter: '',
-        caseSensitive: false,
+        caseSensitive: false
       },
       variables: {
         items: [],
         filter: '',
-        caseSensitive: false,
+        caseSensitive: false
       },
       constantVariables: {
-        items: [],
+        items: []
       },
       restrictions: {
+        bases: {
+          items: [],
+          baseItems: [],
+          baseItemNames: {},
+          baseValues: {}
+        },
+        canAddRestriction: false,
         hasRestrictions: false,
         filter: '',
         caseSensitive: false,
-        table: {
-          headers: [
-            {
-              text: 'Restriction',
-              align: 'left',
-              value: 'name',
-            },
-          ],
-          items: [],
-          selected: [],
-        },
-      },
+        items: [],
+        itemsBackup: [],
+        invalidRestrictionDialog: false
+      }
     }),
     computed: {
       appendIcon () {
@@ -299,7 +385,7 @@
         return undefined
       },
       baseIcon () {
-        if (this.base === null) {
+        if (!this.base) {
           return null
         } else {
           return this.base.icon
@@ -359,13 +445,13 @@
             }
           })
         }
-      },
+      }
     },
     async mounted () {
       this.loading = true
       if (this.$store.state.userRoles === undefined) {
         const roles = await this.axios.get(
-          `${this.$store.state.mainUrl}/members/getUserRoles`,
+          `${this.$store.state.mainUrl}/members/getUserRoles`
         )
 
         this.$store.commit('setUserRoles', roles.data)
@@ -373,18 +459,15 @@
       await this.setData()
     },
     methods: {
-      restrictionList (value, search) {
-        if (value === undefined) {
-          return false
+      checkIfEnableAddRestrictions () {
+        if (Object.keys(this.restrictions.bases.baseValues).length === 0) {
+          this.restrictions.canAddRestriction = false
         } else {
-          if (!this.restrictions.caseSensitive) {
-            return value
-              .toString()
-              .toUpperCase()
-              .includes(search.toUpperCase())
-          } else {
-            return value.toString().includes(search)
-          }
+          const array = Object.keys(this.restrictions.bases.baseValues).find(el => {
+            return !!this.restrictions.bases.baseValues[el]
+          })
+
+          this.restrictions.canAddRestriction = !!array
         }
       },
       async setData () {
@@ -392,30 +475,30 @@
         const baseName = this.$route.params.name
 
         const modelData = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base":"${baseName}"},"order":"name ASC"}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base":"${baseName}"},"order":"name ASC"}`
         )
 
         this.models = modelData.data
 
         const base = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"where":{"name":"${baseName}"},"order":"name ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"where":{"name":"${baseName}"},"order":"name ASC"}`
         )
         this.base = base.data[0]
 
         this.loading = false
       },
       async modelChanged (data) {
-        if (data !== undefined) {
-          if (this.$refs.newVariable !== undefined) {
+        if (data) {
+          if (this.$refs.newVariable) {
             this.$refs.newVariable.reset()
           }
 
-          if (this.$refs.newRule !== undefined) {
+          if (this.$refs.newRule) {
             this.$refs.newRule.reset()
           }
 
           const modelData = await this.axios.get(
-            `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"id":"${data.id}"}}`,
+            `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"id":"${data.id}"}}`
           )
 
           this.currentModel = modelData.data[0]
@@ -426,32 +509,43 @@
           })
 
           this.restrictions.hasRestrictions = this.currentModel.options.hasRestrictions
+          this.restrictions.bases.baseValues = {}
+          this.restrictions.bases.baseItemNames = {}
 
-          const childBase = await this.axios.get(
-            `${
-              this.$store.state.mainUrl
-            }/baseConfigurations?filter={"where":{"sequenceNumber":"${this.base
-              .sequenceNumber + 1}"}}`,
-          )
+          if (this.base.sequenceNumber !== 0) {
+            this.restrictions.items = this.currentModel.restrictions
 
-          if (childBase.data.length > 0) {
-            const childBaseName = childBase.data[0].name
+            const allBases = await this.axios.get(
+              `${
+                this.$store.state.mainUrl
+              }/baseConfigurations?filter={"order":"sequenceNumber asc"}`)
 
-            const children = await this.axios.get(
-              `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base":"${childBaseName}"}}`,
-            )
-
-            if (children !== undefined) {
-              this.restrictions.table.items = children.data
-              this.restrictions.table.selected = []
-              this.restrictions.table.items.forEach(el => {
-                if (this.currentModel.restrictions !== undefined) {
-                  if (this.currentModel.restrictions.includes(el.name)) {
-                    this.restrictions.table.selected.push(el)
-                  }
-                }
+            if (allBases.status === 200) {
+              this.restrictions.bases.items = allBases.data.filter(el => {
+                return el.sequenceNumber < this.base.sequenceNumber
               })
             }
+
+            for (let i = 0; i < this.restrictions.bases.items.length; i++) {
+              const baseI = this.restrictions.bases.items[i]
+              const response = await this.axios.get(`${this.$store.state.mainUrl}/configurationModels?filter=` +
+                `{"where":{"base":"${baseI.name}"}}`)
+              if (response.status === 200) {
+                this.restrictions.bases.baseItems[i] = response.data
+                this.restrictions.bases.baseValues[baseI.name] = null
+                this.restrictions.bases.baseItemNames[baseI.name] = []
+                response.data.forEach(el => {
+                  this.restrictions.bases.baseItemNames[baseI.name].push(el.name)
+                })
+              }
+            }
+
+            this.restrictions.itemsBackup = []
+            this.restrictions.items.forEach(el => {
+              this.restrictions.itemsBackup.push(Object.assign({}, el))
+            })
+
+            this.$forceUpdate()
           }
         } else {
           this.currentModel = null
@@ -464,7 +558,13 @@
           this.variables.caseSensitive = false
 
           this.restrictions.hasRestrictions = false
-          this.restrictions.table.selected = []
+
+          this.restrictions.items = []
+          this.restrictions.itemsBackup = []
+          this.restrictions.bases.items = []
+          this.restrictions.bases.baseItems = []
+          this.restrictions.bases.baseValues = {}
+          this.restrictions.bases.baseItemNames = {}
         }
       },
       async deleteModel () {
@@ -481,11 +581,11 @@
         this.deleteDialog.show = false
       },
       async addOrDeleteModel () {
-        if (this.modelText === '' || this.modelText === null) {
+        if (!this.modelText) {
           return
         }
 
-        if (this.currentModel !== null && this.modelText === this.currentModel.name) {
+        if (this.currentModel && this.modelText === this.currentModel.name) {
           this.deleteDialog.show = true
           return
         }
@@ -503,9 +603,9 @@
             defaultValues: [],
             base: this.base.name,
             options: {
-              hasRestrictions: false,
-            },
-          },
+              hasRestrictions: false
+            }
+          }
         )
 
         this.models.push(newModel.data)
@@ -526,8 +626,8 @@
             conditionValue: data.conditionValue,
             conditionType: data.conditionType,
             conditionRegEx: data.conditionRegEx,
-            error: data.errorMessage,
-          },
+            error: data.errorMessage
+          }
         )
 
         if (rule !== undefined) {
@@ -540,7 +640,7 @@
       async deleteRule (data) {
         const id = data.id
         const rule = await this.axios.delete(
-          `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id}/rule?ruleId=${id}`,
+          `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id}/rule?ruleId=${id}`
         )
 
         if (rule !== undefined) {
@@ -560,8 +660,8 @@
             conditionValue: data.conditionValue,
             conditionType: data.conditionType,
             conditionRegEx: data.conditionRegEx,
-            error: data.errorMessage,
-          },
+            error: data.errorMessage
+          }
         )
       },
       async addVariable (data) {
@@ -569,8 +669,8 @@
           `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id}/variable`,
           {
             name: data.name,
-            value: data.value,
-          },
+            value: data.value
+          }
         )
 
         if (variable !== undefined) {
@@ -584,7 +684,7 @@
       async removeVariable (data) {
         const id = data.id
         const variable = await this.axios.delete(
-          `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id}/variable?variableId=${id}`,
+          `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id}/variable?variableId=${id}`
         )
 
         if (variable !== undefined) {
@@ -599,46 +699,125 @@
           {
             _id: data.id,
             name: data.name,
-            value: data.value,
-          },
+            value: data.value
+          }
         )
       },
       async modifyOptions (restrictions) {
         await this.axios.patch(
           `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id}/options`,
           {
-            hasRestrictions: restrictions,
-          },
+            hasRestrictions: restrictions
+          }
         )
       },
-      async modifyRestriction (data) {
-        if (data.value === true) {
-          await this.axios.post(
-            `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id
-            }/restriction?restriction=${data.item.name}`,
-          )
-        } else {
-          await this.axios.delete(
-            `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id
-            }/restriction?restriction=${data.item.name}`,
-          )
+      async addRestriction () {
+        const item = {
+          __id: Math.random().toString(36).replace(/[^a-z]+/g, '')
         }
-      },
-      async modifyAllRestrictions (data) {
-        for (const rest of this.restrictions.table.items) {
-          const newData = {
-            value: data.value,
-            item: rest,
+
+        for (let key in this.restrictions.bases.baseValues) {
+          item[key] = this.restrictions.bases.baseValues[key] ? this.restrictions.bases.baseValues[key].name : null
+        }
+
+        let ret = false
+
+        this.restrictions.items.forEach(el => {
+          let same = true
+          Object.keys(el).forEach(key => {
+            if (key !== '__id') {
+              if (el[key] && el[key] !== item[key]) {
+                same = false
+              }
+            }
+          })
+
+          if (same) {
+            ret = true
           }
-          await this.modifyRestriction(newData)
+        })
+
+        if (ret === true) {
+          this.restrictions.bases.baseValues = {}
+          this.restrictions.canAddRestriction = false
+          return
         }
+
+        this.restrictions.items.push(item)
+        this.restrictions.itemsBackup.push(Object.assign({}, item))
+
+        await this.axios.post(
+          `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id
+          }/restriction`, item
+        )
+
+        this.restrictions.bases.baseValues = {}
+        this.restrictions.canAddRestriction = false
       },
-    },
+      async deleteRestriction (id) {
+        this.restrictions.items = this.restrictions.items.filter(el => {
+          return el.__id !== id
+        })
+
+        this.restrictions.itemsBackup = this.restrictions.itemsBackup.filter(el => {
+          return el.__id !== id
+        })
+
+        await this.axios.delete(
+          `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id
+          }/restriction?restrictionId=${id}`
+        )
+      },
+      async modifyRestrictions (data) {
+        const found = this.restrictions.items.find(el => {
+          return el.__id === data
+        })
+
+        let allNull = true
+
+        Object.keys(found).forEach(key => {
+          if (key !== '__id') {
+            if (found[key]) {
+              allNull = false
+            }
+          }
+        })
+
+        if (allNull === true) {
+          this.restrictions.invalidRestrictionDialog = true
+
+          this.$nextTick(() => {
+            this.restrictions.items = []
+            this.restrictions.itemsBackup.forEach(el => {
+              this.restrictions.items.push(Object.assign({}, el))
+            })
+            this.$forceUpdate()
+          })
+        } else {
+          this.restrictions.itemsBackup.map(el => {
+            if (el.__id === data) {
+              el = Object.assign({}, found)
+            }
+
+            return el
+          })
+
+          await this.axios.patch(
+            `${this.$store.state.mainUrl}/configurationModels/${this.currentModel.id
+            }/restriction`, found
+          )
+        }
+      }
+    }
   }
 </script>
 
 <style scoped>
 .halfWidth {
   width: 50%;
+}
+
+.test {
+  color: gray
 }
 </style>

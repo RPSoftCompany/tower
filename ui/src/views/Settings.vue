@@ -122,7 +122,7 @@
 
   import {
     mdiAccount, mdiAccountGroup, mdiDatabaseEdit,
-    mdiTransitConnection, mdiHook, mdiSecurity, mdiPackageUp, mdiFolderKeyNetworkOutline,
+    mdiTransitConnection, mdiHook, mdiSecurity, mdiPackageUp, mdiFolderKeyNetworkOutline
   } from '@mdi/js'
 
   export default {
@@ -135,7 +135,7 @@
       PermissionsSettings,
       PromotionSettings,
       GroupsSettings,
-      ConnectionsSettings,
+      ConnectionsSettings
     },
     data: () => ({
       tab: null,
@@ -147,15 +147,15 @@
         mdiHook,
         mdiSecurity,
         mdiPackageUp,
-        mdiFolderKeyNetworkOutline,
-      },
+        mdiFolderKeyNetworkOutline
+      }
     }),
     watch: {
       tab (actual) {
         if (this.$refs[actual] !== undefined) {
           this.$refs[actual].resetData()
         }
-      },
+      }
     },
     mounted () {
       let tab = this.$route.hash
@@ -163,6 +163,6 @@
         tab = tab.slice(1, tab.length)
         this.tab = tab
       }
-    },
+    }
   }
 </script>

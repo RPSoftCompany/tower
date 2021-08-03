@@ -695,7 +695,7 @@ module.exports = class ConfigurationModel {
      * Adds new restriction to model
      *
      * @param {string} modelId Model id
-     * @param {string} restriction variable to add
+     * @param {object} restriction variable to add
      * @param {object} options options from request
      */
     async addRestriction(modelId, restriction, options) {
@@ -721,8 +721,22 @@ module.exports = class ConfigurationModel {
             model.restrictions = [];
         }
 
+        model.options.hasRestrictions = true;
+
+        if (!restriction.__id) {
+            restriction.__id = Math.random().toString(36).replace(/[^a-z]+/g, '');
+        }
+
         const isIn = model.restrictions.find((el) => {
-            return el.name === restriction;
+            let same = true;
+            Object.keys(restriction).forEach( (key) => {
+                if (key !== '__id') {
+                    if (el[key]) {
+                        same = false;
+                    }
+                }
+            });
+            return same;
         });
 
         if (isIn === undefined) {
@@ -731,18 +745,16 @@ module.exports = class ConfigurationModel {
         }
 
         this.log('debug', 'addRestriction', 'FINISHED');
-
-        return;
     }
 
     /**
      * Remove restriction from model
      *
      * @param {string} modelId Model id
-     * @param {string} restriction variable to remove
+     * @param {string} restrictionId variable to remove
      * @param {object} options options from request
      */
-    async removeRestriction(modelId, restriction, options) {
+    async removeRestriction(modelId, restrictionId, options) {
         this.log('debug', 'removeRestriction', 'STARTED');
 
         const model = await this.findOneWithPermissions({
@@ -766,13 +778,54 @@ module.exports = class ConfigurationModel {
         }
 
         model.restrictions = model.restrictions.filter((el) => {
-            return el !== restriction;
+            return el.__id !== restrictionId;
         });
 
         await model.save();
 
         this.log('debug', 'removeRestriction', 'FINISHED');
+    }
 
-        return;
+    /**
+     * Modify restriction in model
+     *
+     * @param {string} modelId Model id
+     * @param {object} restriction variable to remove
+     * @param {object} options options from request
+     */
+    async modifyRestriction(modelId, restriction, options) {
+        this.log('debug', 'modifyRestriction', 'STARTED');
+
+        const model = await this.findOneWithPermissions({
+            where: {
+                id: modelId,
+            },
+        }, options);
+
+        if (model === null) {
+            this.log('debug', 'modifyRestriction', 'FINISHED');
+            throw new HttpErrors.BadRequest('Invalid model id');
+        }
+
+        if (!await this.validateWritePermissions(model.base, model.name, options.accessToken.userId)) {
+            this.log('debug', 'modifyRestriction', 'FINISHED');
+            throw new HttpErrors.Unauthorized();
+        }
+
+        if (model.restrictions === undefined) {
+            model.restrictions = [];
+        }
+
+        model.restrictions = model.restrictions.map((el) => {
+            if (el.__id === restriction.__id) {
+                el = restriction;
+            }
+
+            return el;
+        });
+
+        await model.save();
+
+        this.log('debug', 'modifyRestriction', 'FINISHED');
     }
 };

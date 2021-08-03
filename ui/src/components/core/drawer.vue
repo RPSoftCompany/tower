@@ -27,99 +27,121 @@
   >
     <v-list
       v-if="mainLinksPerm.length > 0"
+      nav
       dense
     >
-      <v-list-item
-        v-for="obj of mainLinksPerm"
-        :key="obj.name"
-        :to="obj.path"
-        :class="{ maxWidth: mini, fullWidth: !mini }"
-        :data-cy="`configuration-${obj.name}`"
-        link
+      <v-list-item-group
         color="primary"
       >
-        <v-list-item-icon class="maxWidth">
-          <v-icon
-            class="text-left"
-            style="min-width: 24px"
+        <v-list-item
+          v-for="obj of mainLinksPerm"
+          :key="obj.name"
+          :to="obj.path"
+          :class="{ maxWidth: mini, fullWidth: !mini }"
+          :data-cy="`configuration-${obj.name}`"
+          link
+          :ripple="false"
+        >
+          <v-list-item-icon
+            class="maxWidth"
           >
-            {{ obj.icon }}
-          </v-icon>
-          <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">{{ obj.name }}</span>
-        </v-list-item-icon>
-      </v-list-item>
+            <v-icon
+              class="text-left"
+              style="min-width: 24px"
+            >
+              {{ obj.icon }}
+            </v-icon>
+            <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">{{ obj.name }}</span>
+          </v-list-item-icon>
+        </v-list-item>
+      </v-list-item-group>
     </v-list>
     <v-divider v-if="mainLinksPerm.length > 0" />
     <v-list
       dense
+      nav
     >
-      <v-list-item
-        v-for="obj of archiveLinks"
-        :key="obj.name"
-        :to="obj.path"
-        :class="{ maxWidth: mini, fullWidth: !mini }"
-        link
+      <v-list-item-group
         color="primary"
-      >
-        <v-list-item-icon class="maxWidth">
-          <v-icon
-            class="text-left"
-            style="min-width: 24px"
-          >
-            {{ obj.icon }}
-          </v-icon>
-          <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">{{ obj.name }}</span>
-        </v-list-item-icon>
-      </v-list-item>
-    </v-list>
-    <v-divider />
-    <v-list
-      v-if="baseModelLinks.length > 0"
-      dense
-    >
-      <v-list-item
-        v-for="obj of baseModelLinks"
-        :key="obj.name"
-        :data-cy="`menuBase-${obj.name}`"
-        :to="obj.path"
-        :class="{ maxWidth: mini }"
-        link
-        color="primary"
-      >
-        <v-list-item-icon class="maxWidth">
-          <v-icon
-            class="text-left"
-            style="min-width: 24px"
-          >
-            {{ obj.icon }}
-          </v-icon>
-          <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">{{ obj.name }}</span>
-        </v-list-item-icon>
-      </v-list-item>
-    </v-list>
-    <v-divider v-if="baseModelLinks.length > 0" />
-    <template v-slot:append>
-      <v-list
-        v-if="isAdmin"
-        dense
       >
         <v-list-item
-          key="Settings"
-          :class="{ maxWidth: mini }"
+          v-for="obj of archiveLinks"
+          :key="obj.name"
+          :to="obj.path"
+          :class="{ maxWidth: mini, fullWidth: !mini }"
           link
-          to="/settings"
-          color="primary"
+          :ripple="false"
         >
           <v-list-item-icon class="maxWidth">
             <v-icon
               class="text-left"
               style="min-width: 24px"
             >
-              {{ configurationIcon }}
+              {{ obj.icon }}
             </v-icon>
-            <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">Settings</span>
+            <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">{{ obj.name }}</span>
           </v-list-item-icon>
         </v-list-item>
+      </v-list-item-group>
+    </v-list>
+    <v-divider />
+    <v-list
+      v-if="baseModelLinks.length > 0"
+      dense
+      nav
+    >
+      <v-list-item-group
+        color="primary"
+      >
+        <v-list-item
+          v-for="obj of baseModelLinks"
+          :key="obj.name"
+          :data-cy="`menuBase-${obj.name}`"
+          :to="obj.path"
+          :class="{ maxWidth: mini }"
+          link
+          :ripple="false"
+        >
+          <v-list-item-icon class="maxWidth">
+            <v-icon
+              class="text-left"
+              style="min-width: 24px"
+            >
+              {{ obj.icon }}
+            </v-icon>
+            <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">{{ obj.name }}</span>
+          </v-list-item-icon>
+        </v-list-item>
+      </v-list-item-group>
+    </v-list>
+    <v-divider v-if="baseModelLinks.length > 0" />
+    <template v-slot:append>
+      <v-list
+        v-if="isAdmin"
+        dense
+        nav
+      >
+        <v-list-item-group
+          color="primary"
+        >
+          <v-list-item
+            key="Settings"
+            :class="{ maxWidth: mini }"
+            link
+            to="/settings"
+            :ripple="false"
+          >
+            <v-list-item-icon class="maxWidth">
+              <v-icon
+                class="text-left"
+                style="min-width: 24px"
+              >
+                {{ configurationIcon }}
+              </v-icon>
+              <span :class="{ 'v-list-item__title': true, 'hidden': mini, 'shown': !mini }">Settings</span>
+            </v-list-item-icon>
+          </v-list-item>
+        </v-list-item-group>
       </v-list>
     </template>
   </v-navigation-drawer>
@@ -132,24 +154,25 @@
     name: 'Drawer',
     data: () => ({
       mini: true,
+      navigation: null,
       mainLinks: [
         {
           name: 'Configuration',
           path: '/configuration',
-          icon: mdiSettings,
-        },
+          icon: mdiSettings
+        }
       ],
       archives: [{
         name: 'Version Archive',
         path: '/archive',
-        icon: mdiArchive,
+        icon: mdiArchive
       }, {
         name: 'Time Archive',
         path: '/timearchive',
-        icon: mdiCalendarClock,
+        icon: mdiCalendarClock
       }],
       baseModelLinks: [],
-      configurationIcon: mdiTune,
+      configurationIcon: mdiTune
     }),
     computed: {
       isAdmin () {
@@ -193,12 +216,12 @@
         }
 
         return []
-      },
+      }
     },
     watch: {
       $route () {
         this.updateBaseLinks()
-      },
+      }
     },
     created () {
       this.updateBaseLinks()
@@ -229,7 +252,7 @@
 
         const links = []
         const base = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         base.data.forEach(el => {
@@ -240,7 +263,7 @@
             links.push({
               name: el.name,
               path: `/base/${el.name}`,
-              icon: el.icon,
+              icon: el.icon
             })
           }
         })
@@ -258,7 +281,7 @@
       },
       async updateIcons () {
         const base = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         this.baseModelLinks = []
@@ -267,11 +290,11 @@
           this.baseModelLinks.push({
             name: el.name,
             path: `/base/${el.name}`,
-            icon: el.icon,
+            icon: el.icon
           })
         })
-      },
-    },
+      }
+    }
   }
 </script>
 

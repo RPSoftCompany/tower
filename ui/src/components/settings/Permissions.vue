@@ -60,10 +60,10 @@
           {
             text: 'Enable Permissions',
             align: 'left',
-            value: 'name',
-          },
-        ],
-      },
+            value: 'name'
+          }
+        ]
+      }
     }),
     async mounted () {
       await this.resetData()
@@ -73,22 +73,22 @@
         this.bases = []
 
         const basesResponse = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         const modelsResponse = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC"}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC"}`
         )
 
         const rolesResponse = await this.axios.get(
           `${this.$store.state.mainUrl
-          }/Roles?filter={"order":"name ASC","where":{"name":{"like":"configurationModel."}}}`,
+          }/Roles?filter={"order":"name ASC","where":{"name":{"like":"configurationModel."}}}`
         )
 
         basesResponse.data.forEach(base => {
           this.permissions.models[base.name] = {
             items: [],
-            selected: [],
+            selected: []
           }
         })
 
@@ -117,25 +117,25 @@
         const constName = `constantVariable.${data.item.base}.${data.item.name}`
         if (data.value === true) {
           await this.axios.post(`${this.$store.state.mainUrl}/Roles`, {
-            name: `${roleName}.view`,
+            name: `${roleName}.view`
           })
 
           await this.axios.post(`${this.$store.state.mainUrl}/Roles`, {
-            name: `${roleName}.modify`,
+            name: `${roleName}.modify`
           })
 
           await this.axios.post(`${this.$store.state.mainUrl}/Roles`, {
-            name: `${constName}.modify`,
+            name: `${constName}.modify`
           })
         } else {
           const rolesResponse = await this.axios.get(
             `${this.$store.state.mainUrl}/Roles?filter={"order":"name ASC","where":{"name":{"regexp":` +
-              `"^(configurationModel|constantVariable).${data.item.base}.${data.item.name}.(view|modify)$"}}}`,
+              `"^(configurationModel|constantVariable).${data.item.base}.${data.item.name}.(view|modify)$"}}}`
           )
 
           for (const role of rolesResponse.data) {
             this.axios.delete(
-              `${this.$store.state.mainUrl}/Roles/${role.id}`,
+              `${this.$store.state.mainUrl}/Roles/${role.id}`
             )
           }
         }
@@ -146,14 +146,14 @@
           const value = `configurationModel.${base}.${model.name}`
           if (data.value) {
             this.axios.patch(`${this.$store.state.mainUrl}/Roles`, {
-              name: `${value}.view`,
+              name: `${value}.view`
             })
             this.axios.patch(`${this.$store.state.mainUrl}/Roles`, {
-              name: `${value}.modify`,
+              name: `${value}.modify`
             })
           } else {
             const rolesResponse = await this.axios.get(
-              `${this.$store.state.mainUrl}/Roles?filter={"order":"name ASC","where":{"name":{"like":"${value}."}}}`,
+              `${this.$store.state.mainUrl}/Roles?filter={"order":"name ASC","where":{"name":{"like":"${value}."}}}`
             )
 
             rolesResponse.data.forEach(async role => {
@@ -161,7 +161,7 @@
             })
           }
         })
-      },
-    },
+      }
+    }
   }
 </script>

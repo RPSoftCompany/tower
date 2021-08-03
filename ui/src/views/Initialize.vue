@@ -73,19 +73,19 @@
     name: 'Initialize',
     data: () => ({
       form: {
-        valid: false,
+        valid: false
       },
       encryption: {
-        key: '',
+        key: ''
       },
       rules: {
         exists: v => !!v || 'Required',
-        fullLength: v => v.length === 32 || 'Encryption key must be 32 characters long',
-      },
+        fullLength: v => v.length === 32 || 'Encryption key must be 32 characters long'
+      }
     }),
     async beforeCreate () {
       const response = await this.axios.get(
-        `${this.$store.state.mainUrl}/configurations/initialized`,
+        `${this.$store.state.mainUrl}/configurations/initialized`
       )
 
       if (response.status === 200) {
@@ -105,11 +105,11 @@
         }
 
         await this.axios.post(
-          `${this.$store.state.mainUrl}/configurations/initialize?secret=${this.encryption.key}`,
+          `${this.$store.state.mainUrl}/configurations/initialize?secret=${this.encryption.key}`
         )
 
         await this.$router.push('/login')
-      },
-    },
+      }
+    }
   }
 </script>

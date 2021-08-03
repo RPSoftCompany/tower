@@ -65,6 +65,6 @@
       this.$store.commit('setUserData', null)
 
       this.$cookie.delete('token')
-    },
+    }
   }
 </script>

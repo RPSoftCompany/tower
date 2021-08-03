@@ -67,18 +67,18 @@
       bases: [],
       models: {},
       values: {
-        current: null,
+        current: null
       },
       table: {
         items: [],
-        selected: [],
-      },
+        selected: []
+      }
     }),
     watch: {
       tab () {
         this.table.items = []
         this.values.current = null
-      },
+      }
     },
     mounted () {
       this.resetData()
@@ -86,7 +86,7 @@
     methods: {
       async resetData () {
         const response = await this.axios.get(
-          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+          `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
         )
 
         this.bases = response.data
@@ -94,7 +94,7 @@
         response.data.forEach(async base => {
           const modelResponse = await this.axios.get(
             `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC","where":{"base":"${base.name
-            }"}}`,
+            }"}}`
           )
 
           this.models[base.name] = modelResponse.data
@@ -107,12 +107,12 @@
 
         const selectedReponse = await this.axios.get(
           `${this.$store.state.mainUrl}/promotions?filter={"where":{"base":"${base.name}","fromModel":"${item.name
-          }"}}`,
+          }"}}`
         )
 
         const itemsResponse = await this.axios.get(
           `${this.$store.state.mainUrl}/configurationModels?filter={"order":"name ASC","where":{"name":{"neq":"${
-            item.name}"},"base":"${base.name}"}}`,
+            item.name}"},"base":"${base.name}"}}`
         )
 
         this.table.items = itemsResponse.data
@@ -134,10 +134,10 @@
         await this.axios.patch(`${this.$store.state.mainUrl}/promotions`, {
           base: base.name,
           fromModel: this.values.current.name,
-          toModels: toModels,
+          toModels: toModels
         })
-      },
-    },
+      }
+    }
   }
 </script>
 

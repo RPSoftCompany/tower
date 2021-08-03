@@ -38,12 +38,14 @@
             <v-form
               ref="form"
               v-model="form.valid"
+              autofill="off"
             >
               <v-text-field
                 v-model="password.newPass"
                 :rules="[rules.exists]"
                 label="New password"
                 type="password"
+                autofill="off"
                 @keyup.enter="submit"
               />
               <v-text-field
@@ -51,6 +53,7 @@
                 :rules="[rules.exists, rules.sameAsPrev]"
                 label="Repeat new password"
                 type="password"
+                autofill="off"
                 @blur="validate"
                 @keyup.enter="submit"
               />
@@ -77,18 +80,18 @@
     name: 'ChangePassword',
     data: props => ({
       form: {
-        valid: false,
+        valid: false
       },
       password: {
         old: null,
         newPass: null,
-        newPassAgain: null,
+        newPassAgain: null
       },
       rules: {
         exists: v => !!v || 'Required',
         sameAsPrev: v =>
-          v === props.password.newPass || 'Passwords does not match',
-      },
+          v === props.password.newPass || 'Passwords does not match'
+      }
     }),
     methods: {
       validate () {
@@ -101,11 +104,11 @@
 
         await this.axios.post(
           `${this.$store.state.mainUrl}/members/changeUserPassword`,
-          { newPassword: this.password.newPass },
+          { newPassword: this.password.newPass }
         )
 
         this.$router.push('/login')
-      },
-    },
+      }
+    }
   }
 </script>

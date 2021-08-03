@@ -383,6 +383,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  word-break: break-all;
 }
 
 .configRow_different {

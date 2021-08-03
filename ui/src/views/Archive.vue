@@ -43,43 +43,50 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <div class="d-flex">
-      <v-autocomplete
+    <v-row
+      v-if="baseArray.length > 0"
+      no-gutters
+    >
+      <v-col
         v-for="base of baseArray"
         :key="base.name"
-        v-model="values[base.sequenceNumber]"
-        :disabled="configuration.items.length > 3"
-        :prepend-icon="base.icon"
-        :label="base.name"
-        :loading="base.loading"
-        :items="arrayOfArrays[base.sequenceNumber]"
-        class="pa-2"
-        item-text="name"
-        clearable
-        autocomplete="off"
-        return-object
-        @change="fillNextArray(base.sequenceNumber)"
-      />
-      <v-autocomplete
-        v-if="baseArray.length > 0"
-        ref="versionCombo"
-        v-model="configuration.version"
-        :disabled="configuration.items.length > 3"
-        :loading="configuration.loadingVersions"
-        :items="configurationVersions"
-        :prepend-icon="icons.mdiNumeric"
-        class="pa-2"
-        autocomplete="off"
-        label="version"
-        item-text="full"
-        clearable
-        return-object
-        @change="getConfiguration"
-      />
-    </div>
-    <div class="headline font-weight-light text-center configurationTitle">
-      {{ configInfo }}
-    </div>
+        class="pa-0"
+      >
+        <v-autocomplete
+
+          v-model="values[base.sequenceNumber]"
+          :disabled="configuration.items.length > 3"
+          :prepend-icon="base.icon"
+          :label="base.name"
+          :loading="base.loading"
+          :items="arrayOfArrays[base.sequenceNumber]"
+          class="pa-2"
+          item-text="name"
+          clearable
+          autocomplete="off"
+          return-object
+          @change="fillNextArray(base.sequenceNumber)"
+        />
+      </v-col>
+      <v-col>
+        <v-autocomplete
+          v-if="baseArray.length > 0"
+          ref="versionCombo"
+          v-model="configuration.version"
+          :disabled="configuration.items.length > 3"
+          :loading="configuration.loadingVersions"
+          :items="configurationVersions"
+          :prepend-icon="icons.mdiNumeric"
+          class="pa-2"
+          autocomplete="off"
+          label="version"
+          item-text="full"
+          clearable
+          return-object
+          @change="getConfiguration"
+        />
+      </v-col>
+    </v-row>
     <v-progress-linear
       :active="configuration.loading"
       :height="3"
@@ -152,7 +159,7 @@
   export default {
     name: 'Archive',
     components: {
-      comparisonTable,
+      comparisonTable
     },
     data: () => ({
       values: [],
@@ -168,13 +175,13 @@
         mdiFormatLetterCase,
         mdiFormatLetterCaseLower,
         mdiStar,
-        mdiStarOutline,
+        mdiStarOutline
       },
 
       promote: {
         show: false,
         promoted: false,
-        configuration: null,
+        configuration: null
       },
 
       configuration: {
@@ -185,9 +192,9 @@
         configInfo: 'Find your configuration',
         filter: {
           caseSensitive: false,
-          filter: null,
-        },
-      },
+          filter: null
+        }
+      }
     }),
     computed: {
       configInfo () {
@@ -196,12 +203,12 @@
         } else {
           return 'Find your configuration'
         }
-      },
+      }
     },
     async created () {
       this.configuration.loading = true
       const response = await this.axios.get(
-        `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`,
+        `${this.$store.state.mainUrl}/baseConfigurations?filter={"order":"sequenceNumber ASC"}`
       )
 
       this.configuration.loading = false
@@ -242,7 +249,7 @@
         this.baseArray[sequenceNumber].loading = true
 
         const array = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${base}"}}`,
+          `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${base}"}}`
         )
 
         array.data.sort((a, b) => {
@@ -297,7 +304,7 @@
         filter = filter.substring(0, filter.length - 1)
 
         const configuration = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurations?filter={"where":{${filter}},"order":"version ASC"}`,
+          `${this.$store.state.mainUrl}/configurations?filter={"where":{${filter}},"order":"version ASC"}`
         )
 
         if (configuration.data.length > 0) {
@@ -309,7 +316,7 @@
             this.configurationVersions.push({
               version: config.version,
               effectiveDate: config.effectiveDate,
-              full: `#${config.version} - ${date}`,
+              full: `#${config.version} - ${date}`
             })
           })
         }
@@ -328,7 +335,7 @@
         filter += `"version":${this.configuration.version.version}`
 
         const configuration = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurations?filter={"where":{${filter}},"order":"version ASC"}`,
+          `${this.$store.state.mainUrl}/configurations?filter={"where":{${filter}},"order":"version ASC"}`
         )
 
         this.configuration.version = null
@@ -345,7 +352,7 @@
 
           if (found === undefined) {
             const details = await this.axios.get(
-              `${this.$store.state.mainUrl}/members/getUserDetails?userId=${configuration.data[0].createdBy}`,
+              `${this.$store.state.mainUrl}/members/getUserDetails?userId=${configuration.data[0].createdBy}`
             )
 
             if (details.status === 200) {
@@ -382,7 +389,7 @@
           ? this.promote.configuration.id : this.promote.configuration.data[0].id
 
         const configuration = await this.axios.post(
-          `${this.$store.state.mainUrl}/configurations/${id}/promote`,
+          `${this.$store.state.mainUrl}/configurations/${id}/promote`
         )
 
         if (this.promote.configuration.data === undefined) {
@@ -392,8 +399,8 @@
         }
 
         this.canPromote(configuration)
-      },
-    },
+      }
+    }
   }
 </script>
 
