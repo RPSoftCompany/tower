@@ -721,6 +721,8 @@ module.exports = class ConfigurationModel {
             model.restrictions = [];
         }
 
+        model.options.hasRestrictions = true;
+
         if (!restriction.__id) {
             restriction.__id = Math.random().toString(36).replace(/[^a-z]+/g, '');
         }
