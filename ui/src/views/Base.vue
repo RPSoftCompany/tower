@@ -219,13 +219,11 @@
                   >
                     <v-autocomplete
                       v-model="restriction[base.name]"
-                      :items="restrictions.bases.baseItems[base.sequenceNumber]"
+                      :items="restrictions.bases.baseItemNames[base.name]"
                       :prepend-icon="base.icon"
                       :label="base.name"
                       class="pa-2"
-                      item-text="name"
                       autocomplete="off"
-                      return-object
                       placeholder="ANY"
                       persistent-placeholder
                       clearable
@@ -359,6 +357,7 @@
         bases: {
           items: [],
           baseItems: [],
+          baseItemNames: {},
           baseValues: {}
         },
         canAddRestriction: false,
@@ -511,6 +510,7 @@
 
           this.restrictions.hasRestrictions = this.currentModel.options.hasRestrictions
           this.restrictions.bases.baseValues = {}
+          this.restrictions.bases.baseItemNames = {}
 
           if (this.base.sequenceNumber !== 0) {
             this.restrictions.items = this.currentModel.restrictions
@@ -533,6 +533,10 @@
               if (response.status === 200) {
                 this.restrictions.bases.baseItems[i] = response.data
                 this.restrictions.bases.baseValues[baseI.name] = null
+                this.restrictions.bases.baseItemNames[baseI.name] = []
+                response.data.forEach(el => {
+                  this.restrictions.bases.baseItemNames[baseI.name].push(el.name)
+                })
               }
             }
 
@@ -560,6 +564,7 @@
           this.restrictions.bases.items = []
           this.restrictions.bases.baseItems = []
           this.restrictions.bases.baseValues = {}
+          this.restrictions.bases.baseItemNames = {}
         }
       },
       async deleteModel () {

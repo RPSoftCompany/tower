@@ -969,7 +969,30 @@
           `${this.$store.state.mainUrl}/configurationModels?filter={"where":{"base": "${baseName}"},"order":"name asc"}`
         )
         if (response.status === 200) {
-          this.bases.baseItems[sequenceNumber] = response.data
+          const allBases = {}
+          for (let baseI in this.bases.baseValues) {
+            if (this.bases.baseValues[baseI]?.name) {
+              allBases[this.bases.baseValues[baseI].base] = this.bases.baseValues[baseI].name
+            }
+          }
+
+          this.bases.baseItems[sequenceNumber] = response.data.filter(el => {
+            if (sequenceNumber > 0 && el.options?.hasRestrictions && el.options.hasRestrictions === true) {
+              const found = el.restrictions.find(restriction => {
+                let match = true
+                for (let key in allBases) {
+                  if (restriction[key] && restriction[key] !== allBases[key]) {
+                    match = false
+                  }
+                }
+
+                return match
+              })
+              return !!found
+            }
+
+            return true
+          })
         }
 
         this.bases.baseValues[sequenceNumber] = {
