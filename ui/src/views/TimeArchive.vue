@@ -314,8 +314,10 @@
 
         const d = new Date(`${date}T${time}`)
 
+        console.log(d.toISOString())
+
         const configuration = await this.axios.get(
-          `${this.$store.state.mainUrl}/configurations/findByDate?filter={${filter}}&date=${d.toUTCString()}`
+          `${this.$store.state.mainUrl}/configurations/findByDate?filter={${filter}}&date=${d.toISOString()}`
         )
 
         if (configuration.data.effectiveDate === undefined) {
@@ -331,7 +333,7 @@
             configuration.data.createdByUser = details.data.username
           }
 
-          configuration.data.effectiveDate = `${d.toUTCString()}`
+          configuration.data.effectiveDate = `${d.toISOString()}`
           configuration.data.__filter = filter
 
           if (index !== undefined) {

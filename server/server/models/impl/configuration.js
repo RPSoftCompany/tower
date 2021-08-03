@@ -632,7 +632,7 @@ module.exports = class Configuration {
             return {};
         }
 
-        const variables = await constVariable.findForDate(filter, date, options);
+        const variables = await constVariable.findForDate(filter, givenDate, options);
 
         candConfig.variables.map((variable) => {
             const constVariable = variables.find( (el) => {
