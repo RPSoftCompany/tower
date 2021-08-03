@@ -36,6 +36,10 @@
     "display": {
       "type": "string",
       "required": false
+    },
+    "dn": {
+      "type": "string",
+      "required": false
     }
   },
   "validations": [],

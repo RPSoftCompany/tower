@@ -229,6 +229,7 @@ module.exports = class Member {
                     username: `${credentials.dn}:${credentials.username}`,
                     type: 'ldap',
                     newUser: false,
+                    dn: credentials.dn,
                     groups: [],
                     display: credentials.display,
                     technicalUser: false,
