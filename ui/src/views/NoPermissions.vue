@@ -46,7 +46,7 @@
               data-cy="goBackToLogin"
               color="primary"
               block
-              @click="$router.push('/login')"
+              @click="routeToLogin"
             >
               Go back to login page
             </v-btn>
@@ -65,6 +65,16 @@
       this.$store.commit('setUserData', null)
 
       this.$cookie.delete('token')
+    },
+    methods: {
+      routeToLogin () {
+        this.$cookie.delete('token', { domain: window.location.hostname,
+                                       samesite: 'Lax' })
+        this.$store.commit('setUserData', null)
+        this.$store.commit('setUserRoles', [])
+
+        this.$router.push('/login')
+      }
     }
   }
 </script>
