@@ -731,7 +731,9 @@ module.exports = class ConfigurationModel {
             let same = true;
             Object.keys(restriction).forEach( (key) => {
                 if (key !== '__id') {
-                    if (el[key]) {
+                    if (!el[key]) {
+                        same = false;
+                    } else if (el[key] !== restriction[key]) {
                         same = false;
                     }
                 }
