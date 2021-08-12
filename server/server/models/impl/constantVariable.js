@@ -118,7 +118,7 @@ module.exports = class BaseConfiguration {
 
                 if (roleFound) {
                     if (!userRoles.includes(`constantVariable.${base.name}.${constantVariable[base.name]}.modify`)
-                        || userRoles.includes('admin')) {
+                        && !userRoles.includes('admin')) {
                         this.log('debug', 'createConstantVariable', 'FINISHED');
                         throw new HttpErrors.Unauthorized();
                     }
