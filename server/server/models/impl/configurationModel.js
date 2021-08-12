@@ -251,6 +251,9 @@ module.exports = class ConfigurationModel {
         }
 
         model.rules = [];
+        if (!model.restrictions) {
+            model.restrictions = [];
+        }
 
         if (wasDeleted) {
             await exists.updateAttributes(model);

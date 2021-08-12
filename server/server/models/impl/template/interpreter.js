@@ -502,6 +502,8 @@ class InterpreterCommon {
                     if (changedVariableLine.trim()) {
                         changedText += wasAnythingAdded === true ? `,${changedVariableLine}`: changedVariableLine;
                     }
+                } else {
+                    changedText += changedVariableLine;
                 }
 
                 if (changedVariableLine.trim()) {
