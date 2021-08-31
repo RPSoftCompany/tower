@@ -120,6 +120,7 @@
           v-model="newRowValid"
         >
           <v-text-field
+            id="restUrlInputId"
             v-model="newItem.url"
             :rules="[rules.validateUrl]"
             :append-icon="icons.mdiPlus"
@@ -548,6 +549,8 @@
           `${this.$store.state.mainUrl}/restConfigurations`,
           newConfig
         )
+
+        this.$eventHub.$emit('tutorialAddConfigurationURL', this.newItem.url)
 
         this.newItem.url = null
         this.newItem.template = null

@@ -30,7 +30,7 @@ const router = new Router({
     },
     {
       path: '/base/:name',
-      name: 'Base',
+      name: 'Configuration Model',
       component: () => import('./views/Base.vue')
     },
     {

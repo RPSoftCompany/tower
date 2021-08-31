@@ -13,11 +13,50 @@
 //
 //    You should have received a copy of the GNU General Public License
 //    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
+
 <template>
   <v-app>
+    <tutorial
+      v-if="startTutorial === true"
+      v-model="startTutorial"
+    />
+    <v-dialog
+      v-model="showTutorialDialog"
+      width="500px"
+    >
+      <v-card>
+        <v-card-title
+          class="primary"
+          primary-title
+        >
+          Tower Configuration Server setup process
+        </v-card-title>
+        <v-divider />
+        <v-card-text class="pt-4">
+          Welcome to Tower Configuration Server.<br>
+          It looks like your Tower is not configured yet.<br>
+          Do you want me to guide you through the setup process?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            text
+            @click="neverCheckTutorial = true; showTutorialDialog = false"
+          >
+            No
+          </v-btn>
+          <v-btn
+            color="primary"
+            text
+            @click="neverCheckTutorial = true; showTutorialDialog = false; startTutorial = true"
+          >
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-dialog
       v-model="errorDialog"
-      persistent
       max-width="500px"
     >
       <v-card>
@@ -66,18 +105,24 @@
 </template>
 
 <script>
-  import drawer from './components/core/drawer'
-  import toolbar from './components/core/toolbar'
-  import footerElement from './components/core/footerElement'
+  import drawer from '@/components/core/drawer'
+  import toolbar from '@/components/core/toolbar'
+  import footerElement from '@/components/core/footerElement'
+  import tutorial from '@/components/core/tutorial'
 
   export default {
     name: 'App',
     components: {
       drawer,
       toolbar,
-      footerElement
+      footerElement,
+      tutorial
     },
-    data: () => ({}),
+    data: () => ({
+      startTutorial: false,
+      showTutorialDialog: false,
+      neverCheckTutorial: false
+    }),
     computed: {
       loggedIn () {
         return (
@@ -92,6 +137,24 @@
       },
       errorText () {
         return this.$store.state.error.text
+      }
+    },
+    watch: {
+      async $route () {
+        if (
+          this.$store.state.user?.username === 'admin' &&
+          this.$route.name !== 'noPermissions' &&
+          this.$route.name !== 'changePassword' &&
+          this.$route.name !== 'Login' &&
+            this.neverCheckTutorial === false
+        ) {
+          const bases = await this.axios.get(`${this.$store.state.mainUrl}/baseConfigurations`)
+          if (bases.data.length === 0) {
+            this.showTutorialDialog = true
+          } else {
+            this.neverCheckTutorial = true
+          }
+        }
       }
     },
     async beforeCreate () {
@@ -118,6 +181,9 @@
             e.response.data.error.message !== undefined
           ) {
             if (e.response.status === 401) {
+              this.$cookie.delete('token', { domain: window.location.hostname,
+                                             samesite: 'Lax' })
+
               this.$store.commit('setUserData', null)
               this.$store.commit('setUserRoles', [])
 
@@ -135,6 +201,11 @@
 html {
   overflow: auto;
 }
+
+.v-application {
+  background-color: #fcfcfc !important;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition-duration: 0.3s;
@@ -176,9 +247,7 @@ html {
   font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
   font-size: 14px;
   line-height: 1.5;
-  border: solid;
-  border-color: rgba(211, 211, 211, 0.5);
-  border-width: 1px;
+  border: 1px solid rgba(211, 211, 211, 0.5);
   background: repeating-linear-gradient(rgba(69, 142, 209, 0.04), rgba(69, 142, 209, 0.04) 21px,
     rgba(0, 0, 0, 0) 21px, rgba(0, 0, 0, 0) 42px);
 }

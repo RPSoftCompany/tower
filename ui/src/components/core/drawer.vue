@@ -35,6 +35,7 @@
       >
         <v-list-item
           v-for="obj of mainLinksPerm"
+          :id="`${obj.name}_id`"
           :key="obj.name"
           :to="obj.path"
           :class="{ maxWidth: mini, fullWidth: !mini }"
@@ -94,7 +95,8 @@
         color="primary"
       >
         <v-list-item
-          v-for="obj of baseModelLinks"
+          v-for="(obj,i) of baseModelLinks"
+          :id="`menuBase_${i}`"
           :key="obj.name"
           :data-cy="`menuBase-${obj.name}`"
           :to="obj.path"
@@ -118,6 +120,7 @@
     <template v-slot:append>
       <v-list
         v-if="isAdmin"
+        id="settingsMenu"
         dense
         nav
       >

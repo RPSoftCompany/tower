@@ -19,6 +19,7 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import axios from 'axios'
+import VueAnime from 'vue-animejs'
 
 // Fonts
 import '@fontsource/roboto'
@@ -26,6 +27,7 @@ import '@fontsource/roboto'
 import VueCookie from 'vue-cookie'
 
 Vue.use(VueCookie)
+Vue.use(VueAnime)
 
 Vue.config.productionTip = false
 
@@ -35,7 +37,7 @@ Vue.prototype.axios = axios
 Vue.prototype.$eventHub = new Vue()
 
 axios.interceptors.request.use(config => {
-  if (store.state.user !== null) {
+  if (store.state.user) {
     config.headers.Authorization = store.state.user.id
   }
 

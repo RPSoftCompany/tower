@@ -90,6 +90,7 @@
         :data-cy="`modelSelectParent_${$route.params.name}`"
       >
         <v-autocomplete
+          id="modelSelect"
           ref="modelSelect"
           v-model="currentModel"
           :data-cy="`modelSelectInput_${$route.params.name}`"
@@ -400,10 +401,10 @@
         }
       },
       modelLabel () {
-        if (this.base === null) {
+        if (!this.base) {
           return ''
         }
-        return `Choose ${this.base.name}`
+        return `Choose or create new ${this.base.name}`
       },
       isEditable () {
         let editable = false
@@ -486,6 +487,8 @@
         this.base = base.data[0]
 
         this.loading = false
+
+        this.$eventHub.$emit('tutorialConfigurationModelChanged', this.base.sequenceNumber)
       },
       async modelChanged (data) {
         if (data) {
@@ -608,6 +611,10 @@
           }
         )
 
+        if (newModel.status !== 200) {
+          return
+        }
+
         this.models.push(newModel.data)
         this.currentModel = newModel.data
 
@@ -615,6 +622,8 @@
 
         this.$refs.modelSelect.isMenuActive = false
         this.$refs.modelSelect.blur()
+
+        this.$eventHub.$emit('tutorialConfigurationModelCreated', this.base.sequenceNumber)
       },
       async addRule (data) {
         const rule = await this.axios.post(

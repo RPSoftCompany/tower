@@ -36,6 +36,7 @@
         <v-icon>{{ icons.mdiAccountGroup }}</v-icon>
       </v-tab>
       <v-tab
+        id="baseModelTab"
         href="#base"
         data-cy="baseModel"
       >
@@ -43,6 +44,7 @@
         <v-icon>{{ icons.mdiDatabaseEdit }}</v-icon>
       </v-tab>
       <v-tab
+        id="restTab"
         href="#rest"
         data-cy="rest"
       >
@@ -154,6 +156,12 @@
       tab (actual) {
         if (this.$refs[actual] !== undefined) {
           this.$refs[actual].resetData()
+        }
+
+        if (actual === 'base') {
+          this.$eventHub.$emit('tutorialBaseModelClicked')
+        } else if (actual === 'rest') {
+          this.$eventHub.$emit('tutorialRestConfigurationClicked')
         }
       }
     },
