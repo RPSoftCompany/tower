@@ -207,7 +207,7 @@ module.exports = class ConfigurationModel {
         const confModelCache = await this.getConfigurationModelFromCache();
 
         const exists = confModelCache.find((el) => {
-            return el.name === model.name;
+            return el.name === model.name && el.base === model.base;
         });
 
         const hookBase = {};
