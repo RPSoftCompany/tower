@@ -474,7 +474,7 @@ module.exports = class Configuration {
             limit: 1,
         });
 
-        if (version) {
+        if (version.length > 0) {
             version = version[0].version;
         } else {
             version = 0;

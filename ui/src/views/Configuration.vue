@@ -1228,7 +1228,7 @@
           objectFilter
         )
 
-        if (candidates.status === 200 && candidates.data) {
+        if (candidates && candidates.status === 200 && candidates.data) {
           this.configuration.promoted = candidates.data
         }
       },
