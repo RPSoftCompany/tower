@@ -111,6 +111,12 @@ module.exports = class BaseConfiguration {
 
         await baseConfig.save();
 
+        const set = {};
+        set[baseConfig.name] = null;
+
+        this.app.dataSources['mongoDB'].connector.collection('configuration').update({},
+            {$set: set}, {multi: true});
+
         this.log('debug', 'createBaseConfiguration', 'FINISHED');
 
         return baseConfig;
@@ -167,6 +173,7 @@ module.exports = class BaseConfiguration {
         this.log('debug', 'deleteBaseConfiguration', 'STARTED');
 
         const baseConfiguration = this.app.models.baseConfiguration;
+        const configurationModel = this.app.models.configurationModel;
         const role = this.app.models.Role;
 
         const base = await baseConfiguration.findOne({
@@ -181,6 +188,16 @@ module.exports = class BaseConfiguration {
             },
         });
 
+        const unset = {};
+        unset[base.name] = '';
+
+        this.app.dataSources['mongoDB'].connector.collection('configuration').update({}, {$unset: unset},
+            {multi: true});
+
+        configurationModel.destroyAll({
+            base: base.name,
+        });
+
         await base.destroy();
 
         const all = await baseConfiguration.find({
@@ -191,7 +208,7 @@ module.exports = class BaseConfiguration {
             const base = all[i];
             base.sequenceNumber = i;
             await base.save();
-        };
+        }
 
         this.log('debug', 'deleteBaseConfiguration', 'FINISHED');
     };

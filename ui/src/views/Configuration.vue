@@ -83,6 +83,7 @@
         <v-card-title class="primary">
           Select promoted configuration
         </v-card-title>
+        </v-card-title>
         <v-card-text>
           <v-data-table
             class="mt-5 promotionDialogTable"
@@ -119,6 +120,7 @@
         class="pa-0"
       >
         <v-autocomplete
+          :id="`baseConf_${base.sequenceNumber}`"
           :ref="`baseConf_${base.name}`"
           v-model="bases.baseValues[base.sequenceNumber]"
           :prepend-icon="base.icon"
@@ -131,15 +133,36 @@
           clearable
           autocomplete="off"
           return-object
+          :style="bases.baseValues[base.sequenceNumber] && bases.baseValues[base.sequenceNumber].name === '__NONE__'
+            ? 'opacity: 0.5' : undefined"
           @change="fillNextArray(base.sequenceNumber)"
-        />
+          @click="emitTutorialEvent"
+        >
+          <template v-slot:item="{parent, item}">
+            <template v-if="item.name === '__NONE__'">
+              <span style="color:gray">NONE</span>
+            </template>
+            <template v-else>
+              {{ item.name }}
+            </template>
+          </template>
+          <template v-slot:selection="{parent, item}">
+            <template v-if="item.name === '__NONE__'">
+              <span style="color:gray">NONE</span>
+            </template>
+            <template v-else>
+              {{ item.name }}
+            </template>
+          </template>
+        </v-autocomplete>
       </v-col>
     </v-row>
     <v-row
       class="d-flex"
     >
-      <div
+      <v-col
         v-if="bases.items.length === 0 && bases.loading === false"
+        cols="12"
       >
         <div
           class="text-center text-h4 font-weight-light mt-5"
@@ -155,7 +178,7 @@
             Settings > Base Models
           </router-link>
         </div>
-      </div>
+      </v-col>
     </v-row>
     <v-progress-linear
       v-if="configuration.loading"
@@ -253,6 +276,7 @@
           </template>
         </v-text-field>
         <div
+          id="configurationLabelId"
           class="text-center text-h5 font-weight-thin pt-2"
           style="width: 33%; margin-top: -1px"
           v-text="configuration.configInfo"
@@ -297,6 +321,7 @@
         >
           <template v-slot:activator="{ on }">
             <v-icon
+              id="modeSwitchId"
               style="max-height: 24px;"
               class="mr-3 mt-3"
               data-cy="configurationEditMode"
@@ -385,7 +410,16 @@
           </div>
         </div>
         <div class="thirdWidth d-flex align-center justify-center">
-          <div class="subtitle-1 text-center font-weight-bold">
+          <div
+            v-if="configuration.editMode"
+            class="subtitle-1 text-center font-weight-bold"
+          >
+            Type
+          </div>
+          <div
+            v-else
+            class="subtitle-1 text-center font-weight-bold"
+          >
             Value
           </div>
         </div>
@@ -397,6 +431,7 @@
       <v-divider v-else />
       <div v-if="configuration.editMode === false">
         <v-responsive
+          id="configurationPanelId"
           class="overflow-y-auto"
           style="max-height: calc(100vh - 436px)"
         >
@@ -515,6 +550,7 @@
             style="display: flex; justify-content: center"
           >
             <v-btn
+              id="saveConfigurationButton"
               :disabled="!differentThanPrevVersion && !isMaxConfigurationDraft"
               color="primary"
               :loading="configuration.saving"
@@ -532,6 +568,7 @@
         data-cy="newConstantVariable"
       >
         <new-configuration-row
+          id="newConfigurationRow"
           ref="newConfigurationRow"
           @add-row="addConfigRow"
         />
@@ -549,7 +586,6 @@
       </div>
     </v-card>
   </div>
-  </v-container>
 </template>
 
 <script>
@@ -865,7 +901,8 @@
               ? date
               : `latest (${date})`
           const draft = this.configuration.versions[this.configuration.shownVersion].draft === true ? '[ DRAFT ]' : ''
-          return `Version #${this.configuration.shownVersion + 1} - ${versionLabel} ${draft}`
+          return `Version #${this.configuration.versions[this.configuration.shownVersion].version} - ${
+            versionLabel} ${draft}`
         }
       }
     },
@@ -895,6 +932,9 @@
           this.configuration.shownVersion--
         }
       },
+      emitTutorialEvent () {
+        this.$eventHub.$emit('tutorialFirstBaseClicked')
+      },
       //* *******************
       // Base Model Functions
       //* *******************
@@ -920,6 +960,7 @@
         this.configuration.items = []
         this.configuration.showConstantVariables = true
         this.configuration.showHistory = true
+        this.constantVariables.show = false
         this.constantVariables.items = []
         this.configuration.configInfo = 'Constant Variables'
 
@@ -948,14 +989,36 @@
           }
         }
 
+        if (allFilled === false && firstUnfilled > 0) {
+          this.$eventHub.$emit('tutorialNextBaseClicked')
+        } else if (allFilled === true) {
+          this.$eventHub.$emit('tutorialAllFilled', this.bases.baseValues)
+        }
+
         if (allFilled === false) {
-          this.constantVariables.show = true
+          if (this.bases.baseValues[sequenceNumber] && this.bases.baseValues[sequenceNumber].id !== -1) {
+            this.constantVariables.show = true
+          }
           for (let i = sequenceNumber + 1; i <= this.bases.items.length; i++) {
             this.bases.baseValues[i] = undefined
             this.bases.baseItems[i] = undefined
           }
 
-          await this.getBases(firstUnfilled)
+          let fillNone = true
+          let baseValuesWithNone = 0
+
+          for (let key in this.bases.baseValues) {
+            const baseValue = this.bases.baseValues[key]
+            if (baseValue?.id === -1) {
+              baseValuesWithNone++
+            }
+          }
+
+          if (baseValuesWithNone + 1 === this.bases.items.length) {
+            fillNone = false
+          }
+
+          await this.getBases(firstUnfilled, fillNone)
           this.$forceUpdate()
         } else {
           this.constantVariables.show = false
@@ -966,7 +1029,7 @@
       //* *******************
       // Get Bases
       //* *******************
-      async getBases (sequenceNumber) {
+      async getBases (sequenceNumber, fillNone) {
         if (this.bases.items[sequenceNumber] === undefined) {
           return
         }
@@ -1007,6 +1070,14 @@
           })
         }
 
+        if (fillNone === true) {
+          this.bases.baseItems[sequenceNumber].unshift({
+            name: '__NONE__',
+            id: -1,
+            base: baseName
+          })
+        }
+
         this.bases.baseValues[sequenceNumber] = {
           loading: false
         }
@@ -1039,7 +1110,7 @@
 
         for (let i = 0; i < this.bases.items.length; i++) {
           const el = this.bases.baseValues[i]
-          filter.where[el.base] = el.name
+          filter.where[el.base] = el.name === '__NONE__' ? null : el.name
           constWhere[el.base] = el.name
           rules = rules.concat(el.rules)
         }
@@ -1157,7 +1228,7 @@
           objectFilter
         )
 
-        if (candidates.status === 200 && candidates.data) {
+        if (candidates && candidates.status === 200 && candidates.data) {
           this.configuration.promoted = candidates.data
         }
       },
@@ -1207,7 +1278,11 @@
 
             for (let i = 0; i < this.bases.items.length; i++) {
               const base = this.bases.baseValues[i]
-              conf[base.base] = base.name
+              if (base.id === -1) {
+                conf[base.base] = null
+              } else {
+                conf[base.base] = base.name
+              }
             }
 
             await this.axios.post(
@@ -1218,6 +1293,8 @@
             this.configuration.items = []
 
             await this.getConfiguration()
+
+            this.$eventHub.$emit('tutorialConfigurationSaved')
 
             this.configuration.saving = false
             this.configuration.loading = false
@@ -1244,6 +1321,8 @@
         } else {
           this.addConfigurationRow(el)
           this.assignCurrentVersionValues(this.currentVersion)
+
+          this.$eventHub.$emit('tutorialConfigurationVariableAdded', this.configuration.items.length)
 
           this.$refs.newConfigurationRow.reset()
           this.$refs.newConfigurationRow.focus()
@@ -1317,7 +1396,7 @@
         this.configuration.items.push(item)
       },
       async promoteConfiguration () {
-        if (this.configuration.versions.length === 0) {
+        if (this.configuration.versions.length === 0 || this.isCurrentConfigurationPromoted === true) {
           return false
         }
 
@@ -1361,6 +1440,7 @@
           this.configuration.configInfo = 'Configuration - Design mode'
         } else if (this.configuration.editMode === false) {
           this.configuration.configInfo = 'Configuration - Edit mode'
+          this.$eventHub.$emit('tutorialEditMode')
         } else {
           this.configuration.configInfo = 'Constant Variables'
         }

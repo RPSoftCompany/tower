@@ -45,6 +45,7 @@ if (process.env.NODE_ENV === 'production') {
     mainConfig.config.nonSafe = userMainConfig.nonSafe;
     mainConfig.config.tokenHeaders = userMainConfig.tokenHeaders;
     mainConfig.config.fullEncryption = userMainConfig.fullEncryption;
+    mainConfig.config.versionLimit = userMainConfig.versionLimit || -1;
 
     mainConfig.components = null;
 
@@ -79,6 +80,9 @@ let logLevel = mainConfig.env === 'production' ? 'error' : 'debug';
 if (mainConfig.config.logLevel) {
     logLevel = mainConfig.config.logLevel;
 }
+
+const versionLimit = mainConfig.config.versionLimit !== undefined ? mainConfig.config.versionLimit : 1;
+app.versionLimit = versionLimit;
 
 let nonSafe = mainConfig.config.nonSafe === undefined ? false : mainConfig.config.nonSafe;
 if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
@@ -116,7 +120,7 @@ const logger = (module.exports = winston.createLogger({
 app.set('winston', logger);
 
 app.start = () => {
-    let server = null;
+    let server;
     let httpOnly = true;
     if (mainConfig.config.privateKey !== ''
     && mainConfig.config.certificate !== '') {

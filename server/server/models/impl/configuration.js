@@ -240,14 +240,18 @@ module.exports = class Configuration {
                     if (temp !== undefined) {
                         modelFind = temp;
                     } else {
-                        modelFind = await configModel.findWithPermissions({
-                            where: {
-                                base: base.name,
-                                name: modelName,
-                            },
-                        }, options);
+                        if (modelName !== null) {
+                            modelFind = await configModel.findWithPermissions({
+                                where: {
+                                    base: base.name,
+                                    name: modelName,
+                                },
+                            }, options);
 
-                        cache.set(`base.${base.name}"name.${modelName}`, modelFind);
+                            cache.set(`base.${base.name}"name.${modelName}`, modelFind);
+                        } else {
+                            modelFind = ['true'];
+                        }
                     }
 
                     if (modelFind.length === 0) {
@@ -329,17 +333,28 @@ module.exports = class Configuration {
         this.app.hookSingleton.executeAdvancedHook('beforeCreate', 'Configuration', basesObj);
 
         let rules = [];
+        let allBasesAreNull = true;
 
         for (let i = 0; i < allBases.length; i++) {
             const parent = allBases[i];
-            const model = await configModel.findOneWithPermissions({
+            let model = await configModel.findOneWithPermissions({
                 where: {
                     base: parent.name,
                     name: config[parent.name],
                 },
             }, options);
 
-            if (model !== null) {
+            if (model !== null || config[parent.name] === null) {
+                if (!model) {
+                    model = {
+                        rules: [],
+                        options: {
+                            hasRestrictions: false,
+                        },
+                    };
+                } else {
+                    allBasesAreNull = false;
+                }
                 rules = [...rules, ...model.rules];
                 if (model.options !== null) {
                     if (model.options.hasRestrictions) {
@@ -366,6 +381,11 @@ module.exports = class Configuration {
                 this.log('debug', 'createConfiguration', 'FINISHED');
                 throw new HttpErrors.BadRequest(`Invalid value for model ${parent.name}`);
             }
+        }
+
+        if (allBasesAreNull === true) {
+            this.log('debug', 'createConfiguration', 'FINISHED');
+            throw new HttpErrors.BadRequest(`At least one Base Model needs to be filled`);
         }
 
         for (const rule of rules) {
@@ -448,7 +468,17 @@ module.exports = class Configuration {
         }
 
         const configuration = this.app.models.configuration;
-        let version = await configuration.count(basesObj);
+        let version = await configuration.find({
+            where: basesObj,
+            order: 'version DESC',
+            limit: 1,
+        });
+
+        if (version.length > 0) {
+            version = version[0].version;
+        } else {
+            version = 0;
+        }
 
         newObject.createdBy = userId;
         newObject.version = ++version;
@@ -463,6 +493,12 @@ module.exports = class Configuration {
             const hookObject = {
                 version: configObject.version,
             };
+
+            if (this.app.versionLimit > 0 && configObject.version > this.app.versionLimit) {
+                await Configuration.destroyAll({
+                    version: {lt: configObject.version - this.app.versionLimit},
+                });
+            }
 
             this.afterSaveHooks(configObject, basesObj, hookObject);
         }

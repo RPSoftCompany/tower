@@ -385,8 +385,7 @@ module.exports = class V1 {
                         if (part.indexOf('}') + 1 < part.length) {
                             part = part.substring(part.indexOf('}'), part.length);
                             const before = part.substring(part.indexOf('}') + 1);
-                            const value = splittedUrl[i].substring(0, splittedUrl[i].lastIndexOf(before));
-                            values[key] = value;
+                            values[key] = splittedUrl[i].substring(0, splittedUrl[i].lastIndexOf(before));
 
                             splittedUrl[i] = splittedUrl[i].substring(splittedUrl[i].lastIndexOf(before) +
                                 before.length, splittedUrl[i].length);
@@ -405,6 +404,12 @@ module.exports = class V1 {
 
         values.draft = false;
         values.deleted = false;
+
+        models.forEach( (el) => {
+            if (values[el.name] === undefined) {
+                values[el.name] = null;
+            }
+        });
 
         const Config = this.app.get('ConfigurationInstance');
 

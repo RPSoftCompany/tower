@@ -106,15 +106,16 @@
     <div class="d-flex justify-center">
       <div class="halfWidth">
         <v-text-field
+          id="baseModelInput"
           v-model="appendText"
           data-cy="newBase"
           :loading="loading"
           :disabled="loading"
           :prepend-icon="allMdi.mdiDatabasePlus"
-          :append-icon="allMdi.mdiPlus"
+          :append-outer-icon="allMdi.mdiPlus"
           label="New Base"
           class="mx-5"
-          @click:append="addBase"
+          @click:append-outer="addBase"
           @keyup.enter="addBase"
         >
           <template v-slot:append />
@@ -130,7 +131,8 @@
       @end="dragEnded"
     >
       <v-card
-        v-for="item of items"
+        v-for="(item,i) of items"
+        :id="`base_${i}`"
         :key="item.name"
         class="mx-3 px-3 d-flex flex-row my-1 elevation-1 py-5"
       >
@@ -323,10 +325,14 @@
         this.iconPicker = false
         this.iconsFilter = null
 
-        await this.axios.put(
+        const response = await this.axios.put(
           `${this.$store.state.mainUrl}/baseConfigurations`,
           currentItem
         )
+
+        if (response.status !== 201) {
+          return
+        }
 
         this.currentIconItem.icon = `${this.allMdi[icon]}`
         this.$eventHub.$emit('updateIcons')
@@ -334,7 +340,7 @@
         this.currentIconItem = null
       },
       async addBase () {
-        if (this.appendText === null || this.appendText === '') {
+        if (!this.appendText) {
           return
         }
 
@@ -354,6 +360,11 @@
 
         this.$eventHub.$emit('updateIcons')
         await this.resetData()
+        if (this.items.length === 1) {
+          this.$eventHub.$emit('tutorialBaseModelCreated')
+        } else if (this.items.length > 1) {
+          this.$eventHub.$emit('tutorialBaseModelCreatedNext')
+        }
       },
       showDeleteDialog (item) {
         this.deleteDialog = true

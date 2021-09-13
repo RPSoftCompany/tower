@@ -1,6 +1,6 @@
 {
-  "name": "tower-client",
-  "version": "1.13.0",
+  "name": "tower-ui",
+  "version": "1.14.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -11,6 +11,7 @@
   "dependencies": {
     "@fontsource/roboto": "^4.3.0",
     "@mdi/js": "^4.9.95",
+    "animejs": "^3.2.1",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "fast-sort": "^2.2.0",
@@ -19,6 +20,7 @@
     "prism-core": "^2.0.2",
     "prismjs": "^1.21.0",
     "vue": "^2.6.11",
+    "vue-animejs": "^2.1.1",
     "vue-cookie": "^1.1.4",
     "vue-custom-scrollbar": "^1.2.0",
     "vue-prism-editor": "^1.2.2",
