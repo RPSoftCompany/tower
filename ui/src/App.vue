@@ -230,6 +230,20 @@ html {
   opacity: 0;
 }
 
+/* Tower SVG classes */
+.cls-1 {
+  fill:#f2a52a;
+}
+.cls-2 {
+  fill:#fff;
+}
+.cls-3 {
+  fill:#231f20;
+}
+.cls-4 {
+  fill:#d8d8d8;
+}
+
 .v-time-picker-title__time .v-picker__title__btn, .v-time-picker-title__time span {
   font-size: 70px !important;
 }

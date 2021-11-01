@@ -1,11 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="e16bfb61-4cb0-49e0-8a6e-5dbd8447af86" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Configuration.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Configuration.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/.env" beforeDir="false" afterPath="$PROJECT_DIR$/ui/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/.eslintrc.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/.eslintrc.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/favicon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/favicon.ico" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-192x192.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-192x192.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-512x512.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-512x512.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-120x120.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-120x120.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-152x152.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-152x152.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-180x180.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-180x180.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-60x60.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-60x60.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-76x76.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-76x76.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.ico" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.ico" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-32x32.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/favicon-32x32.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/msapplication-icon-144x144.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/msapplication-icon-144x144.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/mstile-150x150.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/mstile-150x150.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/safari-pinned-tab.svg" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/safari-pinned-tab.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/assets/tower.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/assets/tower.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Initialize.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Initialize.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Login.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,15 +49,18 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.standard" value="" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
@@ -111,6 +142,17 @@
       <workItem from="1625983036709" duration="8467000" />
       <workItem from="1626011018345" duration="8750000" />
       <workItem from="1626085523203" duration="4825000" />
+      <workItem from="1633788425512" duration="6451000" />
+      <workItem from="1633849682772" duration="840000" />
+      <workItem from="1633850532119" duration="1240000" />
+      <workItem from="1633851781368" duration="104000" />
+      <workItem from="1633851892827" duration="239000" />
+      <workItem from="1633892569777" duration="924000" />
+      <workItem from="1633893503897" duration="1671000" />
+      <workItem from="1634536318440" duration="822000" />
+      <workItem from="1634562071428" duration="76000" />
+      <workItem from="1634961021865" duration="2542000" />
+      <workItem from="1635054895085" duration="283000" />
     </task>
     <servers />
   </component>
@@ -128,5 +170,8 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>
