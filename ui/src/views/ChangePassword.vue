@@ -90,7 +90,7 @@
       </div>
       <v-card
         class="pa-2 elevation-0"
-        style="background-color: #fcfcfc"
+        style="background-color: transparent"
       >
         <v-card-text>
           <v-form
