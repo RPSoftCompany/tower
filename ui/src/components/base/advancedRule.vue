@@ -34,7 +34,8 @@
           :data-cy="`${isNew === true ? 'newRuleTargetSelect' : 'targetSelect' + targetValue}`"
           label="Target"
           style="border-radius: 4px 0 0 4px;"
-          background-color="rgb(236 236 236)"
+          :background-color="$vuetify.theme.dark === true ? 'var(--v-background-lighten2)'
+            : 'var(--v-background-darken1)'"
           dense
           outlined
           @change="modifyRule"
@@ -47,7 +48,7 @@
         <v-text-field
           v-model="target.value"
           :rules="wantValidation ? rules.required : []"
-          :label="target.regex ? 'Expression' : 'Text'"
+          :label="target.regex ? 'Regular expression' : 'Text'"
           :data-cy="`${isNew === true ? 'newRuleTargetText' : 'targetText' + targetValue}`"
           required
           dense
@@ -66,7 +67,8 @@
         <v-select
           v-model="condition.type"
           style="border-radius: 4px 0 0 4px"
-          background-color="rgb(236 236 236)"
+          :background-color="$vuetify.theme.dark === true ? 'var(--v-background-lighten2)'
+            : 'var(--v-background-darken1)'"
           :data-cy="`${isNew === true ? 'newRuleConditionSelect' : 'ConditionSelect' + targetValue}`"
           :items="condition.types"
           label="Condition"
@@ -82,7 +84,7 @@
         <v-text-field
           v-model="condition.value"
           :rules="wantValidation ? rules.required : []"
-          :label="condition.regex ? 'Expression' : 'Text'"
+          :label="condition.regex ? 'Regular expression' : 'Text'"
           :data-cy="`${isNew === true ? 'newRuleConditionText' : 'ConditionText' + targetValue}`"
           dense
           outlined
@@ -272,3 +274,9 @@
     }
   }
 </script>
+
+<style scoped>
+.ruleType {
+  background: var(--v-background-lighten2);
+}
+</style>

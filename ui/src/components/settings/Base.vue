@@ -134,7 +134,8 @@
         v-for="(item,i) of items"
         :id="`base_${i}`"
         :key="item.name"
-        class="mx-3 px-3 d-flex flex-row my-1 elevation-1 py-5"
+        outlined
+        class="mx-3 px-3 d-flex flex-row my-1 py-5"
       >
         <v-icon
           :class="{handler: !changeInProgress, loading: changeInProgress}"

@@ -23,6 +23,8 @@
       <v-expansion-panel
         v-for="base of bases"
         :key="base.id"
+        class="outline"
+        :class="{dark: $vuetify.theme.dark === true}"
       >
         <v-expansion-panel-header class="d-flex flex-row">
           <v-icon style="maxWidth: 40px">

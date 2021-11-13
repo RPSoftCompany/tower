@@ -98,15 +98,23 @@
       <v-expansion-panel
         v-for="model of models"
         :key="model"
+        class="outline"
+        :class="{dark: $vuetify.theme.dark === true}"
       >
-        <v-expansion-panel-header>{{ model }}</v-expansion-panel-header>
+        <v-expansion-panel-header>
+          {{ model }}
+        </v-expansion-panel-header>
         <v-expansion-panel-content>
           <v-expansion-panels>
             <v-expansion-panel
               v-for="entry of hooksModel[model]"
               :key="entry.id"
+              class="outline"
+              :class="{dark: $vuetify.theme.dark === true}"
             >
-              <v-expansion-panel-header>{{ entry.method }}</v-expansion-panel-header>
+              <v-expansion-panel-header>
+                {{ entry.method }}
+              </v-expansion-panel-header>
               <v-expansion-panel-content>
                 <v-divider />
                 <template v-for="hook of hooks[model][entry.method]">

@@ -17,7 +17,8 @@
 <template>
   <div
     :class="{configRow_crossed: deleted, 'font-weight-light': deleted, 'font-italic': deleted,
-             'configRow_different': different}"
+             'configRow_different': different && $vuetify.theme.dark === false, 'configRow_different_dark': different &&
+               $vuetify.theme.dark === true}"
     :style="local_type === 'boolean' ? 'height:71px' : ''"
     class="d-flex flex-row justify-space-around"
   >
@@ -387,7 +388,11 @@
 }
 
 .configRow_different {
-  background: rgba(242, 165, 42, 0.42);
+  background: var(--v-primary-lighten1);
+  transition: all 0.3s;
+}
+.configRow_different_dark {
+  background: var(--v-primary-darken4);
   transition: all 0.3s;
 }
 </style>

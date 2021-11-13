@@ -44,6 +44,6 @@
 <style scoped>
 .footer {
   border-top: 1px solid;
-  border-color: #e6e6e6 !important;
+  border-color: #5252521a !important;
 }
 </style>

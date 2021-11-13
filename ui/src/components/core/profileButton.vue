@@ -34,10 +34,33 @@
         </v-btn>
       </template>
       <v-list width="220">
+        <v-subheader
+          class="text-center justify-center text-caption"
+          style="height: 20px"
+        >
+          User
+        </v-subheader>
         <v-list-item>
           <v-list-item-title
             class="text-center subtitle-1 font-weight-bold"
             v-text="userProfile"
+          />
+        </v-list-item>
+        <v-divider class="mb-2" />
+        <v-subheader
+          class="text-center justify-center text-caption"
+          style="height: 20px"
+        >
+          Theme
+        </v-subheader>
+        <v-list-item class="justify-center">
+          <div
+            class="theme light mx-1"
+            @click="changeTheme(false)"
+          />
+          <div
+            class="theme dark mx-1"
+            @click="changeTheme(true)"
           />
         </v-list-item>
         <v-divider class="mb-2" />
@@ -54,8 +77,7 @@
           @click="logout"
         >
           <v-list-item-title
-            style="color:red"
-            class="text-center"
+            class="text-center error--text"
           >
             Logout
           </v-list-item-title>
@@ -97,48 +119,36 @@
       },
       changePass () {
         this.$router.push('/changePassword')
+      },
+      changeTheme (dark) {
+        this.$vuetify.theme.dark = dark
+
+        let theme = dark === true ? 'dark' : 'light'
+
+        this.$cookie.set('tower.theme', theme, {
+          expires: `10Y`,
+          domain: window.location.hostname,
+          samesite: 'Lax'
+        })
       }
     }
   }
 </script>
 
-<style lang="scss" scoped>
-.profButtonContainer {
-  width: 44px;
-  height: 34px;
-  margin-top: 4px;
-  margin-right: 4px;
-  padding: 0;
-  background-color: rgba(255, 255, 255, 0);
-
-  clip-path: circle(20px at 12px 24px);
-  transition: all 0.3s linear;
-
-  .inner {
-    float: right;
-    cursor: default;
-    transition: all 0.3s linear;
-    padding-top: 10px;
-  }
-
-  .innerOpacity {
-    opacity: 0;
-    transition: all 0.1s linear;
-  }
-
-  &:hover {
-    background-color: white;
-    clip-path: circle(200% at 288px 24px);
-    width: 300px;
-    height: 145px;
-
-    .inner {
-      color: rgba(255, 255, 255, 0);
-    }
-
-    .innerOpacity {
-      opacity: 1;
-    }
-  }
+<style scoped>
+.theme {
+  border-radius: 50%;
+  border-color: var(--v-primary-base);
+  border-width: 1px;
+  border-style: solid;
+  height: 24px;
+  width: 24px;
+  cursor: pointer;
+}
+.dark {
+  background: black;
+}
+.light {
+  background: white;
 }
 </style>

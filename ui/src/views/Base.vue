@@ -825,8 +825,4 @@
 .halfWidth {
   width: 50%;
 }
-
-.test {
-  color: gray
-}
 </style>

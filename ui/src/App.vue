@@ -15,7 +15,7 @@
 //    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
-  <v-app>
+  <v-app :style="cssVariables">
     <tutorial
       v-if="startTutorial === true"
       v-model="startTutorial"
@@ -124,6 +124,17 @@
       neverCheckTutorial: false
     }),
     computed: {
+      cssVariables () {
+        let scrollbarTrackBackground = 'var(--v-background-lighten1)'
+        if (this.$vuetify.theme.dark === false) {
+          scrollbarTrackBackground = 'var(--v-background-darken1)'
+        }
+
+        return {
+          '--v-isDark': this.$vuetify.theme.dark,
+          '--v-scrollbarTrack-background': scrollbarTrackBackground
+        }
+      },
       loggedIn () {
         return (
           this.$store.state.user !== null &&
@@ -170,6 +181,22 @@
       }
     },
     async mounted () {
+      let theme = this.$cookie.get('tower.theme', {
+        domain: window.location.hostname,
+        samesite: 'Lax'
+      })
+
+      if (!theme) {
+        this.$cookie.set('tower.theme', 'light', {
+          expires: `10Y`,
+          domain: window.location.hostname,
+          samesite: 'Lax'
+        })
+        this.$vuetify.theme.dark = false
+      } else {
+        this.$vuetify.theme.dark = theme === 'dark'
+      }
+
       this.axios.interceptors.response.use(
         response => response,
         e => {
@@ -202,8 +229,8 @@ html {
   overflow: auto;
 }
 
-.v-application {
-  background-color: #fcfcfc !important;
+.theme--light.v-application {
+  background-color: var(--v-background-base) !important;
 }
 
 .fade-enter-active,
@@ -232,7 +259,7 @@ html {
 
 /* Tower SVG classes */
 .cls-1 {
-  fill:#f2a52a;
+  fill: var(--v-primary-base);
 }
 .cls-2 {
   fill:#fff;
@@ -250,6 +277,41 @@ html {
 
 .v-picker__title {
   height: 90px !important;
+}
+
+.outline {
+  border: thin solid rgba(0, 0, 0, 0.12);
+  border-bottom: 0;
+}
+
+.outline.dark {
+  border: thin solid rgba(255, 255, 255, 0.12);
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--v-scrollbarTrack-background);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 </style>
 

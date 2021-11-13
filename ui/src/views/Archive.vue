@@ -43,50 +43,54 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-row
-      v-if="baseArray.length > 0"
-      no-gutters
-    >
-      <v-col
-        v-for="base of baseArray"
-        :key="base.name"
-        class="pa-0"
-      >
-        <v-autocomplete
-
-          v-model="values[base.sequenceNumber]"
-          :disabled="configuration.items.length > 3"
-          :prepend-icon="base.icon"
-          :label="base.name"
-          :loading="base.loading"
-          :items="arrayOfArrays[base.sequenceNumber]"
-          class="pa-2"
-          item-text="name"
-          clearable
-          autocomplete="off"
-          return-object
-          @change="fillNextArray(base.sequenceNumber)"
-        />
-      </v-col>
-      <v-col>
-        <v-autocomplete
+    <v-card outlined>
+      <v-card-text class="pt-3 px-3 pb-0">
+        <v-row
           v-if="baseArray.length > 0"
-          ref="versionCombo"
-          v-model="configuration.version"
-          :disabled="configuration.items.length > 3"
-          :loading="configuration.loadingVersions"
-          :items="configurationVersions"
-          :prepend-icon="icons.mdiNumeric"
-          class="pa-2"
-          autocomplete="off"
-          label="version"
-          item-text="full"
-          clearable
-          return-object
-          @change="getConfiguration"
-        />
-      </v-col>
-    </v-row>
+          no-gutters
+        >
+          <v-col
+            v-for="base of baseArray"
+            :key="base.name"
+            class="pa-0"
+          >
+            <v-autocomplete
+
+              v-model="values[base.sequenceNumber]"
+              :disabled="configuration.items.length > 3"
+              :prepend-icon="base.icon"
+              :label="base.name"
+              :loading="base.loading"
+              :items="arrayOfArrays[base.sequenceNumber]"
+              class="pa-2"
+              item-text="name"
+              clearable
+              autocomplete="off"
+              return-object
+              @change="fillNextArray(base.sequenceNumber)"
+            />
+          </v-col>
+          <v-col>
+            <v-autocomplete
+              v-if="baseArray.length > 0"
+              ref="versionCombo"
+              v-model="configuration.version"
+              :disabled="configuration.items.length > 3"
+              :loading="configuration.loadingVersions"
+              :items="configurationVersions"
+              :prepend-icon="icons.mdiNumeric"
+              class="pa-2"
+              autocomplete="off"
+              label="version"
+              item-text="full"
+              clearable
+              return-object
+              @change="getConfiguration"
+            />
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
     <v-progress-linear
       :active="configuration.loading"
       :height="3"
@@ -98,7 +102,8 @@
     >
       <v-card
         v-if="configuration.items.length > 0"
-        class="pb-2 pt-5"
+        class="pb-2 mt-5 pt-5"
+        outlined
       >
         <div class="d-flex">
           <v-text-field
@@ -309,7 +314,7 @@
 
         if (configuration.data.length > 0) {
           this.configurationVersions = []
-          configuration.data.forEach(async config => {
+          for (let config of configuration.data) {
             let date = Date.parse(config.effectiveDate)
             date = new Date(date)
             date = date.toLocaleString(undefined, { timeZoneName: 'short' })
@@ -318,7 +323,7 @@
               effectiveDate: config.effectiveDate,
               full: `#${config.version} - ${date}`
             })
-          })
+          }
         }
       },
       async getConfiguration () {
@@ -403,20 +408,3 @@
     }
   }
 </script>
-
-<style scoped>
-.configurationTitle {
-  height: 50px;
-  color: lightgray;
-  margin-bottom: 20px;
-  margin-top: 20px;
-  cursor: default;
-}
-</style>
-
-<style>
-.configParent {
-  max-height: calc(100vh - 480px);
-  overflow-y: auto;
-}
-</style>

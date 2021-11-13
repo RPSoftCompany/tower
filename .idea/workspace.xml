@@ -6,34 +6,27 @@
   <component name="ChangeListManager">
     <list default="true" id="e16bfb61-4cb0-49e0-8a6e-5dbd8447af86" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.env" beforeDir="false" afterPath="$PROJECT_DIR$/ui/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.eslintrc.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/.eslintrc.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/favicon.ico" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/favicon.ico" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-192x192.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-192x192.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-512x512.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-512x512.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-120x120.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-120x120.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-152x152.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-152x152.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-180x180.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-180x180.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-60x60.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-60x60.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-76x76.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-76x76.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.ico" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.ico" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-32x32.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/favicon-32x32.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/msapplication-icon-144x144.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/msapplication-icon-144x144.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/mstile-150x150.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/mstile-150x150.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/safari-pinned-tab.svg" beforeDir="false" afterPath="$PROJECT_DIR$/ui/public/img/icons/safari-pinned-tab.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/tower.png" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/assets/tower.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Initialize.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Initialize.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/archive/comparisonTable.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/archive/comparisonTable.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/base/advancedRule.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/base/advancedRule.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/base/rule.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/core/footerElement.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/footerElement.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/core/profileButton.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/profileButton.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/highlight/tower_highlight.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Connection.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Connection.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Hook.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Hook.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Promotion.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Promotion.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Rest.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Rest.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/plugins/vuetify.js" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/plugins/vuetify.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Archive.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Archive.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Base.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Configuration.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Configuration.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/src/views/Login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Login.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Settings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -153,6 +146,10 @@
       <workItem from="1634562071428" duration="76000" />
       <workItem from="1634961021865" duration="2542000" />
       <workItem from="1635054895085" duration="283000" />
+      <workItem from="1635751750826" duration="3573000" />
+      <workItem from="1636183481512" duration="9620000" />
+      <workItem from="1636425001034" duration="16997000" />
+      <workItem from="1636792201370" duration="1281000" />
     </task>
     <servers />
   </component>

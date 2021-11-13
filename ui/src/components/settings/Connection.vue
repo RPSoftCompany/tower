@@ -20,7 +20,10 @@
     class="py-3 px-3"
   >
     <v-expansion-panels>
-      <v-expansion-panel>
+      <v-expansion-panel
+        class="outline"
+        :class="{dark: $vuetify.theme.dark === true}"
+      >
         <v-expansion-panel-header>
           <template v-slot:default>
             <v-row no-gutters>
@@ -146,7 +149,10 @@
           </v-form>
         </v-expansion-panel-content>
       </v-expansion-panel>
-      <v-expansion-panel>
+      <v-expansion-panel
+        class="outline"
+        :class="{dark: $vuetify.theme.dark === true}"
+      >
         <v-expansion-panel-header>
           <template v-slot:default>
             Vault
@@ -258,256 +264,257 @@
           </v-form>
         </v-expansion-panel-content>
       </v-expansion-panel>
-      <v-expansion-panel>
-        <v-expansion-panel>
-          <v-expansion-panel-header>
-            SCP
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <v-divider />
-            <v-form>
-              <v-row>
-                <v-col
-                  class="d-flex mt-3"
-                  cols="12"
+      <v-expansion-panel
+        class="outline"
+        :class="{dark: $vuetify.theme.dark === true}"
+      >
+        <v-expansion-panel-header>
+          SCP
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <v-divider />
+          <v-form>
+            <v-row>
+              <v-col
+                class="d-flex mt-3"
+                cols="12"
+              >
+                <v-btn
+                  color="primary"
+                  @click="addScpConnection"
                 >
-                  <v-btn
-                    color="primary"
-                    @click="addScpConnection"
+                  Add SCP Connection
+                </v-btn>
+              </v-col>
+              <v-col cols="12">
+                <v-expansion-panels v-model="scp.panel">
+                  <v-expansion-panel
+                    v-for="connection of scp.connections"
+                    :key="connection.id"
                   >
-                    Add SCP Connection
-                  </v-btn>
-                </v-col>
-                <v-col cols="12">
-                  <v-expansion-panels v-model="scp.panel">
-                    <v-expansion-panel
-                      v-for="connection of scp.connections"
-                      :key="connection.id"
-                    >
-                      <v-expansion-panel-header>
-                        <template v-slot:default>
-                          {{ connection.username }}@{{ connection.host }}
-                        </template>
-                      </v-expansion-panel-header>
-                      <v-expansion-panel-content>
-                        <v-divider class="mb-2" />
-                        <v-form :ref="`SCPForm-${connection.id}`">
-                          <v-row>
-                            <v-col
-                              cols="5"
-                              class="pb-0"
-                            >
-                              <v-text-field
-                                v-model="connection.host"
-                                label="Host"
-                                autocomplete="off"
-                                :rules="[scp.rules.required]"
-                                @blur="saveSCPConnection(connection)"
-                              />
-                            </v-col>
-                            <v-col
-                              cols="5"
-                              offset="2"
-                              class="pb-0"
-                            >
-                              <v-text-field
-                                v-model="connection.username"
-                                label="User name"
-                                autocomplete="off"
-                                :rules="[scp.rules.required]"
-                                @blur="saveSCPConnection(connection)"
-                              />
-                            </v-col>
-                          </v-row>
-                          <v-row
-                            class="scpAuth mt-6"
+                    <v-expansion-panel-header>
+                      <template v-slot:default>
+                        {{ connection.username }}@{{ connection.host }}
+                      </template>
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                      <v-divider class="mb-2" />
+                      <v-form :ref="`SCPForm-${connection.id}`">
+                        <v-row>
+                          <v-col
+                            cols="5"
+                            class="pb-0"
                           >
-                            <div class="scpAuthLabel px-2">
-                              Authentication
-                            </div>
-                            <v-col
-                              cols="2"
-                              class="py-0"
+                            <v-text-field
+                              v-model="connection.host"
+                              label="Host"
+                              autocomplete="off"
+                              :rules="[scp.rules.required]"
+                              @blur="saveSCPConnection(connection)"
+                            />
+                          </v-col>
+                          <v-col
+                            cols="5"
+                            offset="2"
+                            class="pb-0"
+                          >
+                            <v-text-field
+                              v-model="connection.username"
+                              label="User name"
+                              autocomplete="off"
+                              :rules="[scp.rules.required]"
+                              @blur="saveSCPConnection(connection)"
+                            />
+                          </v-col>
+                        </v-row>
+                        <v-row
+                          class="scpAuth mt-6"
+                        >
+                          <div class="scpAuthLabel px-2">
+                            Authentication
+                          </div>
+                          <v-col
+                            cols="2"
+                            class="py-0"
+                          >
+                            <v-radio-group
+                              v-model="connection.authTypeRadio"
+                              dense
                             >
-                              <v-radio-group
-                                v-model="connection.authTypeRadio"
+                              <v-radio
+                                label="SSH Key"
                                 dense
-                              >
-                                <v-radio
-                                  label="SSH Key"
-                                  dense
-                                />
-                                <v-radio
-                                  label="Password"
-                                  dense
-                                />
-                              </v-radio-group>
-                            </v-col>
-                            <v-col
-                              v-if="connection.authTypeRadio === 0"
-                              cols="10"
-                            >
-                              <v-text-field
-                                v-model="connection.key"
-                                label="SSH key"
-                                autocomplete="off"
-                                type="password"
-                                :rules="[scp.rules.required]"
-                                @blur="saveSCPConnection(connection)"
                               />
-                            </v-col>
-                            <v-col
-                              v-else
-                              cols="10"
-                            >
-                              <v-text-field
-                                v-model="connection.password"
+                              <v-radio
                                 label="Password"
-                                type="password"
-                                autocomplete="off"
-                                :rules="[ldap.rules.required]"
-                                @blur="saveSCPConnection(connection)"
+                                dense
                               />
-                            </v-col>
-                          </v-row>
-                          <v-row>
-                            <v-col cols="12">
-                              <v-data-table
-                                :headers="scp.headers"
-                                :items="connection.items"
-                              >
-                                <template v-slot:header.name="{ header }">
-                                  {{ header.text.toUpperCase() }}
-                                </template>
-                                <template v-slot:top>
-                                  <v-toolbar
-                                    flat
+                            </v-radio-group>
+                          </v-col>
+                          <v-col
+                            v-if="connection.authTypeRadio === 0"
+                            cols="10"
+                          >
+                            <v-text-field
+                              v-model="connection.key"
+                              label="SSH key"
+                              autocomplete="off"
+                              type="password"
+                              :rules="[scp.rules.required]"
+                              @blur="saveSCPConnection(connection)"
+                            />
+                          </v-col>
+                          <v-col
+                            v-else
+                            cols="10"
+                          >
+                            <v-text-field
+                              v-model="connection.password"
+                              label="Password"
+                              type="password"
+                              autocomplete="off"
+                              :rules="[ldap.rules.required]"
+                              @blur="saveSCPConnection(connection)"
+                            />
+                          </v-col>
+                        </v-row>
+                        <v-row>
+                          <v-col cols="12">
+                            <v-data-table
+                              :headers="scp.headers"
+                              :items="connection.items"
+                            >
+                              <template v-slot:header.name="{ header }">
+                                {{ header.text.toUpperCase() }}
+                              </template>
+                              <template v-slot:top>
+                                <v-toolbar
+                                  flat
+                                >
+                                  <v-toolbar-title>Connection models</v-toolbar-title>
+                                  <v-spacer />
+                                  <v-dialog
+                                    v-model="scp.addItemDialog"
+                                    max-width="80%"
                                   >
-                                    <v-toolbar-title>Connection models</v-toolbar-title>
-                                    <v-spacer />
-                                    <v-dialog
-                                      v-model="scp.addItemDialog"
-                                      max-width="80%"
-                                    >
-                                      <template v-slot:activator="{ on, attrs }">
-                                        <v-btn
-                                          color="primary"
-                                          dark
-                                          class="mb-2"
-                                          v-bind="attrs"
-                                          v-on="on"
-                                          @click="resetSCPNewItem"
-                                        >
-                                          Add Connection model
-                                        </v-btn>
-                                      </template>
-                                      <v-card>
-                                        <v-card-title class="primary">
+                                    <template v-slot:activator="{ on, attrs }">
+                                      <v-btn
+                                        color="primary"
+                                        dark
+                                        class="mb-2"
+                                        v-bind="attrs"
+                                        v-on="on"
+                                        @click="resetSCPNewItem"
+                                      >
+                                        Add Connection model
+                                      </v-btn>
+                                    </template>
+                                    <v-card>
+                                      <v-card-title class="primary">
+                                        <span
+                                          class="headline"
+                                        >Add Connection model</span>
+                                      </v-card-title>
+                                      <v-card-text>
+                                        <v-row>
+                                          <v-col
+                                            v-for="(base, baseName) of scp.availableBases"
+                                            :key="baseName"
+                                            :cols="12 / scp.availableBases.length"
+                                          >
+                                            <v-autocomplete
+                                              v-model="scp.newItem[baseName]"
+                                              :label="baseName"
+                                              :items="base"
+                                              autocomplete="off"
+                                              @change="SCPNewItemSaveDisabled"
+                                            />
+                                          </v-col>
+                                        </v-row>
+                                        <v-row>
+                                          <v-col
+                                            cols="12"
+                                          >
+                                            <v-text-field
+                                              v-model="scp.newItem.path"
+                                              label="Path"
+                                              autocomplete="new-password"
+                                              hint="eg. /apps/myApplication/configuration.json"
+                                              @keyup="SCPNewItemSaveDisabled"
+                                            />
+                                          </v-col>
+                                        </v-row>
+                                        <v-row>
+                                          <v-col
+                                            cols="12"
+                                          >
+                                            <v-autocomplete
+                                              v-model="scp.newItem.template"
+                                              :items="scp.restTemplates"
+                                              return-object
+                                              item-text="url"
+                                              autocomplete="off"
+                                              label="Template"
+                                              @change="SCPNewItemSaveDisabled"
+                                            />
+                                          </v-col>
+                                        </v-row>
+                                        <v-card-actions>
                                           <span
-                                            class="headline"
-                                          >Add Connection model</span>
-                                        </v-card-title>
-                                        <v-card-text>
-                                          <v-row>
-                                            <v-col
-                                              v-for="(base, baseName) of scp.availableBases"
-                                              :key="baseName"
-                                              :cols="12 / scp.availableBases.length"
-                                            >
-                                              <v-autocomplete
-                                                v-model="scp.newItem[baseName]"
-                                                :label="baseName"
-                                                :items="base"
-                                                autocomplete="off"
-                                                @change="SCPNewItemSaveDisabled"
-                                              />
-                                            </v-col>
-                                          </v-row>
-                                          <v-row>
-                                            <v-col
-                                              cols="12"
-                                            >
-                                              <v-text-field
-                                                v-model="scp.newItem.path"
-                                                label="Path"
-                                                autocomplete="new-password"
-                                                hint="eg. /apps/myApplication/configuration.json"
-                                                @keyup="SCPNewItemSaveDisabled"
-                                              />
-                                            </v-col>
-                                          </v-row>
-                                          <v-row>
-                                            <v-col
-                                              cols="12"
-                                            >
-                                              <v-autocomplete
-                                                v-model="scp.newItem.template"
-                                                :items="scp.restTemplates"
-                                                return-object
-                                                item-text="url"
-                                                autocomplete="off"
-                                                label="Template"
-                                                @change="SCPNewItemSaveDisabled"
-                                              />
-                                            </v-col>
-                                          </v-row>
-                                          <v-card-actions>
-                                            <span
-                                              v-if="scp.identical"
-                                              class="error--text font-weight-bold text-h6"
-                                            >
-                                              Connection with identical properties exists already</span>
-                                            <v-spacer />
-                                            <v-btn
-                                              text
-                                              @click="scp.addItemDialog = false"
-                                            >
-                                              Cancel
-                                            </v-btn>
-                                            <v-btn
-                                              color="primary"
-                                              text
-                                              :disabled="scp.newItemSaveDisabled"
-                                              @click="saveNewSCPItem(connection)"
-                                            >
-                                              Save
-                                            </v-btn>
-                                          </v-card-actions>
-                                        </v-card-text>
-                                      </v-card>
-                                    </v-dialog>
-                                  </v-toolbar>
-                                </template>
-                                <template v-slot:item.actions="{ item }">
-                                  <v-icon
-                                    small
-                                    class="mr-2"
-                                    @click="openEditSCPDialog(item, connection)"
-                                  >
-                                    {{ icons.mdiPencil }}
-                                  </v-icon>
-                                  <v-icon
-                                    small
-                                    @click="deleteSCPItem(item, connection)"
-                                  >
-                                    {{ icons.mdiDelete }}
-                                  </v-icon>
-                                </template>
-                                <template v-slot:no-data>
-                                  Click 'New Connection Model' button to add the connection
-                                </template>
-                              </v-data-table>
-                            </v-col>
-                          </v-row>
-                        </v-form>
-                      </v-expansion-panel-content>
-                    </v-expansion-panel>
-                  </v-expansion-panels>
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
+                                            v-if="scp.identical"
+                                            class="error--text font-weight-bold text-h6"
+                                          >
+                                            Connection with identical properties exists already</span>
+                                          <v-spacer />
+                                          <v-btn
+                                            text
+                                            @click="scp.addItemDialog = false"
+                                          >
+                                            Cancel
+                                          </v-btn>
+                                          <v-btn
+                                            color="primary"
+                                            text
+                                            :disabled="scp.newItemSaveDisabled"
+                                            @click="saveNewSCPItem(connection)"
+                                          >
+                                            Save
+                                          </v-btn>
+                                        </v-card-actions>
+                                      </v-card-text>
+                                    </v-card>
+                                  </v-dialog>
+                                </v-toolbar>
+                              </template>
+                              <template v-slot:item.actions="{ item }">
+                                <v-icon
+                                  small
+                                  class="mr-2"
+                                  @click="openEditSCPDialog(item, connection)"
+                                >
+                                  {{ icons.mdiPencil }}
+                                </v-icon>
+                                <v-icon
+                                  small
+                                  @click="deleteSCPItem(item, connection)"
+                                >
+                                  {{ icons.mdiDelete }}
+                                </v-icon>
+                              </template>
+                              <template v-slot:no-data>
+                                Click 'New Connection Model' button to add the connection
+                              </template>
+                            </v-data-table>
+                          </v-col>
+                        </v-row>
+                      </v-form>
+                    </v-expansion-panel-content>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+              </v-col>
+            </v-row>
+          </v-form>
+        </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
     <v-dialog

@@ -91,9 +91,11 @@
         Tower
       </div>
       <v-card
+        flat
+        tile
         :class="cardClass"
-        class="flat tile loginFormClass"
-        :style="`opacity: ${loginOpacity}; background-color: #fcfcfc`"
+        class="loginFormClass"
+        :style="`opacity: ${loginOpacity}; background-color: transparent`"
       >
         <v-card-text>
           <v-form
