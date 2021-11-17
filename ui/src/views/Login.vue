@@ -231,10 +231,6 @@
         easing: 'linear'
       })
 
-      // setTimeout(() => {
-      //   this.loginInputsDisabled = false
-      // }, 4000)
-
       this.$refs.loginInput.focus()
     },
     async beforeCreate () {

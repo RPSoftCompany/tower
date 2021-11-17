@@ -778,7 +778,9 @@
 
           items.forEach(el => {
             const found = this.configuration.items.find(curr => {
-              return curr.name === el.name && curr.value === el.value
+              const currValue = !curr.value ? '' : curr.value
+              const elValue = !el.value ? '' : el.value
+              return curr.name === el.name && currValue === elValue
             })
 
             if (!found) {
@@ -832,7 +834,9 @@
             })
 
             if (el.isConstantVariable === false || (el.isConstantVariable === true && el.forcedValue === false)) {
-              if (!prev || el.value !== prev.value) {
+              const prevValue = prev ? !prev.value ? '' : prev.value : ''
+              const elValue = !el.value ? '' : el.value
+              if (!prev || elValue !== prevValue) {
                 different = true
               } else if (prev && prev.type !== el.type) {
                 different = true
@@ -1000,6 +1004,11 @@
             this.bases.baseValues[i] = undefined
             this.bases.baseItems[i] = undefined
           }
+        }
+
+        // When user clears one of bases
+        if (sequenceNumber > 0 && !this.bases.baseValues[sequenceNumber]) {
+          sequenceNumber--
         }
 
         let allFilled = true

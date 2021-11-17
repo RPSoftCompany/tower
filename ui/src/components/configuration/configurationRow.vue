@@ -277,9 +277,6 @@
 
         return 'min-width:50%'
       },
-      getClass () {
-        return this.different ? 'configRow_different' : 'configRow_noColor'
-      },
       different () {
         if (this.deleted || this.isNew) {
           return true
@@ -313,7 +310,9 @@
           return diff
         }
 
-        return this.currentVersionValue !== this.local_value
+        const localValue = !this.local_value ? '' : this.local_value
+
+        return this.currentVersionValue !== localValue
       }
     },
     watch: {
