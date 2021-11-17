@@ -50,6 +50,18 @@ class InterpreterCommon {
     }
 
     /**
+     * stringify
+     *
+     * @param {string} value value to change to JSON compatible string
+     *
+     * @return {string} JSON compatible string
+     */
+    stringify(value) {
+        const val = JSON.stringify(value);
+        return val.substring(1, val.length - 1);
+    }
+
+    /**
      * Checks if line represents if end
      *
      * @param {string} line line to check
@@ -127,7 +139,9 @@ class InterpreterCommon {
             Object.keys(this.configuration).forEach( (el, key) => {
                 if (el !== 'variables') {
                     if (line.includes(`%%${el}%%`) === true) {
-                        line = line.replace(`%%${el}%%`, this.configuration[el]);
+                        const value = this.returnsJson === true ? this.stringify(this.configuration[el])
+                            : this.configuration[el];
+                        line = line.replace(`%%${el}%%`, value);
                     }
                 }
             });
@@ -137,12 +151,15 @@ class InterpreterCommon {
                     regex = new RegExp(`%%${el.varName}[.]name%%`);
                     if (regex.test(line) === true) {
                         const toChange = regex.exec(line)[0];
-                        line = line.replaceAll(toChange, el.name);
+                        const name = this.returnsJson === true ? this.stringify(el.name) : el.name;
+                        line = line.replaceAll(toChange, name);
                     }
                     regex = new RegExp(`%%${el.varName}[.]value%%`);
                     if (regex.test(line) === true) {
                         const toChange = regex.exec(line)[0];
-                        line = line.replaceAll(toChange, el.value);
+                        const value = this.returnsJson === true ?
+                            this.stringify(el.value) : el.value;
+                        line = line.replaceAll(toChange, value);
                     }
                     regex = new RegExp(`%%${el.varName}[.]type%%`);
                     if (regex.test(line) === true) {
