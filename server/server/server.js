@@ -81,7 +81,7 @@ if (mainConfig.config.logLevel) {
     logLevel = mainConfig.config.logLevel;
 }
 
-const versionLimit = mainConfig.config.versionLimit !== undefined ? mainConfig.config.versionLimit : 1;
+const versionLimit = mainConfig.config.versionLimit !== undefined ? mainConfig.config.versionLimit : -1;
 app.versionLimit = versionLimit;
 
 let nonSafe = mainConfig.config.nonSafe === undefined ? false : mainConfig.config.nonSafe;

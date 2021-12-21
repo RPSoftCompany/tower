@@ -174,6 +174,10 @@ module.exports = function(Configuration) {
         return await configModel.findConfigurationForGivenDate(filter, date, options);
     };
 
+    Configuration.findVariable = async (search, valueOrName, isRegex, options) => {
+        return await configModel.findVariable(search, valueOrName, isRegex, options);
+    };
+
     // ====================================================
     // ================ Remote methods ====================
     // ====================================================
@@ -253,7 +257,7 @@ module.exports = function(Configuration) {
             {arg: 'id', type: 'string', http: {source: 'path'}},
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
-        description: 'Promote given configuration',
+        description: 'Promote configuration',
         returns: {arg: 'configuration', type: 'configuration', root: true},
     });
 
@@ -290,6 +294,18 @@ module.exports = function(Configuration) {
             {arg: 'secret', type: 'string'},
         ],
         description: 'Sets Tower\'s encryption key',
+    });
+
+    Configuration.remoteMethod('findVariable', {
+        http: {verb: 'GET', status: 200, path: '/findVariable'},
+        accepts: [
+            {arg: 'searchText', type: 'any', http: {source: 'query'}},
+            {arg: 'valueOrName', type: 'boolean', http: {source: 'query'}},
+            {arg: 'isRegex', type: 'boolean', http: {source: 'query'}},
+            {arg: 'options', type: 'object', http: 'optionsFromRequest'},
+        ],
+        description: 'Find all configurations with searched variable',
+        returns: {arg: 'configuration', type: '[configuration]', root: true},
     });
 };
 

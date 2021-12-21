@@ -70,7 +70,7 @@ module.exports = class BaseConfiguration {
         const userRoles = await member.getUserRoles(userId);
 
         if (!(userRoles.includes('constantVariable.modify') || userRoles.includes('admin'))) {
-            this.log('debug', 'findWithPermissions', 'FINISHED');
+            this.log('debug', 'createConstantVariable', 'FINISHED');
             throw new HttpErrors.Unauthorized();
         }
 
@@ -86,7 +86,7 @@ module.exports = class BaseConfiguration {
 
         for (const base of allBases) {
             _id[base.name] = `$${base.name}`;
-            if (constantVariable[base.name] !== undefined) {
+            if (constantVariable[base.name] && constantVariable[base.name] !== '__NONE__') {
                 baseExists = true;
 
                 const where = {};
@@ -126,6 +126,18 @@ module.exports = class BaseConfiguration {
             }
         }
 
+        let allNull = true;
+        for (const base of allBases) {
+            if (constantVariable[base.name] && constantVariable[base.name] !== '__NONE__') {
+                allNull = false;
+            }
+        }
+
+        if (allNull === true) {
+            this.log('debug', 'createConstantVariable', 'FINISHED');
+            throw new HttpErrors.BadRequest('At least one model needs to be a non-null value');
+        }
+
         if (!baseExists) {
             this.log('debug', 'createConstantVariable', 'FINISHED');
             throw new HttpErrors.BadRequest('Constant variable should have at least one model');
@@ -143,7 +155,11 @@ module.exports = class BaseConfiguration {
         });
 
         bases.forEach( (value, key) => {
-            newVariable[key] = value;
+            if (!value || value === '__NONE__') {
+                newVariable[key] = null;
+            } else {
+                newVariable[key] = value;
+            }
         });
 
         await newVariable.save();
@@ -163,7 +179,7 @@ module.exports = class BaseConfiguration {
      * @return {constantVariable} created model
      */
     async afterConstantVariableSave(match, _id, constantVariable, bases) {
-        this.log('debug', 'findWithPermissions', 'STARTED');
+        this.log('debug', 'afterConstantVariableSave', 'STARTED');
 
         const group = {
             _id: _id,
@@ -233,10 +249,11 @@ module.exports = class BaseConfiguration {
      *
      * @param {object} filter filter
      * @param {object} options options from request
+     * @param {object} constObject optional variables object to check the permissions in already existing object
      *
-     * @return {constantVariable} created model
+     * @return {[constantVariable]} created model
      */
-    async findWithPermissions(filter, options) {
+    async findWithPermissions(filter, options, constObject) {
         this.log('debug', 'findWithPermissions', 'STARTED');
 
         const ConstantVariable = this.app.models.constantVariable;
@@ -245,7 +262,12 @@ module.exports = class BaseConfiguration {
 
         const allBases = await baseConfiguration.find();
 
-        const all = await ConstantVariable.find(filter);
+        let all = null;
+        if (constObject) {
+            all = [constObject];
+        } else {
+            all = await ConstantVariable.find(filter);
+        }
 
         const allModels = await ConfModelInstance.findWithPermissions({}, options);
 
@@ -265,7 +287,7 @@ module.exports = class BaseConfiguration {
 
         for (const constVariable of all) {
             for (const base of allBases) {
-                if (constVariable[base.name] !== undefined) {
+                if (constVariable[base.name]) {
                     if (modelsMap.has(base.name)) {
                         const set = modelsMap.get(base.name);
                         if (set.has(constVariable[base.name])) {
@@ -308,7 +330,7 @@ module.exports = class BaseConfiguration {
      * @param {Date} date date
      * @param {object} options options from request
      *
-     * @return {constantVariable} created model
+     * @return {constantVariable} found data
      */
     async findForDate(filter, date, options) {
         this.log('debug', 'findForDate', 'STARTED');
@@ -317,80 +339,149 @@ module.exports = class BaseConfiguration {
 
         const allBases = await baseConfiguration.find({order: 'sequenceNumber ASC'});
 
-        const where = {or: []};
+        const queryFilter = [];
 
-        for (const base of allBases) {
-            if (filter[base.name] !== undefined) {
-                const object = {};
-                object[base.name] = filter[base.name];
-                where.or.push(object);
+        const match = [];
+
+        for (let i = 0; i < allBases.length - 1; i++) {
+            const __filter = {};
+            if (date) {
+                __filter.effectiveDate = {$lte: new Date(date)};
+            }
+            for (const base of allBases) {
+                __filter[base.name] = null;
+            }
+            match.push(__filter);
+            for (let j = 0; j <= i; j++) {
+                match[i][allBases[j].name] = filter[allBases[j].name];
             }
         }
 
-        if (where.or.length === 0) {
-            this.log('debug', 'findLatest', 'FINISHED');
-            throw new HttpErrors.BadRequest('Invalid filter');
+        const __matchFilter = [];
+        for (const row of match) {
+            __matchFilter.push({$and: [row]});
         }
 
-        if (date) {
-            where.effectiveDate = {
-                lt: new Date(date),
-            };
+        queryFilter.push({
+            $match: {
+                $or: __matchFilter,
+            },
+        });
+
+        const __partitionBy = {};
+        for (const base of allBases) {
+            __partitionBy[base.name] = `$${base.name}`;
         }
 
-        const allVariables = await this.findWithPermissions({where, order: 'sequenceNumber ASC'}, options);
+        queryFilter.push({
+            $setWindowFields: {
+                partitionBy: __partitionBy,
+                output: {
+                    maxDate: {
+                        $max: '$effectiveDate',
+                        window: {
+                            documents: [
+                                'unbounded', 'unbounded',
+                            ],
+                        },
+                    },
+                },
+            },
+        });
 
-        const map = new Map();
+        const __projectFilter = {};
+        Object.assign(__projectFilter, __partitionBy);
+        __projectFilter.variables = 1;
+        __projectFilter.show = {$eq: ['$effectiveDate', '$maxDate']};
+        __projectFilter.effectiveDate = 1;
 
-        allVariables.forEach( (el) => {
-            let temp = '';
-            let noGo = false;
-            let undefParent = false;
-            for (const base of allBases) {
-                if (el[base.name] !== undefined) {
-                    if (filter[base.name] !== undefined) {
-                        if (filter[base.name] === el[base.name] && !undefParent) {
-                            temp += base.name + ',';
-                        } else {
-                            noGo = true;
+        queryFilter.push({$project: __projectFilter});
+        queryFilter.push({$match: {'show': true}});
+
+        const constCursor = await this.app.dataSources['mongoDB'].connector.collection('constantVariable').aggregate(
+            queryFilter, {allowDiskUse: true},
+        );
+
+        const queryResult = [];
+
+        for await (const doc of constCursor) {
+            queryResult.push(doc);
+        }
+
+        if (queryResult.length === 0) {
+            return [];
+        }
+
+        const currentTest = {};
+        for (const base of allBases) {
+            currentTest[base.name] = null;
+        }
+
+        let tempArray = [...queryResult];
+        const hierarchyArray = [];
+        for (const base of allBases) {
+            currentTest[base.name] = filter[base.name];
+            const foundElement = tempArray.find( (el) => {
+                for (const innerBase of allBases) {
+                    if (el[innerBase.name]) {
+                        if (currentTest[innerBase.name] !== el[innerBase.name]) {
+                            return false;
+                        }
+                    } else {
+                        if (currentTest[innerBase.name]) {
+                            return false;
                         }
                     }
-                } else {
-                    undefParent = true;
                 }
-            }
 
-            if (temp !== '' && noGo === false) {
-                if (map.has(temp)) {
-                    map.get(temp).push(el);
-                } else {
-                    map.set(temp, [el]);
-                }
-            }
-        });
-
-        const variables = new Map();
-
-        for (const base of allBases) {
-            map.forEach( (value, key) => {
-                if (key.includes(base.name)) {
-                    const temp = value[value.length - 1].variables;
-                    temp.forEach((el) => {
-                        el.source = base.name;
-                        variables.set(el.name, el);
-                    });
-                }
+                return true;
             });
+
+            if (foundElement) {
+                tempArray = tempArray.filter( (el) => {
+                    return el._id !== foundElement._id;
+                });
+                hierarchyArray.push(foundElement);
+            }
         }
 
-        const all = [];
+        const all = {
+            variables: [],
+        };
+        for (let row of hierarchyArray) {
+            const allRow = await this.findWithPermissions({}, options, row);
+            if (allRow.length > 0) {
+                row = allRow[0];
+            } else {
+                row.variables = [];
+            }
 
-        variables.forEach( (value) => {
-            all.push(value);
-        });
+            if (all.variables.length === 0) {
+                all.variables = [...row.variables];
+            } else {
+                const tempVariables = [...row.variables];
+
+                for (const tempVar of tempVariables) {
+                    let updated = false;
+                    all.variables.map( (el) => {
+                        if (el.name === tempVar.name) {
+                            updated = true;
+                            el.value = tempVar.value;
+                            el.type = tempVar.type;
+                            el.forced = tempVar.forced;
+                            el.addIfAbsent = tempVar.addIfAbsent;
+                        }
+                    });
+
+                    if (updated === false) {
+                        all.variables.push(tempVar);
+                    }
+                }
+            }
+        }
 
         this.log('debug', 'findForDate', 'FINISHED');
 
-        return all;
+        return all.variables;
     }
 };

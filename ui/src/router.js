@@ -19,6 +19,11 @@ const router = new Router({
       component: () => import('./views/Archive.vue')
     },
     {
+      path: '/findvariable',
+      name: 'Find Variable',
+      component: () => import('./views/FindVariable')
+    },
+    {
       path: '/configuration',
       name: 'Configuration',
       component: () => import('./views/Configuration.vue')

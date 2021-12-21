@@ -138,7 +138,8 @@
                   clearable
                   autocomplete="off"
                   return-object
-                  :style="bases.baseValues[base.sequenceNumber] && bases.baseValues[base.sequenceNumber].name === '__NONE__'
+                  :style="bases.baseValues[base.sequenceNumber] &&
+                    bases.baseValues[base.sequenceNumber].name === '__NONE__'
                     ? 'opacity: 0.5' : undefined"
                   @change="fillNextArray(base.sequenceNumber)"
                   @click="emitTutorialEvent"
@@ -1144,7 +1145,7 @@
         for (let i = 0; i < this.bases.items.length; i++) {
           const el = this.bases.baseValues[i]
           filter.where[el.base] = el.name === '__NONE__' ? null : el.name
-          constWhere[el.base] = el.name
+          constWhere[el.base] = el.name === '__NONE__' ? null : el.name
           rules = rules.concat(el.rules)
         }
 
@@ -1535,8 +1536,11 @@
 
         const objectFilter = {}
         for (let i = 0; i < this.bases.items.length; i++) {
-          objectFilter[this.bases.items[i].name] = this.bases.baseValues[i]?.name
-              ? this.bases.baseValues[i].name : { eq: null }
+          let name = this.bases.baseValues[i] ? this.bases.baseValues[i].name : { eq: null }
+          if (!name || name === '__NONE__') {
+            name = { eq: null }
+          }
+          objectFilter[this.bases.items[i].name] = name
         }
 
         const filter = {

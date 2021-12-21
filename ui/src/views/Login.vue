@@ -258,7 +258,11 @@
           `${this.$store.state.mainUrl}/members/getUserRoles`
         )
 
-        this.$store.commit('setUserRoles', roles.data)
+        if (roles) {
+          this.$store.commit('setUserRoles', roles.data)
+        } else {
+          return
+        }
 
         if (token.user.newUser) {
           await this.$router.push('/changePassword')
@@ -281,6 +285,10 @@
       },
       getUserStartPath (roles) {
         let path = null
+
+        if (!roles) {
+          return
+        }
 
         if (this.$store.state.user.username === 'admin' || roles.includes('admin')) {
           return 'settings'
