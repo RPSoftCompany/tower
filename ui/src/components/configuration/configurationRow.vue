@@ -16,12 +16,14 @@
 
 <template>
   <div
-    :class="{configRow_crossed: deleted, 'font-weight-light': deleted, 'font-italic': deleted,
-             'configRow_different': different}"
+    :class="{configRow_crossed: deleted, 'font-weight-light': deleted, 'font-italic': deleted}"
     :style="local_type === 'boolean' ? 'height:71px' : ''"
     class="d-flex flex-row justify-space-around"
   >
-    <v-row class="ma-0">
+    <v-row
+      class="ma-0"
+      :class="{'configRow_different': different}"
+    >
       <v-col
         :cols="showHistory === true ? 4 : 6"
         class="pl-2 py-0 d-flex text-center align-center justify-center"
@@ -276,9 +278,6 @@
 
         return 'min-width:50%'
       },
-      getClass () {
-        return this.different ? 'configRow_different' : 'configRow_noColor'
-      },
       different () {
         if (this.deleted || this.isNew) {
           return true
@@ -312,7 +311,9 @@
           return diff
         }
 
-        return this.currentVersionValue !== this.local_value
+        const localValue = !this.local_value ? '' : this.local_value
+
+        return this.currentVersionValue !== localValue
       }
     },
     watch: {
@@ -369,8 +370,7 @@
   }
 </script>
 
-<style>
-
+<style lang="scss">
 .configRow_draft {
   background: rgba(155, 163, 158, 0.3);
 }
@@ -387,7 +387,19 @@
 }
 
 .configRow_different {
-  background: rgba(242, 165, 42, 0.42);
-  transition: all 0.3s;
+  position: relative;
+  z-index: 1;
+}
+
+.configRow_different::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--v-primary-base);
+  opacity: 0.5;
+  z-index: -1;
 }
 </style>

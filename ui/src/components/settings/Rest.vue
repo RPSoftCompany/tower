@@ -140,11 +140,14 @@
           :list="items"
           handle=".handler"
           style="width: 100%"
+          class="mx-2"
           @end="dragEnded"
         >
           <v-expansion-panel
             v-for="(item, i) of items"
             :key="item.id"
+            class="outline"
+            :class="{dark: $vuetify.theme.dark === true}"
           >
             <v-expansion-panel-header>
               <template v-slot:default>

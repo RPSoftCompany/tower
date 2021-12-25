@@ -21,7 +21,8 @@
     },
     "variables": {
       "type": "any",
-      "required": true
+      "required": true,
+      "index": true
     },
     "createdBy": {
       "type": "string"

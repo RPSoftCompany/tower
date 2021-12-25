@@ -151,7 +151,7 @@
 </template>
 
 <script>
-  import { mdiArchive, mdiSettings, mdiTune, mdiCalendarClock } from '@mdi/js'
+  import { mdiArchive, mdiSettings, mdiTune, mdiCalendarClock, mdiFileFind } from '@mdi/js'
 
   export default {
     name: 'Drawer',
@@ -173,6 +173,10 @@
         name: 'Time Archive',
         path: '/timearchive',
         icon: mdiCalendarClock
+      }, {
+        name: 'Find Variable',
+        path: '/findvariable',
+        icon: mdiFileFind
       }],
       baseModelLinks: [],
       configurationIcon: mdiTune

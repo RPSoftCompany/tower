@@ -83,7 +83,6 @@
         <v-card-title class="primary">
           Select promoted configuration
         </v-card-title>
-        </v-card-title>
         <v-card-text>
           <v-data-table
             class="mt-5 promotionDialogTable"
@@ -110,51 +109,62 @@
       :height="3"
       indeterminate
     />
-    <v-row
-      v-if="bases.items.length > 0"
-      no-gutters
-    >
-      <v-col
-        v-for="base of bases.items"
-        :key="base.name"
-        class="pa-0"
-      >
-        <v-autocomplete
-          :id="`baseConf_${base.sequenceNumber}`"
-          :ref="`baseConf_${base.name}`"
-          v-model="bases.baseValues[base.sequenceNumber]"
-          :prepend-icon="base.icon"
-          :label="base.name"
-          :items="bases.baseItems[base.sequenceNumber]"
-          :loading="baseLoading(base.sequenceNumber)"
-          :data-cy="`configuration_base_${base.name}`"
-          class="pa-2"
-          item-text="name"
-          clearable
-          autocomplete="off"
-          return-object
-          :style="bases.baseValues[base.sequenceNumber] && bases.baseValues[base.sequenceNumber].name === '__NONE__'
-            ? 'opacity: 0.5' : undefined"
-          @change="fillNextArray(base.sequenceNumber)"
-          @click="emitTutorialEvent"
+    <v-row class="mb-3">
+      <v-col>
+        <v-card
+          v-if="bases.items.length > 0"
+          outlined
         >
-          <template v-slot:item="{parent, item}">
-            <template v-if="item.name === '__NONE__'">
-              <span style="color:gray">NONE</span>
-            </template>
-            <template v-else>
-              {{ item.name }}
-            </template>
-          </template>
-          <template v-slot:selection="{parent, item}">
-            <template v-if="item.name === '__NONE__'">
-              <span style="color:gray">NONE</span>
-            </template>
-            <template v-else>
-              {{ item.name }}
-            </template>
-          </template>
-        </v-autocomplete>
+          <v-card-text class="pt-3 px-3 pb-0">
+            <v-row
+              no-gutters
+            >
+              <v-col
+                v-for="base of bases.items"
+                :key="base.name"
+                class="pa-0"
+              >
+                <v-autocomplete
+                  :id="`baseConf_${base.sequenceNumber}`"
+                  :ref="`baseConf_${base.name}`"
+                  v-model="bases.baseValues[base.sequenceNumber]"
+                  :prepend-icon="base.icon"
+                  :label="base.name"
+                  :items="bases.baseItems[base.sequenceNumber]"
+                  :loading="baseLoading(base.sequenceNumber)"
+                  :data-cy="`configuration_base_${base.name}`"
+                  class="pa-2"
+                  item-text="name"
+                  clearable
+                  autocomplete="off"
+                  return-object
+                  :style="bases.baseValues[base.sequenceNumber] &&
+                    bases.baseValues[base.sequenceNumber].name === '__NONE__'
+                    ? 'opacity: 0.5' : undefined"
+                  @change="fillNextArray(base.sequenceNumber)"
+                  @click="emitTutorialEvent"
+                >
+                  <template v-slot:item="{parent, item}">
+                    <template v-if="item.name === '__NONE__'">
+                      <span style="color:gray">NONE</span>
+                    </template>
+                    <template v-else>
+                      {{ item.name }}
+                    </template>
+                  </template>
+                  <template v-slot:selection="{parent, item}">
+                    <template v-if="item.name === '__NONE__'">
+                      <span style="color:gray">NONE</span>
+                    </template>
+                    <template v-else>
+                      {{ item.name }}
+                    </template>
+                  </template>
+                </v-autocomplete>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
     <v-row
@@ -187,6 +197,7 @@
     />
     <v-card
       v-if="filterPanel.show"
+      outlined
       class="pb-2 pt-5"
     >
       <div class="d-flex">
@@ -338,14 +349,15 @@
       <v-divider
         v-if="(configuration.items.length > 0 && configuration.editMode === false) || configuration.editMode"
         class="pb-5"
+        :class="{divider: $vuetify.theme.dark === false, divider_dark: $vuetify.theme.dark === true}"
       />
       <div
         v-if="(configuration.items.length > 0 && configuration.editMode === false) || configuration.editMode"
         class="d-flex justify-space-around"
       >
         <div class="thirdWidth d-flex align-center justify-center">
-          <div class="subtitle-1 text-center font-weight-bold">
-            Name
+          <div class="text-h6 text-center font-weight-bold">
+            Variable name
           </div>
         </div>
         <div
@@ -378,7 +390,7 @@
               </template>
               <span>Promote Configuration</span>
             </v-tooltip>
-            <div class="subtitle-1 font-weight-bold">
+            <div class="text-h6 font-weight-bold">
               {{ versionLabel }}
             </div>
             <v-tooltip
@@ -412,13 +424,13 @@
         <div class="thirdWidth d-flex align-center justify-center">
           <div
             v-if="configuration.editMode"
-            class="subtitle-1 text-center font-weight-bold"
+            class="text-h6 text-center font-weight-bold"
           >
             Type
           </div>
           <div
             v-else
-            class="subtitle-1 text-center font-weight-bold"
+            class="text-h6 text-center font-weight-bold"
           >
             Value
           </div>
@@ -427,13 +439,17 @@
       <v-divider
         v-if="(configuration.items.length > 0 && configuration.editMode === false) || configuration.editMode"
         class="mt-4"
+        :class="{divider: $vuetify.theme.dark === false, divider_dark: $vuetify.theme.dark === true}"
       />
-      <v-divider v-else />
+      <v-divider
+        v-else
+        :class="{divider: $vuetify.theme.dark === false, divider_dark: $vuetify.theme.dark === true}"
+      />
       <div v-if="configuration.editMode === false">
         <v-responsive
           id="configurationPanelId"
           class="overflow-y-auto"
-          style="max-height: calc(100vh - 436px)"
+          style="max-height: calc(100vh - 456px)"
         >
           <v-form
             ref="configValidation"
@@ -443,6 +459,7 @@
               v-for="item of filteredItems"
               :key="item.name"
               v-model="configuration.lazyVisible[item.name]"
+              transition=""
               min-height="71"
             >
               <configurationRow
@@ -470,7 +487,7 @@
         <v-responsive
           v-if="filteredItems.length > 0"
           class="overflow-y-auto pt-2"
-          style="max-height: calc(100vh - 436px)"
+          style="max-height: calc(100vh - 456px)"
         >
           <v-form
             ref="configValidation"
@@ -482,6 +499,7 @@
               v-for="item of filteredItems"
               :key="item.name"
               v-model="configuration.lazyVisible[item.name]"
+              transition=""
               min-height="71"
             >
               <new-configuration-row
@@ -504,7 +522,7 @@
         <v-responsive
           v-if="filteredConstantVariables.length > 0"
           class="overflow-y-auto pt-3"
-          style="max-height: calc(100vh - 351px);"
+          style="max-height: calc(100vh - 391px);"
         >
           <v-lazy
             v-for="variable of filteredConstantVariables"
@@ -524,7 +542,14 @@
           </v-lazy>
         </v-responsive>
       </div>
-      <v-divider v-if="constantVariables.editable === true" />
+      <v-divider
+        v-if="constantVariables.editable === true && constantVariables.items.length > 0"
+        :class="{divider: $vuetify.theme.dark === false, divider_dark: $vuetify.theme.dark === true}"
+      />
+      <v-divider
+        v-if="configuration.showSaveButton"
+        :class="{divider: $vuetify.theme.dark === false, divider_dark: $vuetify.theme.dark === true}"
+      />
       <div
         v-if="configuration.showSaveButton"
         class="d-flex flex-row justify-space-around mt-2"
@@ -754,7 +779,9 @@
 
           items.forEach(el => {
             const found = this.configuration.items.find(curr => {
-              return curr.name === el.name && curr.value === el.value
+              const currValue = !curr.value ? '' : curr.value
+              const elValue = !el.value ? '' : el.value
+              return curr.name === el.name && currValue === elValue
             })
 
             if (!found) {
@@ -808,7 +835,9 @@
             })
 
             if (el.isConstantVariable === false || (el.isConstantVariable === true && el.forcedValue === false)) {
-              if (!prev || el.value !== prev.value) {
+              const prevValue = prev ? !prev.value ? '' : prev.value : ''
+              const elValue = !el.value ? '' : el.value
+              if (!prev || elValue !== prevValue) {
                 different = true
               } else if (prev && prev.type !== el.type) {
                 different = true
@@ -978,6 +1007,11 @@
           }
         }
 
+        // When user clears one of bases
+        if (sequenceNumber > 0 && !this.bases.baseValues[sequenceNumber]) {
+          sequenceNumber--
+        }
+
         let allFilled = true
         let firstUnfilled = -1
         for (const item of this.bases.items) {
@@ -1111,7 +1145,7 @@
         for (let i = 0; i < this.bases.items.length; i++) {
           const el = this.bases.baseValues[i]
           filter.where[el.base] = el.name === '__NONE__' ? null : el.name
-          constWhere[el.base] = el.name
+          constWhere[el.base] = el.name === '__NONE__' ? null : el.name
           rules = rules.concat(el.rules)
         }
 
@@ -1502,8 +1536,11 @@
 
         const objectFilter = {}
         for (let i = 0; i < this.bases.items.length; i++) {
-          objectFilter[this.bases.items[i].name] = this.bases.baseValues[i]?.name
-              ? this.bases.baseValues[i].name : { eq: null }
+          let name = this.bases.baseValues[i] ? this.bases.baseValues[i].name : { eq: null }
+          if (!name || name === '__NONE__') {
+            name = { eq: null }
+          }
+          objectFilter[this.bases.items[i].name] = name
         }
 
         const filter = {
@@ -1740,6 +1777,14 @@
 .thirdWidth {
   max-width: 32%;
   width: 32%;
+}
+
+.divider {
+  border-color: var(--v-background-darken4);
+}
+
+.divider_dark {
+  border-color: var(--v-background-lighten4);
 }
 </style>
 

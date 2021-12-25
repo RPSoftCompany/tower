@@ -1,11 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="e16bfb61-4cb0-49e0-8a6e-5dbd8447af86" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/docker/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/archive/comparisonTable.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/archive/comparisonTable.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/base/advancedRule.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/base/advancedRule.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/base/rule.vue" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/core/footerElement.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/footerElement.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/core/profileButton.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/profileButton.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/highlight/tower_highlight.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Connection.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Connection.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Hook.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Hook.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Promotion.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Promotion.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Rest.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Rest.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/plugins/vuetify.js" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/plugins/vuetify.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Archive.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Archive.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Base.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/src/views/Configuration.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Configuration.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Login.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/Settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Settings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,15 +42,18 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.standard" value="" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
@@ -111,6 +135,21 @@
       <workItem from="1625983036709" duration="8467000" />
       <workItem from="1626011018345" duration="8750000" />
       <workItem from="1626085523203" duration="4825000" />
+      <workItem from="1633788425512" duration="6451000" />
+      <workItem from="1633849682772" duration="840000" />
+      <workItem from="1633850532119" duration="1240000" />
+      <workItem from="1633851781368" duration="104000" />
+      <workItem from="1633851892827" duration="239000" />
+      <workItem from="1633892569777" duration="924000" />
+      <workItem from="1633893503897" duration="1671000" />
+      <workItem from="1634536318440" duration="822000" />
+      <workItem from="1634562071428" duration="76000" />
+      <workItem from="1634961021865" duration="2542000" />
+      <workItem from="1635054895085" duration="283000" />
+      <workItem from="1635751750826" duration="3573000" />
+      <workItem from="1636183481512" duration="9620000" />
+      <workItem from="1636425001034" duration="16997000" />
+      <workItem from="1636792201370" duration="1281000" />
     </task>
     <servers />
   </component>
@@ -128,5 +167,8 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>

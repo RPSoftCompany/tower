@@ -15,7 +15,7 @@
 //    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
 <template>
-  <v-card>
+  <v-card outlined>
     <v-tabs
       v-model="tab"
       icons-and-text

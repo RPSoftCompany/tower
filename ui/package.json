@@ -1,7 +1,10 @@
 {
   "name": "tower-ui",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "private": true,
+  "engines": {
+    "node": "<15.0.0"
+  },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "rm -rf ../server/client/* && vue-cli-service build --mode production --dest ../server/client/ui && cp ../server/redirect/index.html ../server/client/index.html",
@@ -23,6 +26,7 @@
     "vue-animejs": "^2.1.1",
     "vue-cookie": "^1.1.4",
     "vue-custom-scrollbar": "^1.2.0",
+    "vue-multipane": "^0.9.5",
     "vue-prism-editor": "^1.2.2",
     "vue-router": "^3.4.9",
     "vue-virtual-scroller": "^1.0.10",

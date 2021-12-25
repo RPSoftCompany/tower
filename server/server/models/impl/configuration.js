@@ -212,16 +212,22 @@ module.exports = class Configuration {
      *
      * @param {any} filter query filter
      * @param {object} options request options
+     * @param {boolean} customQuery use custom query result from filter
      *
      * @return {[configuration]} queried models
      */
-    async findWithPermissions(filter, options) {
+    async findWithPermissions(filter, options, customQuery) {
         this.log('debug', 'findWithPermissions', 'STARTED');
 
         const configuration = this.app.models.configuration;
         const configModel = new ConfigurationModelClass(this.app);
 
-        const configAll = await configuration.find(filter);
+        let configAll;
+        if (customQuery === true) {
+            configAll = filter;
+        } else {
+            configAll = await configuration.find(filter);
+        }
         const allBases = await this.app.get('BaseConfigurationInstance').getConfigurationModelFromCache();
 
         await this.createCrypt();
@@ -275,6 +281,7 @@ module.exports = class Configuration {
                         }
                     });
                 }
+
                 findArray.push(config);
             }
         }
@@ -698,5 +705,166 @@ module.exports = class Configuration {
         this.log('debug', 'findConfigurationForGivenDate', 'FINISHED');
 
         return candConfig;
+    }
+
+    /**
+     * Find all configurations with given variable
+     *
+     * @param {string} search query filter
+     * @param {boolean} valueOrName true: value, false: name
+     * @param {boolean} isRegex indicates if search text is a regex or not
+     * @param {boolean} returnFullConfig indicates if user wants all variables
+     *  from configuration or only the searched ones
+     * @param {boolean} latestOnly indicates if user needs all configurations or only the latest one
+     * @param {object} options request options
+     *
+     */
+    async findVariable(search, valueOrName, isRegex, options) {
+        this.log('debug', 'findVariable', 'STARTED');
+
+        const allBases = await this.app.get('BaseConfigurationInstance').getConfigurationModelFromCache();
+
+        const constVariable = new ConstantVariableClass(this.app);
+
+        const valOrName = valueOrName === true ? 'value' : 'name';
+        const cond = isRegex === true ? {'$regexMatch': {
+            input: `$$item.${valOrName}`,
+            regex: new RegExp(search),
+            options: 'i',
+        }} : {$eq: [`$$item.${valOrName}`, search]};
+
+        const project = {
+            version: 1,
+            effectiveDate: 1,
+            variables: {
+                '$filter': {
+                    input: '$variables',
+                    as: 'item',
+                    cond: cond,
+                },
+            },
+        };
+
+        const _id = {};
+
+        for (const base of allBases) {
+            project[base.name] = 1;
+            _id[base.name] = `$${base.name}`;
+        }
+
+        const match = {
+            variables: {
+                '$elemMatch': {},
+            },
+        };
+
+        if (isRegex) {
+            match.variables['$elemMatch'][valOrName] = {'$regex': new RegExp(search, 'i')};
+        } else {
+            match.variables['$elemMatch'][valOrName] = search;
+        }
+
+        let filter = [];
+        filter.push({
+            '$match': match,
+        });
+        filter.push({
+            '$project': project,
+        });
+
+        filter.push({
+            '$setWindowFields': {
+                partitionBy: _id,
+                sortBy: {version: -1},
+                output: {
+                    maxVersion: {
+                        $max: '$version',
+                        window: {
+                            documents: ['unbounded', 'unbounded'],
+                        },
+                    },
+                },
+            },
+        });
+
+        const _all = {};
+        Object.assign(_all, _id);
+        _all.show = {$eq: ['$maxVersion', '$version']};
+        _all.variables = 1;
+        _all.effectiveDate = 1;
+        _all.version = 1;
+
+        filter.push({
+            '$project': _all,
+        });
+
+        filter.push({
+            $match: {
+                show: true,
+            },
+        });
+
+        const cursor = await this.app.dataSources['mongoDB'].connector.collection('configuration').aggregate(
+            filter, {allowDiskUse: true},
+        );
+
+        let queryResult = [];
+
+        for await (const doc of cursor) {
+            queryResult.push(doc);
+        }
+
+        let output = await this.findWithPermissions(queryResult, options, true);
+
+        filter = [];
+        filter.push({
+            '$match': match,
+        });
+        filter.push({
+            '$project': project,
+        });
+        filter.push({
+            '$setWindowFields': {
+                partitionBy: _id,
+                sortBy: {version: -1},
+                output: {
+                    maxDate: {
+                        $max: '$effectiveDate',
+                        window: {
+                            documents: ['unbounded', 'unbounded'],
+                        },
+                    },
+                },
+            },
+        });
+
+        _all.const = {$eq: [1, 1]};
+        _all.show = {$eq: ['$effectiveDate', '$maxDate']};
+        filter.push({
+            '$project': _all,
+        });
+        filter.push({
+            $match: {
+                show: true,
+            },
+        });
+
+        const constCursor = await this.app.dataSources['mongoDB'].connector.collection('constantVariable').aggregate(
+            filter, {allowDiskUse: true},
+        );
+
+        queryResult = [];
+        for await (const doc of constCursor) {
+            const row = await constVariable.findWithPermissions({}, options, doc);
+            if (row.length > 0) {
+                queryResult.push(row[0]);
+            }
+        }
+
+        output = {variables: output, constantVariables: queryResult};
+
+        this.log('debug', 'findVariable', 'FINISHED');
+
+        return output;
     }
 };

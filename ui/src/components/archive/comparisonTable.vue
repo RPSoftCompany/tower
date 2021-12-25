@@ -79,10 +79,11 @@
         <div class="d-flex flex-row justify-space-around">
           <div
             :style="maxWidth"
+            class="px-3 py-4 text-center"
             :class="
               isDifferent(variable)
-                ? 'different text-center px-3 py-4'
-                : 'text-center px-3 py-4'
+                ? $vuetify.theme.dark === true ? 'different_dark' : 'different'
+                : ''
             "
           >
             {{ variable }}
@@ -91,10 +92,11 @@
             v-for="l in configurationsLength"
             :key="l"
             :style="maxWidth"
+            class="font-weight-light text-center px-3 py-4"
             :class="
               isDifferent(variable)
-                ? 'different font-weight-light text-center px-3 py-4'
-                : 'font-weight-light text-center px-3 py-4'
+                ? $vuetify.theme.dark === true ? 'different_dark' : 'different'
+                : ''
             "
             v-html="findVariableValue(l, variable)"
           />
@@ -114,34 +116,34 @@
         type: Array,
         default: () => {
           return []
-        },
+        }
       },
       bases: {
         type: Array,
         default: () => {
           return []
-        },
+        }
       },
       filter: {
         type: Object,
-        required: true,
+        required: true
       },
       dateversion: {
         type: Boolean,
-        default: false,
+        default: false
       },
       innerclass: {
         type: String,
         required: false,
-        default: null,
-      },
+        default: null
+      }
     },
     data: () => ({
       icons: {
-        mdiClose,
+        mdiClose
       },
       variables: new Set(),
-      local_items: [],
+      local_items: []
     }),
     computed: {
       configurationsLength () {
@@ -182,7 +184,7 @@
 
           return false
         })
-      },
+      }
     },
     methods: {
       onHeaderClicked (configIndex) {
@@ -190,7 +192,7 @@
         const config = this.configurations[configIndex]
         this.$emit('headerClicked', {
           index: configIndex,
-          dateTime: config.effectiveDate,
+          dateTime: config.effectiveDate
         })
       },
       onConfigurationsChange () {
@@ -204,24 +206,24 @@
         this.local_items = Array.from(this.variables).sort()
       },
       findVariableValue (configIndex, name) {
-        configIndex--
-        const variable = this.configurations[configIndex].variables.find(el => {
+        const variable = this.configurations[--configIndex].variables.find(el => {
           return el.name === name
         })
 
-        if (variable === undefined) {
+        const value = variable ? variable.value !== undefined ? variable.value : variable : undefined
+
+        if (value === undefined) {
           return '<i style="color:gray">No variable</i>'
+        } else if (value === null || value === '') {
+          return '<i style="color:gray">Empty variable</i>'
         } else {
-          return variable.value
+          return value
         }
       },
       getVersionCreatorText (configIndex) {
-        configIndex--
-        const config = this.configurations[configIndex]
+        const config = this.configurations[--configIndex]
 
-        const text = `Created by: ${config.createdByUser}`
-
-        return text
+        return `Created by: ${config.createdByUser}`
       },
       getDateText (configIndex) {
         configIndex--
@@ -281,8 +283,8 @@
         })
 
         return diff
-      },
-    },
+      }
+    }
   }
 </script>
 
@@ -292,7 +294,10 @@
 }
 
 .different {
-  background: #f2a52a69;
+  background: var(--v-primary-lighten1);
+}
+.different_dark {
+  background: var(--v-primary-darken4);
 }
 
 .list-enter-active,
