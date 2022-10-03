@@ -58,7 +58,11 @@ class InterpreterCommon {
      */
     stringify(value) {
         const val = JSON.stringify(value);
-        return val.substring(1, val.length - 1);
+        if (typeof value === 'string') {
+            return val.substring(1, val.length - 1);
+        } else {
+            return val;
+        }
     }
 
     /**
@@ -293,7 +297,7 @@ class InterpreterCommon {
                     if (find[mod] <= compare) {
                         ifPassed = true;
                     }
-                } else if (operation === '>~=') {
+                } else if (operation === '~=') {
                     const compareRegEx = new RegExp(compare);
                     if (compareRegEx.test(find[mod]) === true) {
                         ifPassed = true;
