@@ -311,7 +311,7 @@
           return diff
         }
 
-        const localValue = !this.local_value ? '' : this.local_value
+        const localValue = this.local_value !== undefined ? this.local_value : ''
 
         return this.currentVersionValue !== localValue
       }
