@@ -43,6 +43,8 @@ class InterpreterCommon {
 
         this.returnsJson = returnsJson;
 
+        this.globalVariables = [];
+
         this.configurationVariables = configuration.variables;
         this.configuration = configuration;
 
@@ -140,7 +142,7 @@ class InterpreterCommon {
     handler(line) {
         // replace know values
         if (line.split('%%').length >= 2) {
-            Object.keys(this.configuration).forEach( (el, key) => {
+            Object.keys(this.configuration).forEach((el, key) => {
                 if (el !== 'variables') {
                     if (line.includes(`%%${el}%%`) === true) {
                         const value = this.returnsJson === true ? this.stringify(this.configuration[el])
@@ -149,7 +151,8 @@ class InterpreterCommon {
                     }
                 }
             });
-            this.variables.forEach((el) => {
+            const allVariables = [...this.globalVariables, ...this.variables, this.configuration.variables];
+            allVariables.forEach((el) => {
                 let regex = new RegExp(`%%${el.varName}[.](name|value|type)+%%`);
                 if (regex.test(line) === true) {
                     regex = new RegExp(`%%${el.varName}[.]name%%`);
@@ -174,12 +177,6 @@ class InterpreterCommon {
             });
         }
 
-        while (line.split('%%').length >= 2) {
-            const tempLine = line.substring(line.indexOf('%%') + 2, line.lastIndexOf('%%'));
-            const newLine = this.handler(tempLine);
-            line = line.replace(`%%${tempLine}%%`, newLine);
-        }
-
         line = this.handleVariableReplace(line);
         return line;
     }
@@ -195,51 +192,89 @@ class InterpreterCommon {
         // function
         const tempText = line.trim();
 
-        if (tempText.startsWith('tower_')) {
-            const methodName = tempText.substring(0, tempText.indexOf('('));
-            const params = tempText.substring(tempText.indexOf('(') + 1, tempText.lastIndexOf(')'));
+        const methodRegex = new RegExp(`%%\\s*tower_\\S+\\s*\\([^\)]*\\)%%`, 'g');
+        const variablesRegex = new RegExp(`%%\\s*variables\\[["']*[^\\]]+["']*\\]\\s*%%`, 'g');
+        const definedVariableRegex = new RegExp(`%%\\s*defined\\.(name|value|type)\\s*%%`, 'g');
 
-            return this.executeMethod(methodName, params);
-        } else if (tempText.startsWith('variables') === true) {
-            let variable = tempText.substring(tempText.indexOf('[')+1, tempText.length - 1);
-            variable = variable.trim();
-            if (variable.startsWith('"') || variable.startsWith(`'`) || variable.startsWith('`')) {
-                variable = variable.substring(1, variable.length-1);
+        if (methodRegex.test(tempText)) {
+            const allMethods = line.match(methodRegex);
+
+            for (const method of allMethods) {
+                const methodName = method.substring(2, method.indexOf('(')).trim();
+                const params = method.substring(method.indexOf('(') + 1, method.lastIndexOf(')'));
+
+                const tempLine = this.executeMethod(methodName, params);
+                line = line.replace(method, tempLine);
             }
-            let find = this.variables.find((el) => {
-                return el.varName === variable;
-            });
+        }
+        if (variablesRegex.test(tempText)) {
+            const allVariables = line.match(variablesRegex);
 
-            if (find) {
-                return find.value;
-            } else {
-                find = this.configurationVariables.find((el) => {
-                    return el.name === variable;
+            for (const variableTemp of allVariables) {
+                let variable = variableTemp.trim();
+                variable = variable.replace(new RegExp(`^%%\\s*variables\\[["']*`), '');
+                variable = variable.replace(new RegExp(`["']*\]\\s*%%$`), '');
+
+                let find = this.variables.find((el) => {
+                    return el.varName === variable;
                 });
 
                 if (find) {
-                    return find.value;
+                    line = line.replace(variableTemp, find.value);
+                } else {
+                    find = this.configurationVariables.find((el) => {
+                        return el.name === variable;
+                    });
+
+                    if (find) {
+                        line = line.replace(variableTemp, find.value);
+                    }
                 }
             }
-        } else if (tempText.split('.').length === 2) {
-            const splitLine = tempText.split('.');
-            let find = this.variables.find((el) => {
-                return el.varName === splitLine[0];
-            });
+        }
 
-            if (find) {
-                return find[splitLine[1]];
-            } else {
-                find = this.configurationVariables.find((el) => {
-                    return el.name === splitLine[0];
+        if (definedVariableRegex.test(tempText)) {
+            const allVariables = line.match(definedVariableRegex);
+
+            for (const variable of allVariables) {
+                const splitLine = variable.split('.');
+                let find = this.variables.find((el) => {
+                    return el.varName === splitLine[0];
                 });
 
                 if (find) {
-                    return find[splitLine[1]];
+                    line = line.replace(variable, find[splitLine[1]]);
+                } else {
+                    find = this.configurationVariables.find((el) => {
+                        return el.name === splitLine[0];
+                    });
+
+                    if (find) {
+                        line = line.replace(variable, find[splitLine[1]]);
+                    }
                 }
             }
-        } else if (tempText !== 'variables' && this.configuration.variables[tempText]) {
-            return this.configuration.variables[tempText];
+        }
+
+        if (this.checkIfDef(tempText)) {
+            const defRegex = new RegExp(`%%\\s*def\\s+[^=]+=[^%]+%%`, 'g');
+            const allDefs = line.match(defRegex);
+
+            for (const def of allDefs) {
+                const defName = def.replace(new RegExp(`^%%\\s*def\\s+`), '')
+                    .replace(new RegExp(`=.*`), '').trim();
+                let defValue = def.replace(new RegExp(`^%%\\s*def\\s+`), '')
+                    .replace(defName, '').trim();
+                defValue = defValue.substring(1, defValue.length - 2).trim();
+
+                this.globalVariables.push({
+                    varName: defName,
+                    value: defValue,
+                    type: 'string',
+                });
+
+                line = line.replace(def, '');
+            }
         }
 
         return line;
@@ -268,7 +303,8 @@ class InterpreterCommon {
                 '');
             compare = /[^'"`]+/.exec(compare)[0];
 
-            const find = this.variables.find( (el) => {
+            const allVariables = [...this.globalVariables, ...this.variables, this.configuration.variables];
+            const find = allVariables.find((el) => {
                 return el.varName === variableName;
             });
 
@@ -306,12 +342,12 @@ class InterpreterCommon {
 
                 // handle if statement
                 i++;
-                const definedVariables = [];
+                const definedVariables = [...this.globalVariables];
                 let whileLine = textLines[i];
                 let textChange = '';
                 let elseIfs = 0;
 
-                while (whileLine && this.checkIfIfEnd(whileLine) === false || elseIfs > 0 ) {
+                while (whileLine && this.checkIfIfEnd(whileLine) === false || elseIfs > 0) {
                     let inElse = false;
                     if (this.checkIfElse(whileLine) === true) {
                         ifPassed = !ifPassed;
@@ -330,12 +366,12 @@ class InterpreterCommon {
                         } else if (this.checkIfDef(whileLine) === true) {
                             const newVariable = this.handleDef(whileLine);
                             definedVariables.push(newVariable);
-                            const findVariable = this.variables.find( (el) => {
+                            const findVariable = this.variables.find((el) => {
                                 return el.name === newVariable.name;
                             });
 
                             if (findVariable) {
-                                this.variables = this.variables.map( (el) => {
+                                this.variables = this.variables.map((el) => {
                                     if (el.varName === newVariable.varName) {
                                         el.value = newVariable.value;
                                         el.type = newVariable.type;
@@ -361,8 +397,8 @@ class InterpreterCommon {
                     whileLine = textLines[i];
                 }
 
-                definedVariables.forEach( (variable) => {
-                    this.variables = this.variables.filter( (el) => {
+                definedVariables.forEach((variable) => {
+                    this.variables = this.variables.filter((el) => {
                         return el.varName !== variable.varName;
                     });
                 });
@@ -391,7 +427,7 @@ class InterpreterCommon {
         const currentLine = textLines[i];
         let varName = '';
         const variable = [];
-        const definedVariables = [];
+        const definedVariables = [...this.globalVariables];
 
         // check forEach kind
         if (/^\s*%%forEach\s+\S+\s+in\s+list\s*\[/.test(currentLine)) {
@@ -411,7 +447,7 @@ class InterpreterCommon {
             });
 
             if (!tempVariable) {
-                tempVariable = this.variables.find( (el) => {
+                tempVariable = this.variables.find((el) => {
                     return el.varName === variableName;
                 });
             }
@@ -447,7 +483,7 @@ class InterpreterCommon {
 
             const reg = new RegExp(line);
 
-            this.configuration.variables.forEach( (el) => {
+            this.configuration.variables.forEach((el) => {
                 if (reg.test(el.name)) {
                     variable.push({
                         name: el.name,
@@ -468,7 +504,7 @@ class InterpreterCommon {
 
         if (variable.length > 0) {
             for (let loop = 0; loop < variable.length; loop++) {
-                let loopLine = textLines[i+1];
+                let loopLine = textLines[i + 1];
                 maxI = i + 1;
                 let changedVariableLine = '';
 
@@ -487,12 +523,12 @@ class InterpreterCommon {
                     } else if (this.checkIfDef(loopLine) === true) {
                         const newVariable = this.handleDef(loopLine);
                         definedVariables.push(newVariable);
-                        const findVariable = this.variables.find( (el) => {
+                        const findVariable = this.variables.find((el) => {
                             return el.name === newVariable.name;
                         });
 
                         if (findVariable) {
-                            this.variables = this.variables.map( (el) => {
+                            this.variables = this.variables.map((el) => {
                                 if (el.varName === newVariable.varName) {
                                     el.value = newVariable.value;
                                     el.type = newVariable.type;
@@ -514,14 +550,14 @@ class InterpreterCommon {
                     maxI++;
                     loopLine = textLines[maxI];
 
-                    this.variables = this.variables.filter( (el) => {
+                    this.variables = this.variables.filter((el) => {
                         return el.varName !== varName;
                     });
                 }
 
                 if (this.returnsJson === true) {
                     if (changedVariableLine.trim()) {
-                        changedText += wasAnythingAdded === true ? `,${changedVariableLine}`: changedVariableLine;
+                        changedText += wasAnythingAdded === true ? `,${changedVariableLine}` : changedVariableLine;
                     }
                 } else {
                     changedText += changedVariableLine;
@@ -532,7 +568,7 @@ class InterpreterCommon {
                 }
             }
         } else {
-            let loopLine = textLines[i+1];
+            let loopLine = textLines[i + 1];
             maxI = i + 1;
             while (loopLine && !this.checkIfForEnd(loopLine)) {
                 maxI++;
@@ -540,7 +576,7 @@ class InterpreterCommon {
             }
         }
 
-        definedVariables.forEach( (el) => {
+        definedVariables.forEach((el) => {
             this.variables = this.variables.filter((variable) => {
                 return variable.varName !== el.varName;
             });
@@ -564,7 +600,7 @@ class InterpreterCommon {
 
         if (/%%def\s+\S+=\S+\s*%%/.test(newText)) {
             newText = newText.replace(/\s*%%def\s*/, '');
-            newText= newText.substring(0, newText.lastIndexOf('%%'));
+            newText = newText.substring(0, newText.lastIndexOf('%%'));
 
             const array = newText.split('=');
 
@@ -658,22 +694,36 @@ class InterpreterCommon {
 
         newText += text;
 
-        if (/%%\s*tower_[^%]+%%/.test(newText)) {
-            const exec = /%%tower_[^%]+%%/.exec(text);
-            const tempText = exec[0];
-            const methodName = /%%tower_[^(]+/.exec(tempText)[0].substring(2);
-            const params = tempText.substring(tempText.indexOf('(') + 1, tempText.lastIndexOf(')'));
+        const methodRegex = new RegExp(`%%\\s*tower_\\S+\\s*\\([^\)]*\\)%%`, 'g');
 
-            const methodOutput = this.executeMethod(methodName, params);
+        if (methodRegex.test(newText)) {
+            const allMethods = newText.match(methodRegex);
 
-            newText = newText.replace(tempText, methodOutput);
+            for (const method of allMethods) {
+                const methodName = method.substring(2, method.indexOf('(')).trim();
+                const params = method.substring(method.indexOf('(') + 1, method.lastIndexOf(')'));
+
+                const tempLine = this.executeMethod(methodName, params);
+                newText = newText.replace(method, tempLine);
+            }
         }
+
+        // if (/%%\s*tower_[^%]+%%/.test(newText)) {
+        //     const exec = /%%tower_[^%]+%%/.exec(text);
+        //     const tempText = exec[0];
+        //     const methodName = /%%tower_[^(]+/.exec(tempText)[0].substring(2);
+        //     const params = tempText.substring(tempText.indexOf('(') + 1, tempText.lastIndexOf(')')).trim();
+        //
+        //     const methodOutput = this.executeMethod(methodName, params);
+        //
+        //     newText = newText.replace(tempText, methodOutput);
+        // }
 
         return newText;
     }
 
     /**
-     * Executes givn method
+     * Executes given method
      *
      * @param {string} method method name
      * @param {string} params method params
@@ -689,7 +739,7 @@ class InterpreterCommon {
             return buff.toString('base64');
         } else if (method === 'tower_random') {
             const array = params.split(',');
-            if (array.length === 2 ) {
+            if (array.length === 2) {
                 const min = Math.ceil(array[0]);
                 const max = Math.floor(array[1]);
                 return `${Math.floor(Math.random() * (max - min)) + min}`;
@@ -764,8 +814,13 @@ module.exports = class Interpreter extends InterpreterCommon {
                     i = value.i;
                     this.textToChange += value.text;
                 } else {
-                    this.textToChange += this.handler(line);
-                    this.textToChange += '\n';
+                    if (this.checkIfDef(line)) {
+                        // Add defined variable to globals
+                        this.handler(line);
+                    } else {
+                        this.textToChange += this.handler(line);
+                        this.textToChange += '\n';
+                    }
                 }
             }
         }
