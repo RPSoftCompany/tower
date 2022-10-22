@@ -1387,8 +1387,11 @@
           el.addIfAbsent = foundGlobal.addIfAbsent
           forcedValue = foundGlobal.forced
           if (forcedValue) {
-            console.log(foundGlobal)
-            forcedCause = `Value forced by ${foundGlobal.source}`
+            Object.values(this.bases.baseValues).forEach(el => {
+              if (el && foundGlobal[el.base]) {
+                forcedCause = `Value forced by ${foundGlobal[el.base]} ${el.base}`
+              }
+            })
           }
         }
 
