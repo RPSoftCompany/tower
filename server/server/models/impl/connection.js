@@ -466,7 +466,7 @@ module.exports = class Connection {
 
                         const filename = path.join(os.tmpdir(), Math.random().toString(36).substring(2, 15));
 
-                        await fs.writeFile(filename, inter.handle() );
+                        await fs.writeFile(filename, await inter.handle() );
                         await sftp.fastPut(filename, conf.path);
 
                         await fs.unlink(filename);

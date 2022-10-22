@@ -95,7 +95,7 @@
         tile
         :class="cardClass"
         class="loginFormClass"
-        :style="`opacity: ${loginOpacity}; background-color: transparent`"
+        :style="`opacity: ${loginOpacity}; background-color: transparent; display: ${loginDisplay}`"
       >
         <v-card-text>
           <v-form
@@ -176,6 +176,7 @@
       },
 
       loginOpacity: 0,
+      loginDisplay: 'none',
 
       login: '',
       pass: '',
@@ -228,7 +229,10 @@
         loginOpacity: 1,
         delay: 2000,
         duration: 2000,
-        easing: 'linear'
+        easing: 'linear',
+        begin: () => {
+          this.loginDisplay = 'block'
+        }
       })
 
       this.$refs.loginInput.focus()

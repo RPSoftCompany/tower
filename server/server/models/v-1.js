@@ -93,7 +93,7 @@ module.exports = function(V1) {
         if (variables.variables !== undefined && variables.variables.length !== 0) {
             const returns = usedConfig.returnType === 'json';
             const inter = new Interpreter(usedConfig.template, variables, returns, []);
-            output = inter.handle();
+            output = await inter.handle();
         }
 
         if (output.length === 0) {

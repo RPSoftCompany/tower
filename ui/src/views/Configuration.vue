@@ -1387,6 +1387,7 @@
           el.addIfAbsent = foundGlobal.addIfAbsent
           forcedValue = foundGlobal.forced
           if (forcedValue) {
+            console.log(foundGlobal)
             forcedCause = `Value forced by ${foundGlobal.source}`
           }
         }
@@ -1773,7 +1774,7 @@
   }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .thirdWidth {
   max-width: 32%;
   width: 32%;
