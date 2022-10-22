@@ -713,9 +713,6 @@ module.exports = class Configuration {
      * @param {string} search query filter
      * @param {boolean} valueOrName true: value, false: name
      * @param {boolean} isRegex indicates if search text is a regex or not
-     * @param {boolean} returnFullConfig indicates if user wants all variables
-     *  from configuration or only the searched ones
-     * @param {boolean} latestOnly indicates if user needs all configurations or only the latest one
      * @param {object} options request options
      *
      */
@@ -726,83 +723,100 @@ module.exports = class Configuration {
 
         const constVariable = new ConstantVariableClass(this.app);
 
-        const valOrName = valueOrName === true ? 'value' : 'name';
+        const valOrName = valueOrName === true ? isRegex ? 'stringVariable' : 'value' : 'name';
         const cond = isRegex === true ? {'$regexMatch': {
-            input: `$$item.${valOrName}`,
+            input: `$$variable.${valOrName}`,
             regex: new RegExp(search),
             options: 'i',
-        }} : {$eq: [`$$item.${valOrName}`, search]};
+        }} : {$eq: [`$$variable.${valOrName}`, search]};
 
-        const project = {
-            version: 1,
-            effectiveDate: 1,
-            variables: {
-                '$filter': {
-                    input: '$variables',
-                    as: 'item',
-                    cond: cond,
-                },
-            },
-        };
-
-        const _id = {};
+        const groupId = {};
+        const addFields = {};
 
         for (const base of allBases) {
-            project[base.name] = 1;
-            _id[base.name] = `$${base.name}`;
+            groupId[base.name] = `$${base.name}`;
+            addFields[base.name] = `$_id.${base.name}`;
         }
 
-        const match = {
-            variables: {
-                '$elemMatch': {},
-            },
-        };
-
-        if (isRegex) {
-            match.variables['$elemMatch'][valOrName] = {'$regex': new RegExp(search, 'i')};
-        } else {
-            match.variables['$elemMatch'][valOrName] = search;
-        }
-
-        let filter = [];
-        filter.push({
-            '$match': match,
-        });
-        filter.push({
-            '$project': project,
-        });
-
-        filter.push({
-            '$setWindowFields': {
-                partitionBy: _id,
-                sortBy: {version: -1},
-                output: {
-                    maxVersion: {
-                        $max: '$version',
-                        window: {
-                            documents: ['unbounded', 'unbounded'],
+        const filter = [
+            {
+                '$sort': {
+                    'version': -1,
+                },
+            }, {
+                '$group': {
+                    '_id': groupId,
+                    'maxVersion': {
+                        '$max': '$version',
+                    },
+                    'variables': {
+                        '$first': '$variables',
+                    },
+                },
+            }, {
+                '$addFields': {
+                    'variables': {
+                        '$map': {
+                            'input': '$variables',
+                            'as': 'variable',
+                            'in': {
+                                '$cond': {
+                                    'if': {
+                                        '$ne': [
+                                            '$$variable.type', 'list',
+                                        ],
+                                    },
+                                    'then': {
+                                        '$mergeObjects': [
+                                            '$$variable', {
+                                                'stringVariable': {
+                                                    '$convert': {
+                                                        'input': '$$variable.value',
+                                                        'to': 'string',
+                                                        'onError': '',
+                                                    },
+                                                },
+                                            },
+                                        ],
+                                    },
+                                    'else': {
+                                        '$mergeObjects': [
+                                            '$$variable', {
+                                                'stringVariable': {
+                                                    '$reduce': {
+                                                        'input': '$$variable.value',
+                                                        'initialValue': '',
+                                                        'in': {
+                                                            '$concat': [
+                                                                '$$value', ',', '$$this',
+                                                            ],
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
                         },
                     },
                 },
             },
-        });
-
-        const _all = {};
-        Object.assign(_all, _id);
-        _all.show = {$eq: ['$maxVersion', '$version']};
-        _all.variables = 1;
-        _all.effectiveDate = 1;
-        _all.version = 1;
-
-        filter.push({
-            '$project': _all,
-        });
-
-        filter.push({
-            $match: {
-                show: true,
+            {
+                '$project': {
+                    'variables': {
+                        '$filter': {
+                            'input': '$variables',
+                            'as': 'variable',
+                            'cond': cond,
+                        },
+                    },
+                },
             },
-        });
+            {
+                '$addFields': addFields,
+            },
+        ];
 
         const cursor = await this.app.dataSources['mongoDB'].connector.collection('configuration').aggregate(
             filter, {allowDiskUse: true},
@@ -816,38 +830,22 @@ module.exports = class Configuration {
 
         let output = await this.findWithPermissions(queryResult, options, true);
 
-        filter = [];
-        filter.push({
-            '$match': match,
-        });
-        filter.push({
-            '$project': project,
-        });
-        filter.push({
-            '$setWindowFields': {
-                partitionBy: _id,
-                sortBy: {version: -1},
-                output: {
-                    maxDate: {
-                        $max: '$effectiveDate',
-                        window: {
-                            documents: ['unbounded', 'unbounded'],
-                        },
-                    },
+        filter[0] = {
+            '$sort': {
+                'effectiveDate': -1,
+            },
+        };
+        filter[1] = {
+            '$group': {
+                '_id': groupId,
+                'maxVersion': {
+                    '$max': '$effectiveDate',
+                },
+                'variables': {
+                    '$first': '$variables',
                 },
             },
-        });
-
-        _all.const = {$eq: [1, 1]};
-        _all.show = {$eq: ['$effectiveDate', '$maxDate']};
-        filter.push({
-            '$project': _all,
-        });
-        filter.push({
-            $match: {
-                show: true,
-            },
-        });
+        };
 
         const constCursor = await this.app.dataSources['mongoDB'].connector.collection('constantVariable').aggregate(
             filter, {allowDiskUse: true},
