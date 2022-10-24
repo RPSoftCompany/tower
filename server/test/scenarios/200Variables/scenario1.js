@@ -72,10 +72,10 @@ describe('Scenario1 - Configuration with 200 elements', () => {
         }
 
         const template = `{
-%%forEach var in variables%%
-"%%var.name%%":"%%var.value%%"
-%%forEach END%%
-}`;
+        {%- for var in variables -%}
+          "{{ var.name }}":"{{ var.value }}"{%- if forloop.last != true -%},{%- endif %}
+        {%- endfor%}
+        }`;
 
         await axios.post(`${url}/restConfigurations`, {
             url: '{Environment}/{Application}',
