@@ -151,7 +151,7 @@
 </template>
 
 <script>
-  import { mdiArchive, mdiSettings, mdiTune, mdiCalendarClock, mdiFileFind } from '@mdi/js'
+  import { mdiArchive, mdiCog, mdiTune, mdiCalendarClock, mdiFileFind } from '@mdi/js'
 
   export default {
     name: 'Drawer',
@@ -162,7 +162,7 @@
         {
           name: 'Configuration',
           path: '/configuration',
-          icon: mdiSettings
+          icon: mdiCog
         }
       ],
       archives: [{

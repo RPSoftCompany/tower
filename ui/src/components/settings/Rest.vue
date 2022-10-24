@@ -17,7 +17,7 @@
 <template>
   <uiCard
     flat
-    class="pt-4"
+    class="py-4"
   >
     <template v-slot:help>
       <div class="text-h4 font-weight-bold text-uppercase">
@@ -181,7 +181,6 @@
                       autocomplete="off"
                       :append-outer-icon="icons.mdiDelete"
                       @click:append-outer="showDeleteDialog(i, 'v1')"
-                      @blur="saveConfig(i, 'v1')"
                     />
                   </v-col>
                   <v-col
@@ -193,40 +192,41 @@
                       v-model="item.returnType"
                       :items="types"
                       label="Type"
-                      @blur="saveConfig(i, 'v1')"
                     />
                   </v-col>
                   <v-col
                     class="py-0"
                     cols="12"
                   >
-                    <prism-editor
-                      v-if="item.returnType === 'plain text'"
+                    <ace-editor
+                      v-if="items[i].template !== undefined"
                       v-model="items[i].template"
-                      class="prismeditor"
-                      language="markup"
-                      :highlight="highlighter"
-                      line-numbers
-                      @blur="saveConfig(i, 'v1')"
+                      style="border: solid 1px rgba(0, 0, 0, 0.12); min-height: 200px"
+                      lang="liquid"
+                      theme="sqlserver"
+                      width="100%"
+                      height="400px"
+                      :options="{
+                        enableBasicAutocompletion: true,
+                        enableLiveAutocompletion: true,
+                        fontSize: 14,
+                        highlightActiveLine: true,
+                        enableSnippets: true,
+                        showLineNumbers: true,
+                        tabSize: 2,
+                        showPrintMargin: false,
+                        showGutter: true,
+                      }"
+                      @init="editorInit"
                     />
-                    <prism-editor
-                      v-if="item.returnType === 'json'"
-                      v-model="items[i].template"
-                      class="prismeditor"
-                      language="json"
-                      :highlight="highlighterJson"
-                      line-numbers
-                      @blur="saveConfig(i, 'v1')"
-                    />
-                    <prism-editor
-                      v-if="item.returnType === 'xml'"
-                      v-model="items[i].template"
-                      class="prismeditor"
-                      language="xml"
-                      :highlight="highlighterXml"
-                      line-numbers
-                      @blur="saveConfig(i, 'v1')"
-                    />
+                  </v-col>
+                  <v-col>
+                    <v-btn
+                      color="primary"
+                      @click="saveConfig(i, 'v1')"
+                    >
+                      Save
+                    </v-btn>
                   </v-col>
                 </v-row>
               </v-form>
@@ -266,91 +266,103 @@
         v-model="v2.panel"
         accordion
       >
-        <v-expansion-panel
-          v-for="(item, i) of v2.items"
-          :key="item.id"
+        <draggable
+          :list="items"
+          handle=".handler"
+          style="width: 100%"
+          class="mx-2"
+          @end="dragEnded"
         >
-          <v-expansion-panel-header>
-            <template v-slot:default>
-              <v-row no-gutters>
-                <v-col cols="12">
-                  <span>/v2/ </span>
-                  <span class="font-weight-bold">{{ item.url }}</span>
-                  <span> {{ v2Suffix }}</span>
-                </v-col>
-              </v-row>
-            </template>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content class="pb-5">
-            <v-divider />
-            <v-form
-              ref="existingRowFormV2"
-              v-model="v2.newRowValid"
-            >
-              <v-row align="center">
-                <v-col
-                  class="d-flex pb-0"
-                  cols="6"
-                >
-                  <v-text-field
-                    v-model="item.url"
-                    :rules="[rules.required]"
-                    label="URL"
-                    prefix="/v2/"
-                    autocomplete="off"
-                    :append-outer-icon="icons.mdiDelete"
-                    @click:append-outer="showDeleteDialog(i, 'v2')"
-                    @blur="saveConfig(i, 'v2')"
-                  />
-                </v-col>
-                <v-col
-                  class="d-flex pb-0"
-                  cols="3"
-                  offset="3"
-                >
-                  <v-select
-                    v-model="item.returnType"
-                    :items="types"
-                    label="Type"
-                    @blur="saveConfig(i, 'v2')"
-                  />
-                </v-col>
-                <v-col
-                  class="py-0"
-                  cols="12"
-                >
-                  <prism-editor
-                    v-if="item.returnType === 'plain text'"
-                    v-model="v2.items[i].template"
-                    class="prismeditor"
-                    language="markup"
-                    :highlight="highlighter"
-                    line-numbers
-                    @blur="saveConfig(i, 'v2')"
-                  />
-                  <prism-editor
-                    v-if="item.returnType === 'json'"
-                    v-model="v2.items[i].template"
-                    class="prismeditor"
-                    language="json"
-                    :highlight="highlighterJson"
-                    line-numbers
-                    @blur="saveConfig(i, 'v2')"
-                  />
-                  <prism-editor
-                    v-if="item.returnType === 'xml'"
-                    v-model="v2.items[i].template"
-                    class="prismeditor"
-                    language="xml"
-                    :highlight="highlighterXml"
-                    line-numbers
-                    @blur="saveConfig(i, 'v2')"
-                  />
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
+          <v-expansion-panel
+            v-for="(item, i) of v2.items"
+            :key="item.id"
+            class="outline"
+            :class="{dark: $vuetify.theme.dark === true}"
+          >
+            <v-expansion-panel-header>
+              <template v-slot:default>
+                <v-row no-gutters>
+                  <v-col cols="12">
+                    <v-icon class="handler mr-3">
+                      {{ icons.mdiDotsVertical }}
+                    </v-icon>
+                    <span>/v2/ </span>
+                    <span class="font-weight-bold">{{ item.url }}</span>
+                  </v-col>
+                </v-row>
+              </template>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content class="pb-5">
+              <v-divider />
+              <v-form
+                ref="existingRowFormV2"
+                v-model="v2.newRowValid"
+              >
+                <v-row align="center">
+                  <v-col
+                    class="d-flex pb-0"
+                    cols="6"
+                  >
+                    <v-text-field
+                      v-model="item.url"
+                      :rules="[rules.required]"
+                      label="URL"
+                      prefix="/v2/"
+                      autocomplete="off"
+                      :append-outer-icon="icons.mdiDelete"
+                      @click:append-outer="showDeleteDialog(i, 'v2')"
+                    />
+                  </v-col>
+                  <v-col
+                    class="d-flex pb-0"
+                    cols="3"
+                    offset="3"
+                  >
+                    <v-select
+                      v-model="item.returnType"
+                      :items="types"
+                      label="Type"
+                    />
+                  </v-col>
+                  <v-col
+                    class="py-0"
+                    cols="12"
+                  >
+                    <ace-editor
+                      v-if="items[i].template !== undefined"
+                      v-model="items[i].template"
+                      style="border: solid 1px rgba(0, 0, 0, 0.12); min-height: 200px"
+                      lang="liquid"
+                      theme="sqlserver"
+                      width="100%"
+                      height="400px"
+                      :options="{
+                        enableBasicAutocompletion: true,
+                        enableLiveAutocompletion: true,
+                        fontSize: 14,
+                        highlightActiveLine: true,
+                        enableSnippets: true,
+                        showLineNumbers: true,
+                        tabSize: 2,
+                        showPrintMargin: false,
+                        showGutter: true,
+                      }"
+                      @init="editorInit"
+                    />
+                  </v-col>
+                  <v-col>
+                    <v-btn
+                      color="primary"
+                      @click="saveConfig(i, 'v2')"
+                    >
+                      Save
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-form>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </draggable>
       </v-expansion-panels>
     </div>
   </uiCard>
@@ -362,15 +374,7 @@
   import uiCard from '../base/uiCard'
   import gif from '../base/gif'
 
-  import { PrismEditor } from 'vue-prism-editor'
-  import 'vue-prism-editor/dist/prismeditor.min.css'
-  import { highlight, languages } from 'prismjs/components/prism-core'
-  import 'prismjs/components/prism-clike'
-  import 'prismjs/components/prism-markup'
-  import 'prismjs/components/prism-json'
-  import 'prismjs/components/prism-xml-doc'
-  import 'prismjs/components/prism-css'
-  import 'prismjs/themes/prism-coy.css'
+  import AceEditor from 'vuejs-ace-editor'
 
   export default {
     name: 'RestSettings',
@@ -378,7 +382,7 @@
       draggable,
       uiCard,
       gif,
-      'prism-editor': PrismEditor
+      AceEditor
     },
     data: (props) => ({
       panel: null,
@@ -459,34 +463,12 @@
       this.resetData()
     },
     methods: {
-      highlighter (code) {
-        return highlight(
-          code,
-          {
-            ...languages.markup
-          },
-          'markup'
-        )
-      },
-      highlighterJson (code) {
-        return highlight(
-          code,
-          {
-            ...languages.markup,
-            ...languages.json
-          },
-          'markup'
-        )
-      },
-      highlighterXml (code) {
-        return highlight(
-          code,
-          {
-            ...languages.markup,
-            ...languages.xml
-          },
-          'markup'
-        )
+      editorInit: function () {
+        require('brace/ext/language_tools')
+        require('brace/mode/liquid')
+        require('brace/theme/sqlserver')
+        require('brace/snippets/javascript')
+        require('brace/mode/liquid')
       },
       async resetData () {
         const response = await this.axios.get(
@@ -544,7 +526,18 @@
 
         const newConfig = {
           url: this.newItem.url,
-          template: '{\n%%forEach var in variables%%\n\t"%%var.name%%":"%%var.value%%"\n%%forEach END%%\n}',
+          template: '{\n' +
+            '  {%- for var in variables -%}\n' +
+            '  {% case var.type -%}\n' +
+            '  {% when "string", "password" %}\n' +
+            '  "{{ var.name }}":"{{ var.value }}"{%- if forloop.last != true -%},{%- endif -%}\n' +
+            '  {% when "number", "boolean" %}\n' +
+            '  "{{ var.name }}":{{ var.value }}{%- if forloop.last != true -%},{%- endif -%}\n' +
+            '  {% when "list" %}\n' +
+            '  "{{ var.name }}":[{% for listVar in var -%}"{{ listVar }}"{%- if forloop.last != true -%},{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%},{%- endif -%}\n' +
+            '  {% endcase -%}\n' +
+            '  {%- endfor %}\n' +
+            '}',
           returnType: 'json'
         }
 
@@ -564,7 +557,18 @@
       async addV2Configuration () {
         const newConfig = {
           url: this.v2.newItem.url,
-          template: '{\n%%forEach var in variables%%\n\t"%%var.name%%":"%%var.value%%"\n%%forEach END%%\n}',
+          template: '{\n' +
+            '  {%- for var in variables -%}\n' +
+            '  {% case var.type -%}\n' +
+            '  {% when "string", "password" %}\n' +
+            '  "{{ var.name }}":"{{ var.value }}"{%- if forloop.last != true -%},{%- endif -%}\n' +
+            '  {% when "number", "boolean" %}\n' +
+            '  "{{ var.name }}":{{ var.value }}{%- if forloop.last != true -%},{%- endif -%}\n' +
+            '  {% when "list" %}\n' +
+            '  "{{ var.name }}":[{% for listVar in var -%}"{{ listVar }}"{%- if forloop.last != true -%},{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%},{%- endif -%}\n' +
+            '  {% endcase -%}\n' +
+            '  {%- endfor %}\n' +
+            '}',
           returnType: 'json',
           type: 'v2'
         }
