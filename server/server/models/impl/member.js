@@ -178,9 +178,7 @@ module.exports = class Member {
 
         const User = this.app.models.member;
 
-        if (!this.ldapInitialized) {
-            await this.initializeLDAP();
-        }
+        await this.initializeLDAP();
 
         const user = await User.findOne({
             where: {
@@ -230,7 +228,7 @@ module.exports = class Member {
                     type: 'ldap',
                     newUser: false,
                     dn: credentials.dn,
-                    groups: [],
+                    groups: this.ldapServer.defaultGroups ? this.ldapServer.defaultGroups : [],
                     display: credentials.display,
                     technicalUser: false,
                 });
@@ -371,7 +369,7 @@ module.exports = class Member {
 
                 const split = text.split(':');
 
-                if (split.length != 2) {
+                if (split.length !== 2) {
                     return false;
                 } else {
                     const username = split[0];
@@ -483,6 +481,10 @@ module.exports = class Member {
                     id: userId,
                 },
             });
+        }
+
+        if (!user) {
+            return [];
         }
 
         const groupCache = await this.getGroupsFromCache();

@@ -18,7 +18,6 @@ const ConfigurationClass = require('./configuration.js');
 const Interpreter = require('./template/interpreter');
 const V1 = require('./v1');
 
-const ObjectID = require('mongodb').ObjectID;
 const axios = require('axios');
 const {authenticate} = require('ldap-authentication');
 const HttpErrors = require('http-errors');
@@ -153,6 +152,8 @@ module.exports = class Connection {
                     connection.usernameAttribute : tempConn.usernameAttribute;
                 tempConn.displayAttribute = connection.displayAttribute ?
                     connection.displayAttribute : tempConn.displayAttribute;
+                tempConn.defaultGroups = connection.defaultGroups ?
+                    connection.defaultGroups : tempConn.defaultGroups;
             } else if (tempConn.system === 'Vault') {
                 tempConn.url = connection.url ? connection.url : tempConn.url;
                 tempConn.globalToken = connection.globalToken ?
@@ -213,6 +214,8 @@ module.exports = class Connection {
                     connection.usernameAttribute : tempConn.usernameAttribute;
                 tempConn.displayAttribute = connection.displayAttribute !== undefined ?
                     connection.displayAttribute : tempConn.displayAttribute;
+                tempConn.defaultGroups = connection.defaultGroups !== undefined ?
+                    connection.defaultGroups : tempConn.defaultGroups;
             } else if (tempConn.system === 'Vault') {
                 tempConn.url = connection.url !== undefined ? connection.url : tempConn.url;
                 tempConn.globalToken = connection.globalToken !== undefined ?
