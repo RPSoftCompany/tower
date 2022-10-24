@@ -61,10 +61,10 @@
     >
       <v-card-text>
         <splitpanes>
-          <pane>
+          <pane :style="activeItems.length < 0 || currentValues.length < 0 ? 'width: 100%' : undefined">
             <v-card
               outlined
-              style="overflow: auto; max-height: calc(100vh - 360px); width: 100%"
+              style="overflow: auto; max-height: calc(100vh - 268px); width: 100%"
             >
               <v-treeview
                 :active.sync="activeItems"
@@ -86,33 +86,34 @@
                       <span style="color:gray">NONE</span>
                     </template>
                     <template v-else>
-                      <span :class="{'font-weight-bold': !!variables[item.id]}">{{ item.name }}</span>
+                      <span :class="{'font-weight-bold': !!variables[item.id], 'font-weight-thin': !variables[item.id]}">{{ item.name }}</span>
                     </template>
                   </div>
                 </template>
               </v-treeview>
             </v-card>
           </pane>
-          <pane>
+          <pane v-if="activeItems.length > 0 && currentValues.length > 0">
             <v-card
-              v-show="activeItems.length > 0 && currentValues.length > 0"
               outlined
               class="flex-grow-1"
-              style="max-height: calc(100vh - 360px); width: 100%"
+              style="max-height: calc(100vh - 268px); width: 100%; overflow: auto"
             >
-              <v-row
-                style="flex-wrap: nowrap; height: 48px"
-                class="ma-0"
-              >
-                <v-col class="subtitle-2 font-weight-bold text-center">
-                  Variable Name
-                </v-col>
-                <v-col class="subtitle-2 font-weight-bold text-center">
-                  Value
-                </v-col>
-              </v-row>
-              <v-divider />
-              <div style="overflow: auto; max-height: calc( 100% - 48px);">
+              <div class="stickyHeader">
+                <v-row
+                  style="flex-wrap: nowrap; height: 48px"
+                  class="ma-0"
+                >
+                  <v-col class="subtitle-2 font-weight-bold text-center">
+                    Variable Name
+                  </v-col>
+                  <v-col class="subtitle-2 font-weight-bold text-center">
+                    Value
+                  </v-col>
+                </v-row>
+                <v-divider />
+              </div>
+              <div style="max-height: calc( 100% - 48px);">
                 <v-row
                   v-for="(value, i) of currentValues"
                   :key="i"
@@ -120,7 +121,10 @@
                   style="cursor: pointer; height: 47px"
                 >
                   <v-col class="text-center">
-                    <v-icon v-if="value.addIfAbsent !== undefined">
+                    <v-icon
+                      v-if="value.addIfAbsent !== undefined"
+                      small
+                    >
                       {{ icons.mdiAlphaCBox }}
                     </v-icon>
                     {{ value.name }}
@@ -211,8 +215,6 @@
             `searchText=${this.searchText}&valueOrName=${valueOrName}&isRegex=${this.regex}`
         )
 
-        console.log(response)
-
         if (response.status === 200) {
           this.lastId = 0
 
@@ -225,16 +227,16 @@
           }
 
           for (let row of response.data.variables) {
-            let currentParent = null
+            if (row.variables.length > 0) {
+              let currentParent = null
 
-            for (let base of this.bases) {
-              currentParent = this.addToParent(currentParent, row[base], base)
+              for (let base of this.bases) {
+                currentParent = this.addToParent(currentParent, row[base], base)
+              }
+
+              this.variables[this.lastId - 1] = row.variables
             }
-
-            this.variables[this.lastId - 1] = row.variables
           }
-
-          // const reverse = [...this.bases].reverse()
 
           for (let row of response.data.constantVariables) {
             let currentParent = null
@@ -366,6 +368,13 @@
 <style lang="scss" scoped>
 .halfWidth {
   width: 50%;
+}
+
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 1;
 }
 
 .configRow {
