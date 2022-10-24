@@ -723,12 +723,12 @@ module.exports = class Configuration {
 
         const constVariable = new ConstantVariableClass(this.app);
 
-        const valOrName = valueOrName === true ? isRegex ? 'stringVariable' : 'value' : 'name';
+        const valOrName = valueOrName === true ? 'stringVariable' : 'name';
         const cond = isRegex === true ? {'$regexMatch': {
             input: `$$variable.${valOrName}`,
             regex: new RegExp(search),
             options: 'i',
-        }} : {$eq: [`$$variable.${valOrName}`, search]};
+        }} : {$eq: [`$$variable.${valOrName}`, `${search}`]};
 
         const groupId = {};
         const addFields = {};
@@ -816,7 +816,16 @@ module.exports = class Configuration {
             {
                 '$addFields': addFields,
             },
+            {
+                '$match': {
+                    '$expr': {
+                        '$gt': [{'$size': '$variables'}, 0],
+                    },
+                },
+            },
         ];
+
+        console.log(JSON.stringify(filter));
 
         const cursor = await this.app.dataSources['mongoDB'].connector.collection('configuration').aggregate(
             filter, {allowDiskUse: true},
