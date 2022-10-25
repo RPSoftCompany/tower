@@ -76,6 +76,58 @@
       </v-card>
     </v-dialog>
     <v-dialog
+      v-model="exportDialog.show"
+      max-width="500px"
+    >
+      <v-card>
+        <v-card-title class="primary">
+          Export configuration to file
+        </v-card-title>
+        <v-card-text>
+          <v-radio-group
+            v-model="exportDialog.type"
+            :disabled="exportDialog.file === null"
+          >
+            <v-radio
+              label="plain text"
+              value="text/plain"
+            />
+            <v-radio
+              label="JSON"
+              value="application/json"
+            />
+            <v-radio
+              label="CSV"
+              value="text/csv"
+            />
+          </v-radio-group>
+          <v-combobox
+            v-if="exportDialog.type==='text/csv'"
+            v-model="exportDialog.separator"
+            return-object
+            :items="exportDialog.separators"
+            label="Separator"
+          />
+        </v-card-text>
+        <v-card-actions class="mx-3 mb-3">
+          <v-btn
+            text
+            @click="closeExportDialog"
+          >
+            Cancel
+          </v-btn>
+          <v-spacer />
+          <v-btn
+            color="primary"
+            text
+            @click="onExportButtonClicked"
+          >
+            Export
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
       v-model="promotionDialog.show"
       max-width="80%"
     >
@@ -324,6 +376,22 @@
             />
           </template>
           <span>Import configuration from file</span>
+        </v-tooltip>
+        <v-tooltip
+          v-if="configuration.items.length > 0 || configuration.editMode === true"
+          bottom
+          :open-delay="500"
+        >
+          <template v-slot:activator="{ on }">
+            <v-icon
+              style="max-height: 24px;"
+              class="mr-3 mt-3"
+              @click="exportDialog.show = true"
+              v-on="on"
+              v-text="icons.mdiFileDownload"
+            />
+          </template>
+          <span>Export configuration to file</span>
         </v-tooltip>
         <v-tooltip
           v-if="configuration.items.length > 0"
@@ -618,6 +686,7 @@
     mdiChevronDown,
     mdiChevronLeft,
     mdiChevronRight,
+    mdiFileDownload,
     mdiFileUpload,
     mdiFormatLetterCase,
     mdiFormatLetterCaseLower,
@@ -633,6 +702,7 @@
   import sort from 'fast-sort'
   import NewConfigurationRow from '@/components/configuration/newConfigurationRow'
   import constantVariable from '@/components/base/constantVariable'
+  import { saveAs } from 'file-saver'
 
   export default {
     name: 'Configuration',
@@ -682,7 +752,18 @@
         separators: [{ text: 'Semicolon (;)', value: ';' },
                      { text: 'Comma (,)', value: ',' },
                      { text: 'Tab (    )', value: '\t' },
-                     { text: 'Space ( )', value: ' ' }]
+                     { text: 'Space ( )', value: ' ' },
+                     { text: 'Equal sign (=)', value: '=' }]
+      },
+      exportDialog: {
+        show: false,
+        type: 'text/plain',
+        separator: { text: 'Semicolon (;)', value: ';' },
+        separators: [{ text: 'Semicolon (;)', value: ';' },
+                     { text: 'Comma (,)', value: ',' },
+                     { text: 'Tab (    )', value: '\t' },
+                     { text: 'Space ( )', value: ' ' },
+                     { text: 'Equal sign (=)', value: '=' }]
       },
       configuration: {
         promoted: [],
@@ -718,6 +799,7 @@
         mdiChevronRight,
         mdiChevronDown,
         mdiFileUpload,
+        mdiFileDownload,
         mdiReply,
         mdiStarOutline,
         mdiStar
@@ -1387,7 +1469,11 @@
           el.addIfAbsent = foundGlobal.addIfAbsent
           forcedValue = foundGlobal.forced
           if (forcedValue) {
-            forcedCause = `Value forced by ${foundGlobal.source}`
+            Object.values(this.bases.baseValues).forEach(el => {
+              if (el && foundGlobal[el.base]) {
+                forcedCause = `Value forced by ${foundGlobal[el.base]} ${el.base}`
+              }
+            })
           }
         }
 
@@ -1728,7 +1814,6 @@
             this.closeImportDialog()
           })
         } catch (error) {
-          console.error(error)
           this.closeImportDialog()
           this.$store.commit('setError', 'Invalid JSON file: ' + error.message)
         }
@@ -1741,9 +1826,10 @@
 
         split.forEach(line => {
           if (line.includes(separator)) {
-            const split = line.split(separator)
-            const name = split[0]
-            const value = split[1] ? split[1] : ''
+            const nameRegex = new RegExp(`^[^${separator}]*`)
+            const name = line.match(nameRegex)[0]
+            const valueRegex = new RegExp(`^[^${separator}]*${separator}`)
+            const value = line.replace(valueRegex, '')
 
             if (name) {
               importedMap.set(name, value)
@@ -1768,12 +1854,52 @@
             this.closeImportDialog()
           })
         }
+      },
+      //* *******************
+      // Export to file
+      //* *******************
+      closeExportDialog () {
+        this.exportDialog.show = false
+        this.exportDialog.type = 'text/plain'
+      },
+      async onExportButtonClicked () {
+        if (this.exportDialog.type === 'text/plain') {
+          this.exportCSV('=', 'configuration.txt')
+        } else if (this.exportDialog.type === 'text/csv') {
+          this.exportCSV(this.exportDialog.separator.value, 'configuration.csv')
+        } else if (this.exportDialog.type === 'application/json') {
+          this.exportJSON()
+        }
+
+        this.$nextTick(() => {
+          this.closeExportDialog()
+        })
+      },
+      exportCSV (separator, fileName) {
+        let data = ''
+
+        this.configuration.items.forEach(el => {
+          data += `${el.name}${separator}${el.value}\n`
+        })
+
+        const blob = new Blob([data], { type: `${this.exportDialog.type};charset=utf-8` })
+        saveAs(blob, fileName)
+      },
+      exportJSON () {
+        let data = {}
+
+        this.configuration.items.forEach(el => {
+          data[el.name] = el.value
+        })
+
+        const blob = new Blob([JSON.stringify(data)], { type: `${this.exportDialog.type};charset=utf-8` })
+        saveAs(blob, 'configuration.json')
       }
     }
   }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .thirdWidth {
   max-width: 32%;
   width: 32%;

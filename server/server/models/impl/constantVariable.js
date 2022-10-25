@@ -452,6 +452,15 @@ module.exports = class BaseConfiguration {
             const allRow = await this.findWithPermissions({}, options, row);
             if (allRow.length > 0) {
                 row = allRow[0];
+
+                row.variables = row.variables.map( (el) => {
+                    for (const base of allBases) {
+                        if (row[base.name]) {
+                            el[base.name] = row[base.name];
+                        }
+                    }
+                    return el;
+                });
             } else {
                 row.variables = [];
             }

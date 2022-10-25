@@ -134,6 +134,22 @@
                 />
               </v-col>
               <v-col
+                class="d-flex conn_row"
+                cols="12"
+              >
+                <v-autocomplete
+                  v-model="ldap.groups"
+                  :items="groups.items"
+                  chips
+                  item-text="name"
+                  label="Default LDAP user groups"
+                  :disabled="!ldap.enabled"
+                  item-value="name"
+                  multiple
+                  @change="updateLdap"
+                />
+              </v-col>
+              <v-col
                 class="d-flex mt-3"
                 cols="2"
               >
@@ -562,6 +578,10 @@
         mdiDelete
       },
 
+      groups: {
+        items: []
+      },
+
       ldap: {
         id: null,
         url: null,
@@ -571,6 +591,7 @@
         searchBase: null,
         usernameAttribute: null,
         displayAttribute: null,
+        groups: [],
 
         filterHint: "eg. '(cn={{username}})'",
         baseHint: "eg. 'dc=example,dc=org'",
@@ -653,6 +674,12 @@
           `${this.$store.state.mainUrl}/restConfigurations?filter={"order":"url ASC"}`
         )
 
+        const groupsRes = await this.axios.get(
+          `${this.$store.state.mainUrl}/groups`
+        )
+
+        this.groups.items = groupsRes.data
+
         this.scp.restTemplates = restConfigurationsResponse.data
 
         this.scp.availableBases = {}
@@ -692,6 +719,8 @@
           const temp = el
           temp.enabled = temp.enabled ? temp.enabled : false
 
+          console.log(temp)
+
           if (temp.system === 'LDAP') {
             this.ldap.enabled = temp.enabled
             this.ldap.id = temp.id
@@ -703,6 +732,7 @@
               temp.searchBase === undefined ? null : temp.searchBase
             this.ldap.usernameAttribute = temp.usernameAttribute === undefined ? null : temp.usernameAttribute
             this.ldap.displayAttribute = temp.displayAttribute === undefined ? null : temp.displayAttribute
+            this.ldap.groups = temp.defaultGroups === undefined ? [] : temp.defaultGroups
           } else if (temp.system === 'Vault') {
             this.Vault.enabled = temp.enabled
             this.Vault.id = temp.id
@@ -796,7 +826,8 @@
               searchBase: this.ldap.searchBase,
               enabled: this.ldap.enabled,
               usernameAttribute: this.ldap.usernameAttribute,
-              displayAttribute: this.ldap.displayAttribute
+              displayAttribute: this.ldap.displayAttribute,
+              defaultGroups: this.ldap.groups
             }
           )
         }

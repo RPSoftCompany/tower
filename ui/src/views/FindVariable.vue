@@ -60,95 +60,96 @@
       outlined
     >
       <v-card-text>
-        <multipane class="custom-resizer">
-          <v-card
-            outlined
-            style="overflow: auto; max-height: calc(100vh - 360px)"
-            :style="`width: ${activeItems.length > 0 && currentValues.length > 0 ? '50%' : '100%'}`"
-          >
-            <v-treeview
-              :active.sync="activeItems"
-              hoverable
-              active-class="v-treeview-node--active"
-              activatable
-              transition
-              :items="items"
-              @update:active="updateActive"
+        <splitpanes>
+          <pane :style="activeItems.length < 0 || currentValues.length < 0 ? 'width: 100%' : undefined">
+            <v-card
+              outlined
+              style="overflow: auto; max-height: calc(100vh - 268px); width: 100%"
             >
-              <template v-slot:prepend="{ item }">
-                <v-icon v-if="item.base">
-                  {{ baseIcons[item.base] }}
-                </v-icon>
-              </template>
-              <template v-slot:label="{ item }">
-                <div style="cursor: default">
-                  <template v-if="item.name === '__NONE__'">
-                    <span style="color:gray">NONE</span>
-                  </template>
-                  <template v-else>
-                    <span :class="{'font-weight-bold': !!variables[item.id]}">{{ item.name }}</span>
-                  </template>
-                </div>
-              </template>
-            </v-treeview>
-          </v-card>
-          <multipane-resizer
-            v-show="activeItems.length > 0 && currentValues.length > 0"
-            class="d-flex ma-2 align-self-center"
-          />
-          <v-card
-            v-show="activeItems.length > 0 && currentValues.length > 0"
-            outlined
-            class="flex-grow-1"
-            style="max-height: calc(100vh - 360px);"
-          >
-            <v-row
-              style="flex-wrap: nowrap;"
-              class="ma-0"
-            >
-              <v-col class="subtitle-2 font-weight-bold text-center">
-                Variable Name
-              </v-col>
-              <v-col class="subtitle-2 font-weight-bold text-center">
-                Value
-              </v-col>
-            </v-row>
-            <v-divider />
-            <div style="overflow: auto; max-height: calc( 100% - 48px);">
-              <v-row
-                v-for="(value, i) of currentValues"
-                :key="i"
-                class="ma-0 configRow"
-                style="cursor: pointer"
+              <v-treeview
+                :active.sync="activeItems"
+                hoverable
+                active-class="v-treeview-node--active"
+                activatable
+                transition
+                :items="items"
+                @update:active="updateActive"
               >
-                <v-col class="text-center">
-                  <v-icon v-if="value.addIfAbsent !== undefined">
-                    {{ icons.mdiAlphaCBox }}
+                <template v-slot:prepend="{ item }">
+                  <v-icon v-if="item.base">
+                    {{ baseIcons[item.base] }}
                   </v-icon>
-                  {{ value.name }}
-                </v-col>
-                <v-col class="text-center">
-                  {{ value.value }}
-                </v-col>
-              </v-row>
-            </div>
-          </v-card>
-        </multipane>
+                </template>
+                <template v-slot:label="{ item }">
+                  <div style="cursor: default">
+                    <template v-if="item.name === '__NONE__'">
+                      <span style="color:gray">NONE</span>
+                    </template>
+                    <template v-else>
+                      <span :class="{'font-weight-bold': !!variables[item.id], 'font-weight-thin': !variables[item.id]}">{{ item.name }}</span>
+                    </template>
+                  </div>
+                </template>
+              </v-treeview>
+            </v-card>
+          </pane>
+          <pane v-if="activeItems.length > 0 && currentValues.length > 0">
+            <v-card
+              outlined
+              class="flex-grow-1"
+              style="max-height: calc(100vh - 268px); width: 100%; overflow: auto"
+            >
+              <div class="stickyHeader">
+                <v-row
+                  style="flex-wrap: nowrap; height: 48px"
+                  class="ma-0"
+                >
+                  <v-col class="subtitle-2 font-weight-bold text-center">
+                    Variable Name
+                  </v-col>
+                  <v-col class="subtitle-2 font-weight-bold text-center">
+                    Value
+                  </v-col>
+                </v-row>
+                <v-divider />
+              </div>
+              <div style="max-height: calc( 100% - 48px);">
+                <v-row
+                  v-for="(value, i) of currentValues"
+                  :key="i"
+                  class="ma-0 configRow"
+                  style="cursor: pointer; height: 47px"
+                >
+                  <v-col class="text-center">
+                    <v-icon
+                      v-if="value.addIfAbsent !== undefined"
+                      small
+                    >
+                      {{ icons.mdiAlphaCBox }}
+                    </v-icon>
+                    {{ value.name }}
+                  </v-col>
+                  <v-col class="text-center">
+                    {{ value.value }}
+                  </v-col>
+                </v-row>
+              </div>
+            </v-card>
+          </pane>
+        </splitpanes>
       </v-card-text>
     </v-card>
   </div>
 </template>
 
 <script>
-  import { Multipane, MultipaneResizer } from 'vue-multipane'
   import { mdiRegex, mdiFormatLetterCase, mdiChevronDown, mdiAlphaCBox } from '@mdi/js'
+  import { Splitpanes, Pane } from 'splitpanes'
+  import 'splitpanes/dist/splitpanes.css'
 
   export default {
     name: 'FindVariable',
-    components: {
-      Multipane,
-      MultipaneResizer
-    },
+    components: { splitpanes: Splitpanes, pane: Pane },
     data: () => ({
       bases: [],
       baseIcons: {},
@@ -226,16 +227,16 @@
           }
 
           for (let row of response.data.variables) {
-            let currentParent = null
+            if (row.variables.length > 0) {
+              let currentParent = null
 
-            for (let base of this.bases) {
-              currentParent = this.addToParent(currentParent, row[base], base)
+              for (let base of this.bases) {
+                currentParent = this.addToParent(currentParent, row[base], base)
+              }
+
+              this.variables[this.lastId - 1] = row.variables
             }
-
-            this.variables[this.lastId - 1] = row.variables
           }
-
-          // const reverse = [...this.bases].reverse()
 
           for (let row of response.data.constantVariables) {
             let currentParent = null
@@ -353,8 +354,7 @@
           }
         }
       },
-      updateActive (item) {
-        const currentItem = item.length > 0 ? item[0] : null
+      updateActive (currentItem) {
         if (currentItem) {
           this.currentValues = this.variables[currentItem] ? this.variables[currentItem] : []
         } else {
@@ -368,6 +368,13 @@
 <style lang="scss" scoped>
 .halfWidth {
   width: 50%;
+}
+
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 1;
 }
 
 .configRow {
@@ -427,5 +434,29 @@
       border-color: #999;
     }
   }
+}
+.splitpanes__pane {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>
+
+<style lang="scss">
+.splitpanes__splitter {
+  position: relative;
+  width: 10px;
+}
+.splitpanes__splitter::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  height: 30px;
+  width: 4px;
+  border-left: solid 1px black;
+  border-right: solid 1px black;
+  opacity: 0.12;
 }
 </style>
