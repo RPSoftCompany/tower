@@ -379,6 +379,22 @@
           <span>Import configuration from file</span>
         </v-tooltip>
         <v-tooltip
+          v-if="configuration.items.length > 0 || configuration.editMode === true"
+          bottom
+          :open-delay="500"
+        >
+          <template v-slot:activator="{ on }">
+            <v-icon
+              style="max-height: 24px;"
+              class="mr-3 mt-3"
+              @click="exportDialog.show = true"
+              v-on="on"
+              v-text="icons.mdiFileDownload"
+            />
+          </template>
+          <span>Export configuration to file</span>
+        </v-tooltip>
+        <v-tooltip
           v-if="configuration.items.length > 0"
           bottom
           :open-delay="500"
