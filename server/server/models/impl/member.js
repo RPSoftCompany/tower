@@ -51,7 +51,7 @@ module.exports = class Member {
      * @param {string} message Message to log
      * @param {string} obj object to log
      */
-    log(severity, method, message, obj) {
+    log(severity, method, message, obj = undefined) {
         if (this.logger === null) {
             this.logger = this.app.get('winston');
         }
@@ -165,16 +165,12 @@ module.exports = class Member {
      *
      * @param {object} credentials Object with username and password
      * @param {string} include Optionally set it to "user" to include the user info
-     * @param {string} ttl Optional token ttl
+     * @param {number} ttl Optional token ttl
      *
      * @return {object} access token details (Optionally user data)
      */
-    async login(credentials, include, ttl) {
+    async login(credentials, include, ttl = 86400) {
         this.log('debug', 'login', 'STARTED');
-
-        if (!ttl) {
-            ttl = 86400;
-        }
 
         const User = this.app.models.member;
 

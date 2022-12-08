@@ -49,7 +49,7 @@ module.exports = class Configuration {
      * @param {string} obj object to log
      *
      */
-    log(severity, method, message, obj) {
+    log(severity, method, message, obj = undefined) {
         if (this.logger === null) {
             this.logger = this.app.get('winston');
         }
