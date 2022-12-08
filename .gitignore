@@ -106,3 +106,5 @@ server/secret
 server/server/datasources.test*
 
 dist/tower-*
+
+.idea

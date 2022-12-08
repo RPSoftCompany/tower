@@ -5,14 +5,49 @@ const url = 'http://localhost:3000';
 
 let id = null;
 let token = null;
+
+let baseConfig = null;
+let configModel = null;
 describe('Configuration', () => {
     before(async () => {
-        const temp = await axios.post(`${url}/members/login`, {
+        let temp = await axios.post(`${url}/members/login`, {
             username: 'admin',
             password: 'admin',
         });
 
         token = temp.data.id;
+
+        temp = await axios.post(`${url}/baseConfigurations`, {
+            'name': 'TEST',
+            'sequenceNumber': 0,
+            'icon': 'string',
+        }, {
+            headers: {Authorization: token},
+        });
+
+        baseConfig = temp.data.id;
+
+        temp = await axios.post(`${url}/configurationModels`, {
+            'name': 'TEST',
+            'rules': [],
+            'restrictions': [],
+            'base': 'TEST',
+            'options': {
+                'hasRestrictions': false,
+            },
+        }, {
+            headers: {Authorization: token},
+        });
+
+        configModel = temp.data.id;
+    });
+    after( async () => {
+        await axios.delete(`${url}/baseConfigurations/${baseConfig}`, {
+            headers: {Authorization: token},
+        });
+        await axios.delete(`${url}/configurationModels/${configModel}`, {
+            headers: {Authorization: token},
+        });
     });
     describe('Authorized (token)', () => {
         describe('initialize', () => {
@@ -36,6 +71,7 @@ describe('Configuration', () => {
                             'type': 'string',
                         },
                     ],
+                    'TEST': 'TEST',
                     'description': '',
                     'version': 0,
                 }, {
@@ -134,6 +170,7 @@ describe('Configuration', () => {
                             'type': 'string',
                         },
                     ],
+                    'TEST': 'TEST',
                     'description': '',
                     'version': 0,
                 }, {
