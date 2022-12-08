@@ -448,18 +448,28 @@
         }
       }
     },
-    async mounted () {
-      this.loading = true
-      if (this.$store.state.userRoles === undefined) {
-        const roles = await this.axios.get(
-          `${this.$store.state.mainUrl}/members/getUserRoles`
-        )
-
-        this.$store.commit('setUserRoles', roles.data)
+    watch: {
+      '$route.path' () {
+        this.onRouteChange()
       }
-      await this.setData()
+    },
+    async mounted () {
+      await this.onRouteChange()
     },
     methods: {
+      async onRouteChange () {
+        this.loading = true
+        this.currentModel = null
+
+        if (this.$store.state.userRoles === undefined) {
+          const roles = await this.axios.get(
+            `${this.$store.state.mainUrl}/members/getUserRoles`
+          )
+
+          this.$store.commit('setUserRoles', roles.data)
+        }
+        await this.setData()
+      },
       checkIfEnableAddRestrictions () {
         if (Object.keys(this.restrictions.bases.baseValues).length === 0) {
           this.restrictions.canAddRestriction = false

@@ -94,7 +94,6 @@
           mode="out-in"
         >
           <router-view
-            :key="$route.fullPath"
             class="mx-3 mt-4"
           />
         </transition>
