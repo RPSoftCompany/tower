@@ -534,7 +534,8 @@
             '  {% when "number", "boolean" %}\n' +
             '  "{{ var.name }}":{{ var.value }}{%- if forloop.last != true -%},{%- endif -%}\n' +
             '  {% when "list" %}\n' +
-            '  "{{ var.name }}":[{% for listVar in var -%}"{{ listVar }}"{%- if forloop.last != true -%},{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%},{%- endif -%}\n' +
+            '  "{{ var.name }}":[{% for listVar in var -%}"{{ listVar }}"{%- if forloop.last != true -%},' +
+            '{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%},{%- endif -%}\n' +
             '  {% endcase -%}\n' +
             '  {%- endfor %}\n' +
             '}',

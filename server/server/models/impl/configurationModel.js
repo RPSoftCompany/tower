@@ -42,7 +42,7 @@ module.exports = class ConfigurationModel {
      * @param {string} obj object to log
      *
      */
-    log(severity, method, message, obj) {
+    log(severity, method, message, obj = undefined) {
         if (this.logger === null) {
             this.logger = this.app.get('winston');
         }
@@ -89,7 +89,7 @@ module.exports = class ConfigurationModel {
     }
 
     /**
-     * Works exectly the same as find, but filters data depanding on user
+     * Works exectly the same as find, but filters data depanding on user permissions
      *
      * @param {object} filter regular filter
      * @param {object} options options from request
@@ -141,25 +141,10 @@ module.exports = class ConfigurationModel {
         ret = ret.filter((model) => {
             const modelPermName = `configurationModel.${model.base}.${model.name}.view`;
             if (roleSet.has(modelPermName)) {
-                if (userRoles.includes(modelPermName) || userRoles.includes('admin')) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return userRoles.includes(modelPermName) || userRoles.includes('admin');
             }
 
             return true;
-        });
-
-        const ConstantVariable = this.app.models.constantVariable;
-
-        ret.map(async (model) => {
-            const where = {
-                where: {},
-            };
-            where.where[model.base] = model.name;
-            const variables = await ConstantVariable.find(where);
-            model.defaultValues = variables;
         });
 
         this.log('debug', 'findWithPermissions', 'FINISHED');

@@ -30,7 +30,8 @@
     },
     "base": {
       "type": "string",
-      "required": true
+      "required": true,
+      "index": true
     },
     "options": {
       "type": "modelOptions",

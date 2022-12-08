@@ -184,6 +184,7 @@
                   :label="base.name"
                   :items="bases.baseItems[base.sequenceNumber]"
                   :loading="baseLoading(base.sequenceNumber)"
+                  :disabled="baseLoading(base.sequenceNumber)"
                   :data-cy="`configuration_base_${base.name}`"
                   class="pa-2"
                   item-text="name"
@@ -379,6 +380,22 @@
         </v-tooltip>
         <v-tooltip
           v-if="configuration.items.length > 0 || configuration.editMode === true"
+          bottom
+          :open-delay="500"
+        >
+          <template v-slot:activator="{ on }">
+            <v-icon
+              style="max-height: 24px;"
+              class="mr-3 mt-3"
+              @click="exportDialog.show = true"
+              v-on="on"
+              v-text="icons.mdiFileDownload"
+            />
+          </template>
+          <span>Export configuration to file</span>
+        </v-tooltip>
+        <v-tooltip
+          v-if="configuration.items.length > 0"
           bottom
           :open-delay="500"
         >
@@ -1018,8 +1035,21 @@
       }
     },
     watch: {
-      currentVersion (actual) {
-        this.assignCurrentVersionValues(actual)
+      currentVersion (current) {
+        this.assignCurrentVersionValues(current)
+      },
+      '$route.path' (current) {
+        let currentPath = []
+        for (const iterator in this.bases.baseValues) {
+          const base = this.bases.baseValues[iterator]
+          if (base?.name) {
+            currentPath.push(base.name)
+          }
+        }
+
+        if (`/configuration/${currentPath.join('/')}` !== current) {
+          this.setBaseItems()
+        }
       }
     },
     async mounted () {
@@ -1060,12 +1090,32 @@
         }
 
         if (this.bases.items.length > 0) {
-          await this.fillNextArray(0)
+          await this.fillNextArray(0, false)
+        }
+
+        if (this.$route.params.configurationPath) {
+          const pathArray = this.$route.params.configurationPath.split('/')
+
+          for (let i = 0; i < pathArray.length; i++) {
+            const path = pathArray[i]
+            if (this.bases.baseItems[i]) {
+              const found = this.bases.baseItems[i].find(el => {
+                return el.name === path
+              })
+
+              if (found) {
+                this.bases.baseValues[i] = found
+                await this.fillNextArray(i + 1, false)
+              } else {
+                i = pathArray.length
+              }
+            }
+          }
         }
 
         this.bases.loading = false
       },
-      async fillNextArray (sequenceNumber) {
+      async fillNextArray (sequenceNumber, changeRoute = true) {
         this.configuration.showSaveButton = false
         this.configuration.editMode = undefined
         this.configuration.items = []
@@ -1135,11 +1185,21 @@
           }
 
           await this.getBases(firstUnfilled, fillNone)
-          this.$forceUpdate()
         } else {
           this.constantVariables.show = false
-          this.$forceUpdate()
           await this.getConfiguration()
+        }
+
+        if (changeRoute) {
+          let newPath = []
+          for (const iterator in this.bases.baseValues) {
+            const base = this.bases.baseValues[iterator]
+            if (base?.name) {
+              newPath.push(base.name)
+            }
+          }
+
+          await this.$router.push(`/configuration/${newPath.join('/')}`)
         }
       },
       //* *******************

@@ -38,7 +38,7 @@ module.exports = class BaseConfiguration {
      * @param {string} obj object to log
      *
      */
-    log(severity, method, message, obj) {
+    log(severity, method, message, obj = undefined) {
         if (this.logger === null) {
             this.logger = this.app.get('winston');
         }
@@ -175,6 +175,7 @@ module.exports = class BaseConfiguration {
      * @param {object} match
      * @param {object} _id
      * @param {object} constantVariable
+     * @param {object} bases
      *
      * @return {constantVariable} created model
      */
@@ -258,6 +259,7 @@ module.exports = class BaseConfiguration {
 
         const ConstantVariable = this.app.models.constantVariable;
         const baseConfiguration = this.app.models.baseConfiguration;
+        const Role = this.app.models.Role;
         const ConfModelInstance = this.app.get('ConfModelInstance');
 
         const allBases = await baseConfiguration.find();
@@ -269,40 +271,42 @@ module.exports = class BaseConfiguration {
             all = await ConstantVariable.find(filter);
         }
 
-        const allModels = await ConfModelInstance.findWithPermissions({}, options);
+        const userId = options.accessToken.userId;
 
-        const modelsMap = new Map();
+        const allRoles = await Role.find();
 
-        for (const model of allModels) {
-            if (modelsMap.has(model.base)) {
-                modelsMap.get(model.base).add(model.name);
-            } else {
-                const set = new Set();
-                set.add(model.name);
-                modelsMap.set(model.base, set);
-            }
+        const roleSet = new Set();
+        allRoles.forEach((role) => {
+            roleSet.add(role.name);
+        });
+
+        const member = this.app.get('MemberInstance');
+
+        const userRoles = await member.getUserRoles(userId);
+
+        if (!userRoles.includes('configurationModel.view')) {
+            return [];
         }
 
-        const out = [];
-
-        for (const constVariable of all) {
+        all = all.filter((constVariable) => {
+            let isValid = true;
             for (const base of allBases) {
                 if (constVariable[base.name]) {
-                    if (modelsMap.has(base.name)) {
-                        const set = modelsMap.get(base.name);
-                        if (set.has(constVariable[base.name])) {
-                            out.push(constVariable);
+                    const modelPermName = `configurationModel.${base.name}.${constVariable[base.name]}.view`;
+                    if (allRoles.includes(modelPermName)) {
+                        if (!userRoles.includes(modelPermName)) {
+                            isValid = false;
                         }
-                    } else {
-                        out.push(constVariable);
                     }
                 }
             }
-        }
+
+            return isValid;
+        });
 
         this.log('debug', 'findWithPermissions', 'FINISHED');
 
-        return out;
+        return all;
     }
 
     /**
@@ -362,11 +366,13 @@ module.exports = class BaseConfiguration {
             __matchFilter.push({$and: [row]});
         }
 
-        queryFilter.push({
-            $match: {
-                $or: __matchFilter,
-            },
-        });
+        if (__matchFilter.length > 0) {
+            queryFilter.push({
+                $match: {
+                    $or: __matchFilter,
+                },
+            });
+        }
 
         const __partitionBy = {};
         for (const base of allBases) {

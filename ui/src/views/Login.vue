@@ -270,6 +270,12 @@
 
         if (token.user.newUser) {
           await this.$router.push('/changePassword')
+        } else if (this.$store.state.requestedUrl) {
+          const requestedUrl = this.$store.state.requestedUrl
+          this.$store.commit('setRequestedUrl', null)
+          await this.$router.push(requestedUrl)
+        } else if (this.$route.query?.redirect) {
+          await this.$router.push(this.$route.query.redirect)
         } else {
           let path = this.getUserStartPath(roles.data)
 
@@ -361,6 +367,13 @@
             if (user.data.user.newUser) {
               await this.$router.push('/changePassword')
               return
+            } else if (this.$store.state.requestedUrl) {
+              const requestedUrl = this.$store.state.requestedUrl
+              this.$store.commit('setRequestedUrl', null)
+              await this.$router.push(requestedUrl)
+              return
+            } else if (this.$route.query?.redirect) {
+              await this.$router.push(this.$route.query.redirect)
             } else {
               let path = this.getUserStartPath(roles.data)
 
@@ -369,7 +382,6 @@
               }
 
               await this.$router.push(`/${path}`)
-              return
             }
           } else {
             validUser = false

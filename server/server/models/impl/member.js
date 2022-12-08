@@ -41,6 +41,7 @@ module.exports = class Member {
         this.userRolesCache = new Map();
 
         this.cacheEnabled = true;
+        this.refreshCache = true;
     }
 
     /**
@@ -51,7 +52,7 @@ module.exports = class Member {
      * @param {string} message Message to log
      * @param {string} obj object to log
      */
-    log(severity, method, message, obj) {
+    log(severity, method, message, obj = undefined) {
         if (this.logger === null) {
             this.logger = this.app.get('winston');
         }
@@ -81,6 +82,7 @@ module.exports = class Member {
             }
         });
         changeStream.on('change', async () => {
+            this.refreshCache = true;
             this.userRolesCache.clear();
             this.rolesCache = await Role.find();
         });
@@ -92,6 +94,7 @@ module.exports = class Member {
             }
         });
         groupChangeStream.on('change', async () => {
+            this.refreshCache = true;
             this.userRolesCache.clear();
             this.groupCache = await Group.find();
         });
@@ -165,16 +168,12 @@ module.exports = class Member {
      *
      * @param {object} credentials Object with username and password
      * @param {string} include Optionally set it to "user" to include the user info
-     * @param {string} ttl Optional token ttl
+     * @param {number} ttl Optional token ttl
      *
      * @return {object} access token details (Optionally user data)
      */
-    async login(credentials, include, ttl) {
+    async login(credentials, include, ttl = 86400) {
         this.log('debug', 'login', 'STARTED');
-
-        if (!ttl) {
-            ttl = 86400;
-        }
 
         const User = this.app.models.member;
 
@@ -472,7 +471,7 @@ module.exports = class Member {
 
         let user = null;
 
-        if (this.userRolesCache.has(userId.toString()) && this.cacheEnabled) {
+        if (this.userRolesCache.has(userId.toString()) && this.cacheEnabled && !this.refreshCache) {
             this.log('debug', 'getUserRoles', 'FINISHED');
             return this.userRolesCache.get(userId.toString());
         } else {
@@ -723,7 +722,7 @@ module.exports = class Member {
         const userRoles = await this.getUserRoles(userId);
         const roles = await this.getRolesFromCache();
 
-        let found = userRoles.find( (el) => {
+        let found = userRoles.find((el) => {
             return el === 'constantVariable.modify';
         });
 
@@ -731,12 +730,12 @@ module.exports = class Member {
             permission = 'modify';
         }
 
-        found = roles.find( (el) => {
+        found = roles.find((el) => {
             return el.name === `constantVariable.${base}.${model}.modify`;
         });
 
         if (found) {
-            const perm = userRoles.find( (el) => {
+            const perm = userRoles.find((el) => {
                 return el === `constantVariable.${base}.${model}.modify`;
             });
 

@@ -1,13 +1,18 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import Settings from './views/Settings.vue'
+import Settings from '@/views/Settings.vue'
+import Configuration from '@/views/Configuration.vue'
 
 Vue.use(Router)
 
 const router = new Router({
   base: '/ui/',
   routes: [
+    {
+      path: '/',
+      redirect: '/configuration'
+    },
     {
       path: '/timearchive',
       name: 'Time Archive',
@@ -24,9 +29,9 @@ const router = new Router({
       component: () => import('./views/FindVariable')
     },
     {
-      path: '/configuration',
+      path: '/configuration/:configurationPath(.*)?',
       name: 'Configuration',
-      component: () => import('./views/Configuration.vue')
+      component: Configuration
     },
     {
       path: '/login',
@@ -66,11 +71,12 @@ router.beforeEach((to, from, next) => {
     next()
   } else {
     if (router.app.$store === undefined) {
-      next('/login')
+      next(`/login?redirect=${to.path}`)
     } else if (
       router.app.$store.state.user === null ||
       router.app.$store.state.user === undefined
     ) {
+      router.app.$store.commit('setRequestedUrl', to.path)
       next('/login')
     } else {
       next()

@@ -19,7 +19,9 @@ export default new Vuex.Store({
       show: false
     },
 
-    initialized: false
+    initialized: false,
+
+    requestedUrl: null
   },
   mutations: {
     setUserData (state, user) {
@@ -34,6 +36,9 @@ export default new Vuex.Store({
     },
     closeError (state) {
       state.error.show = false
+    },
+    setRequestedUrl (state, url) {
+      state.requestedUrl = url
     }
   }
 })

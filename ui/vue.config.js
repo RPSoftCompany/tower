@@ -7,6 +7,6 @@ module.exports = {
   pwa: {
     workboxPluginMode: 'GenerateSW',
     skipWaiting: true,
-    assetsVersion: '1.11.0',
-  },
+    assetsVersion: '1.17.0'
+  }
 }

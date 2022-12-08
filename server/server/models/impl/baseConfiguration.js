@@ -32,7 +32,9 @@ module.exports = class BaseConfiguration {
 
         this.cacheEnabled = true;
 
-        this.createCache();
+        this.createCache().then(() => {
+            this.createIndexes();
+        });
     }
 
     /**
@@ -44,7 +46,7 @@ module.exports = class BaseConfiguration {
      * @param {string} obj object to log
      *
      */
-    log(severity, method, message, obj) {
+    log(severity, method, message, obj = undefined) {
         if (this.logger === null) {
             this.logger = this.app.get('winston');
         }
@@ -76,6 +78,19 @@ module.exports = class BaseConfiguration {
         });
 
         this.app.set('BaseConfigurationInstance', this);
+    }
+
+    /**
+     * Creates indexes on configuration collection based on baseConfiguration model
+     * @return {Promise<void>}
+     */
+    async createIndexes() {
+        const configModel = await this.getConfigurationModelFromCache();
+        for (const model of configModel) {
+            const keyPath = {};
+            keyPath[model.name] = 1;
+            await this.app.dataSources['mongoDB'].connector.collection('configuration').createIndex(model.name);
+        }
     }
 
     /**
@@ -111,6 +126,9 @@ module.exports = class BaseConfiguration {
 
         await baseConfig.save();
 
+        await this.app.dataSources['mongoDB'].connector.collection('configuration')
+            .createIndex(baseConfig.name, baseConfig.name);
+
         const set = {};
         set[baseConfig.name] = null;
 
@@ -133,7 +151,7 @@ module.exports = class BaseConfiguration {
         const baseCache = await this.getConfigurationModelFromCache();
 
         const all = baseCache.sort((a, b) => {
-            if ( a.sequenceNumber > b.sequenceNumber) {
+            if (a.sequenceNumber > b.sequenceNumber) {
                 return 1;
             } else {
                 return -1;
@@ -150,7 +168,7 @@ module.exports = class BaseConfiguration {
                 base.sequenceNumber = baseConfig.sequenceNumber;
                 newBase = base;
             }
-        };
+        }
 
         tempArray.splice(baseConfig.sequenceNumber, 0, newBase);
 
@@ -188,21 +206,28 @@ module.exports = class BaseConfiguration {
             },
         });
 
+        await base.destroy();
+
         const unset = {};
         unset[base.name] = '';
 
-        this.app.dataSources['mongoDB'].connector.collection('configuration').update({}, {$unset: unset},
+        this.app.dataSources['mongoDB'].connector.collection('configuration').updateMany({}, {$unset: unset},
             {multi: true});
 
-        configurationModel.destroyAll({
+        await configurationModel.destroyAll({
             base: base.name,
         });
-
-        await base.destroy();
 
         const all = await baseConfiguration.find({
             order: 'sequenceNumber ASC',
         });
+
+        const allIndexes = await this.app.dataSources['mongoDB'].connector.collection('configuration').indexes();
+        for (const index of allIndexes) {
+            if (index.name === `${base.name}_1`) {
+                await this.app.dataSources['mongoDB'].connector.collection('configuration').dropIndex(index.name);
+            }
+        }
 
         for (let i = 0; i < all.length; i++) {
             const base = all[i];
