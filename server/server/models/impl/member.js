@@ -41,6 +41,7 @@ module.exports = class Member {
         this.userRolesCache = new Map();
 
         this.cacheEnabled = true;
+        this.refreshCache = true;
     }
 
     /**
@@ -81,6 +82,7 @@ module.exports = class Member {
             }
         });
         changeStream.on('change', async () => {
+            this.refreshCache = true;
             this.userRolesCache.clear();
             this.rolesCache = await Role.find();
         });
@@ -92,6 +94,7 @@ module.exports = class Member {
             }
         });
         groupChangeStream.on('change', async () => {
+            this.refreshCache = true;
             this.userRolesCache.clear();
             this.groupCache = await Group.find();
         });
@@ -468,7 +471,7 @@ module.exports = class Member {
 
         let user = null;
 
-        if (this.userRolesCache.has(userId.toString()) && this.cacheEnabled) {
+        if (this.userRolesCache.has(userId.toString()) && this.cacheEnabled && !this.refreshCache) {
             this.log('debug', 'getUserRoles', 'FINISHED');
             return this.userRolesCache.get(userId.toString());
         } else {
@@ -719,7 +722,7 @@ module.exports = class Member {
         const userRoles = await this.getUserRoles(userId);
         const roles = await this.getRolesFromCache();
 
-        let found = userRoles.find( (el) => {
+        let found = userRoles.find((el) => {
             return el === 'constantVariable.modify';
         });
 
@@ -727,12 +730,12 @@ module.exports = class Member {
             permission = 'modify';
         }
 
-        found = roles.find( (el) => {
+        found = roles.find((el) => {
             return el.name === `constantVariable.${base}.${model}.modify`;
         });
 
         if (found) {
-            const perm = userRoles.find( (el) => {
+            const perm = userRoles.find((el) => {
                 return el === `constantVariable.${base}.${model}.modify`;
             });
 
