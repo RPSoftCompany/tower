@@ -485,6 +485,10 @@ module.exports = class BaseConfiguration {
                             el.type = tempVar.type;
                             el.forced = tempVar.forced;
                             el.addIfAbsent = tempVar.addIfAbsent;
+
+                            for (const base of allBases) {
+                                el[base.name] = tempVar[base.name];
+                            }
                         }
                     });
 
