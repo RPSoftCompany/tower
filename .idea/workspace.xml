@@ -5,121 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e16bfb61-4cb0-49e0-8a6e-5dbd8447af86" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jsLinters/eslint.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jsLinters/eslint.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/prettier.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/prettier.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/boot/role-resolver.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/boot/role-resolver.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/server/datasources.development.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/datasources.development.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/model-config.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/model-config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/base-configuration.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/base-configuration.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/configuration-model.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/configuration-model.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/configuration.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/configuration.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/configuration.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/configuration.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/connection.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/connection.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/constant-variable.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/constant-variable.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/constant-variable.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/constant-variable.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/group.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/group.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/hook.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/hook.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/impl/configuration.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/configuration.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/impl/configurationModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/configurationModel.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/impl/connection.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/connection.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/impl/constantVariable.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/constantVariable.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/impl/hook.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/hook.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/impl/member.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/member.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/impl/template/interpreter.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/template/interpreter.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/impl/v1.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/impl/v1.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/member.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/member.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/member.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/member.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/promotion.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/promotion.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/rest-configuration.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/rest-configuration.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/v-1.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/v-1.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/server/models/v-2.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/models/v-2.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.env" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.eslintrc.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/babel.config.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress/fixtures/example.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress/integration/01_login.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress/integration/02_baseModel.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress/integration/03_zone.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress/integration/04_configuration.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress/plugins/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress/support/commands.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cypress/support/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-192x192.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/android-chrome-512x512.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-120x120.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-152x152.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-180x180.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-60x60.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon-76x76.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/apple-touch-icon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-16x16.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/favicon-32x32.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/msapplication-icon-144x144.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/mstile-150x150.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/img/icons/safari-pinned-tab.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/manifest.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/robots.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/tower.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Bases_change_order.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Bases_new_base.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Bases_remove_base.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Groups_create_group.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Groups_modify_group.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Rest_modify_url.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Rest_new_url.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Rest_remove_url.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Users_add_to_group.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Users_create_user.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/Users_technical_user.gif" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/logo.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/assets/tower-40x40.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/archive/comparisonTable.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/base/advancedRule.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/base/constantVariable.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/base/gif.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/base/uiCard.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/base/variable.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/newConfigurationRow.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/drawer.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/footerElement.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/profileButton.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/toolbar.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/tutorial.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Connection.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Group.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Hook.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Promotion.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Rest.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/User.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/main.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/plugins/vuetify.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/router.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/store.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Archive.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Base.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/ChangePassword.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Configuration.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/FindVariable.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Initialize.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Login.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/NoPermissions.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Settings.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/vue.config.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -440,6 +326,7 @@
       <workItem from="1678514911873" duration="5868000" />
       <workItem from="1678634000093" duration="259000" />
       <workItem from="1678634290359" duration="9771000" />
+      <workItem from="1678778107690" duration="16485000" />
     </task>
     <servers />
   </component>
