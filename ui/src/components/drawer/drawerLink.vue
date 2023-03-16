@@ -1,0 +1,71 @@
+<template>
+	<router-link :to="link">
+		<q-item
+			:class="{
+				'tw-bg-secondary': checkRegEx.test(currentRoute),
+				'tw-bg-dark': !checkRegEx.test(currentRoute),
+				'tw-text-darkPage': checkRegEx.test(currentRoute)
+			}"
+			class="tw-px-2 2xl:tw-py-1 tw-py-0 tw-mb-1 2xl:tw-mx-2 tw-mx-3 tw-rounded 2xl:tw-min-h-[2.25rem] tw-min-h-[2rem]"
+			clickable
+			tag="div"
+		>
+			<q-tooltip
+				v-if="!$q.screen.gt.lg"
+				anchor="center right"
+				self="center left"
+			>
+				{{ title }}
+			</q-tooltip>
+			<div class="tw-flex tw-w-full tw-justify-center 2xl:tw-justify-start">
+				<q-icon
+					v-if="icon"
+					:color="checkRegEx.test(currentRoute) ? 'dark' : undefined"
+					:name="icon"
+					:size="$q.screen.gt.lg ? 'xs' : 'sm'"
+					class="tw-self-center 2xl:tw-mr-2 tw-grow 2xl:tw-grow-0"
+				>
+				</q-icon>
+				<div
+					:class="{ 'tw-text-center': !icon }"
+					class="tw-text-xs tw-self-center tw-grow tw-justify-self-center 2xl:tw-block tw-hidden"
+				>
+					{{ title }}
+				</div>
+			</div>
+		</q-item>
+	</router-link>
+</template>
+
+<script lang="ts" setup>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useQuasar } from 'quasar';
+
+const $q = useQuasar();
+
+/**
+ * Interfaces
+ */
+export interface LinkProps {
+	title: string;
+	link?: string;
+	icon?: string;
+	checkRegEx: RegExp;
+}
+
+const route = useRoute();
+
+/**
+ * Props
+ */
+withDefaults(defineProps<LinkProps>(), {
+	link: '#',
+	icon: ''
+});
+
+/**
+ * Computed
+ */
+const currentRoute = computed(() => route.path);
+</script>

@@ -14,89 +14,103 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
-'use strict';
+"use strict";
 
-const HookModel = require('./impl/hook.js');
+const HookModel = require("./impl/hook.js");
 
 let hookObject = null;
 
 const initiate = (main) => {
-    if (main.app !== undefined && main.app.booted) {
-        if (main.app.dataSources['mongoDB'] === undefined) {
-            setTimeout( () => {
-                initiate(main);
-            }, 200);
-        } else {
-            if (main.app.dataSources['mongoDB'].connected) {
-                hookObject = new HookModel(main.app);
-                main.app.hookSingleton = hookObject;
-            } else {
-                setTimeout( () => {
-                    initiate(main);
-                }, 200);
-            }
-        }
+  if (main.app !== undefined && main.app.booted) {
+    if (main.app.dataSources["mongoDB"] === undefined) {
+      setTimeout(() => {
+        initiate(main);
+      }, 200);
     } else {
-        setTimeout( () => {
-            initiate(main);
+      if (main.app.dataSources["mongoDB"].connected) {
+        hookObject = new HookModel(main.app);
+        main.app.hookSingleton = hookObject;
+      } else {
+        setTimeout(() => {
+          initiate(main);
         }, 200);
+      }
     }
+  } else {
+    setTimeout(() => {
+      initiate(main);
+    }, 200);
+  }
 };
 
-module.exports = function(Hook) {
-    initiate(Hook);
+module.exports = function (Hook) {
+  initiate(Hook);
 
-    Hook.disableRemoteMethodByName('create'); // POST
-    Hook.disableRemoteMethodByName('upsert'); // PATCH
-    Hook.disableRemoteMethodByName('replaceOrCreate'); // PUT
+  Hook.afterRemote("*", (context, unused, next) => {
+    const audit = Hook.app.get("AuditInstance");
+    audit.logAudit(context, "Hook");
+    next();
+  });
 
-    Hook.disableRemoteMethodByName('replaceById');
-    Hook.disableRemoteMethodByName('deleteById');
-    Hook.disableRemoteMethodByName('prototype.updateAttributes');
+  Hook.afterRemoteError("*", (context, next) => {
+    const audit = Hook.app.get("AuditInstance");
+    audit.logError(context, "Hook");
+    next();
+  });
 
-    Hook.disableRemoteMethodByName('update');
-    Hook.disableRemoteMethodByName('upsertWithWhere');
+  Hook.disableRemoteMethodByName("create"); // POST
+  Hook.disableRemoteMethodByName("upsert"); // PATCH
+  Hook.disableRemoteMethodByName("replaceOrCreate"); // PUT
 
-    Hook.disableRemoteMethodByName('createChangeStream');
+  Hook.disableRemoteMethodByName("replaceById");
+  Hook.disableRemoteMethodByName("deleteById");
+  Hook.disableRemoteMethodByName("prototype.updateAttributes");
 
-    Hook.addHook = async (id, hook) => {
-        await hookObject.addHookObject(hook, id);
-    };
+  Hook.disableRemoteMethodByName("update");
+  Hook.disableRemoteMethodByName("upsertWithWhere");
 
-    Hook.removeHook = async (id, fk) => {
-        await hookObject.removeHookObject(fk, id);
-    };
+  Hook.disableRemoteMethodByName("createChangeStream");
 
-    Hook.modifyHook = async (id, hook) => {
-        await hookObject.modifyHookObject(hook, id);
-    };
+  Hook.addHook = async (id, hook) => {
+    return hookObject.addHookObject(hook, id);
+  };
 
-    // ====================================================
-    // ================ Remote methods ====================
-    // ====================================================
-    Hook.remoteMethod('addHook', {
-        http: {verb: 'POST', status: 200, path: '/:id/hookObject'},
-        accepts: [
-            {arg: 'id', type: 'string', http: {source: 'path'}},
-            {arg: 'hook', type: 'hookObject', http: {source: 'body'}},
-        ],
-        description: 'Create a new instance of hookObject in given instance of Hook model',
-        returns: {arg: 'model', type: 'hookObject', root: true},
-    });
-    Hook.remoteMethod('modifyHook', {
-        http: {verb: 'PUT', status: 200, path: '/:id/hookObject'},
-        accepts: [
-            {arg: 'id', type: 'string', http: {source: 'path'}},
-            {arg: 'hook', type: 'hookObject', http: {source: 'body'}},
-        ],
-        description: 'Replace a hookObject instance in hooks with id {{id}}',
-    });
-    Hook.remoteMethod('removeHook', {
-        http: {verb: 'DELETE', status: 200, path: '/:id/hookObject/:fk'},
-        accepts: [
-            {arg: 'id', type: 'string', http: {source: 'path'}},
-            {arg: 'fk', type: 'string', http: {source: 'path'}},
-        ],
-        description: 'Delete a model instance by {{fk}} from hook with id {{id}}',
-    });
+  Hook.removeHook = async (id, fk) => {
+    await hookObject.removeHookObject(fk, id);
+  };
+
+  Hook.modifyHook = async (id, hook) => {
+    return hookObject.modifyHookObject(hook, id);
+  };
+
+  // ====================================================
+  // ================ Remote methods ====================
+  // ====================================================
+  Hook.remoteMethod("addHook", {
+    http: { verb: "POST", status: 200, path: "/:id/hookObject" },
+    accepts: [
+      { arg: "id", type: "string", http: { source: "path" } },
+      { arg: "hook", type: "hookObject", http: { source: "body" } },
+    ],
+    description:
+      "Create a new instance of hookObject in given instance of Hook model",
+    returns: { arg: "model", type: "hookObject", root: true },
+  });
+  Hook.remoteMethod("modifyHook", {
+    http: { verb: "PUT", status: 200, path: "/:id/hookObject" },
+    accepts: [
+      { arg: "id", type: "string", http: { source: "path" } },
+      { arg: "hook", type: "hookObject", http: { source: "body" } },
+    ],
+    description: "Replace a hookObject instance in hooks with id {{id}}",
+    returns: { arg: "model", type: "hookObject", root: true },
+  });
+  Hook.remoteMethod("removeHook", {
+    http: { verb: "DELETE", status: 200, path: "/:id/hookObject/:fk" },
+    accepts: [
+      { arg: "id", type: "string", http: { source: "path" } },
+      { arg: "fk", type: "string", http: { source: "path" } },
+    ],
+    description: "Delete a model instance by {{fk}} from hook with id {{id}}",
+  });
 };

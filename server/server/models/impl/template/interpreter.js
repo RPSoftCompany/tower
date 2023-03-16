@@ -17,116 +17,139 @@
 let customFunctions = null;
 
 try {
-    customFunctions = require('./extensions/customFunctions.js');
+  customFunctions = require("./extensions/customFunctions.js");
 } catch (_e) {
-    // ignore
+  // ignore
 }
 
-const {Liquid} = require('liquidjs');
+const { Liquid } = require("liquidjs");
 
 /**
  * Common class for interpreter
  */
 class InterpreterCommon {
-    /**
-     * Constructor
-     *
-     * @param {string} text text to handle
-     * @param {object} configuration full configuration object
-     * @param {boolean} returnsJson Indicates if returned data is json
-     * @param {[object]} variables process variables array
-     *
-     */
-    constructor(text, configuration, returnsJson, variables) {
-        this.variables = [];
-        this.text = text.replace('\r\n', '\n');
+  /**
+   * Constructor
+   *
+   * @param {string} text text to handle
+   * @param {object} configuration full configuration object
+   * @param {boolean} returnsJson Indicates if returned data is json
+   * @param {[object]} variables process variables array
+   *
+   */
+  constructor(text, configuration, returnsJson, variables) {
+    this.variables = [];
+    this.text = text.replace("\r\n", "\n");
 
-        this.variables = variables;
+    this.variables = variables;
 
-        this.returnsJson = returnsJson;
+    this.returnsJson = returnsJson;
 
-        this.globalVariables = [];
+    this.globalVariables = [];
 
-        this.configurationVariables = configuration.variables;
-        this.configuration = configuration;
+    this.configurationVariables = configuration.variables;
+    this.configuration = configuration;
 
-        this.textToChange = '';
-    }
+    this.textToChange = "";
+  }
 }
 
 module.exports = class Interpreter extends InterpreterCommon {
-    /**
-     * Constructor
-     *
-     * @param {string} text text to handle
-     * @param {object} configuration full configuration object
-     * @param {boolean} returnsJson Indicates if returned data is json
-     * @param {[object]} variables process variables array
-     *
-     */
-    constructor(text, configuration, returnsJson, variables) {
-        super(text, configuration, returnsJson, variables);
+  /**
+   * Constructor
+   *
+   * @param {string} text text to handle
+   * @param {object} configuration full configuration object
+   * @param {boolean} returnsJson Indicates if returned data is json
+   * @param {[object]} variables process variables array
+   *
+   */
+  constructor(text, configuration, returnsJson, variables) {
+    super(text, configuration, returnsJson, variables);
+  }
+
+  /**
+   * Interprets the template string and creates the output template
+   *
+   * @return {string} filled template
+   */
+  async handle() {
+    const engine = new Liquid();
+
+    engine.registerFilter("tower_toBase64", this.towerToBase64);
+    engine.registerFilter("tower_random", this.towerRandom);
+    engine.registerFilter("tower_toString", this.towerToString);
+    engine.registerFilter(
+      "tower_getVariableByName",
+      this.towerGetVariableByName
+    );
+
+    if (customFunctions) {
+      Object.keys(customFunctions).forEach((func) => {
+        engine.registerFilter(func, customFunctions[func]);
+      });
     }
 
-    /**
-     * Interprets the template string and creates the output template
-     *
-     * @return {string} filled template
-     */
-    async handle() {
-        const engine = new Liquid();
+    this.text = await engine.parseAndRender(this.text, this.configuration);
 
-        engine.registerFilter('tower_toBase64', this.towerToBase64);
-        engine.registerFilter('tower_random', this.towerRandom);
-        engine.registerFilter('tower_toString', this.towerToString);
+    return this.text;
+  }
 
-        if (customFunctions) {
-            Object.keys(customFunctions).forEach( (func) => {
-                engine.registerFilter(func, customFunctions[func]);
-            });
-        }
+  /**
+   * towerToBase64
+   *
+   * @param {string} str string to encode
+   * @return {string} string in Base64
+   */
+  towerToBase64(str) {
+    const buff = Buffer.from(str);
+    return buff.toString("base64");
+  }
 
-        this.text = await engine.parseAndRender(this.text, this.configuration);
-
-        return this.text;
+  /**
+   * towerRandom
+   *
+   * @param {number} from minimum value of the generated number
+   * @param {number} to maximum value of the generated number
+   *
+   * @return {number} random number
+   */
+  towerRandom(from, to) {
+    if (from && to) {
+      const min = Math.ceil(from);
+      const max = Math.floor(to);
+      return Math.floor(Math.random() * (max - min)) + min;
+    } else {
+      return Math.ceil(Math.random() * 100);
     }
+  }
 
-    /**
-     * towerToBase64
-     *
-     * @param {string} str string to encode
-     * @return {string} string in Base64
-     */
-    towerToBase64(str) {
-        const buff = Buffer.from(str);
-        return buff.toString('base64');
-    }
+  /**
+   * towerToString
+   *
+   * @param {any} str any value
+   * @return {string} value as string
+   */
+  towerToString(str) {
+    return `${str}`;
+  }
 
-    /**
-     * towerRandom
-     *
-     * @param {number} from minimum value of the generated number
-     * @param {number} to maximum value of the generated number
-     *
-     * @return {number} random number
-     */
-    towerRandom(from, to) {
-        if (from && to) {
-            const min = Math.ceil(from);
-            const max = Math.floor(to);
-            return Math.floor(Math.random() * (max - min)) + min;
-        } else {
-            return Math.ceil(Math.random() * 100);
-        }
-    }
+  /**
+   * towerGetVariableByName
+   *
+   * @param {Array} variables
+   * @param {string} name
+   * @return {*|null}
+   */
+  towerGetVariableByName(variables, name) {
+    const found = variables.find((el) => {
+      return el.name === name;
+    });
 
-    /**
-     * towerToString
-     *
-     * @param {any} str any value
-     * @return {string} value as string
-     */
-    towerToString(str) {
-        return `${str}`;
+    if (found) {
+      return found;
+    } else {
+      return null;
     }
+  }
 };

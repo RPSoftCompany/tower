@@ -24,7 +24,7 @@ const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
         configModel = new ConfigModel(main.app);
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             initiate(main);
         }, 200);
     }
@@ -32,6 +32,18 @@ const initiate = (main) => {
 
 module.exports = function(Restconfiguration) {
     initiate(Restconfiguration);
+
+    Restconfiguration.afterRemote('*', (context, unused, next) => {
+        const audit = Restconfiguration.app.get('AuditInstance');
+        audit.logAudit(context, 'RestConfiguration');
+        next();
+    });
+
+    Restconfiguration.afterRemoteError('*', (context, next) => {
+        const audit = Restconfiguration.app.get('AuditInstance');
+        audit.logError(context, 'RestConfiguration');
+        next();
+    });
 
     Restconfiguration.validatesUniquenessOf('url', {message: 'URL is not unique'});
     Restconfiguration.validatesInclusionOf('returnType',

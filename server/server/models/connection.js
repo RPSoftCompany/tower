@@ -14,92 +14,115 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
-'use strict';
+"use strict";
 
-const ConnectionModel = require('./impl/connection');
+const ConnectionModel = require("./impl/connection");
 
 let connection = null;
 
 const initiate = (main) => {
-    if (main.app !== undefined && main.app.booted) {
-        connection = new ConnectionModel(main.app);
-    } else {
-        setTimeout( () => {
-            initiate(main);
-        }, 200);
-    }
+  if (main.app !== undefined && main.app.booted) {
+    connection = new ConnectionModel(main.app);
+  } else {
+    setTimeout(() => {
+      initiate(main);
+    }, 200);
+  }
 };
 
 module.exports = (Connection) => {
-    initiate(Connection);
+  initiate(Connection);
 
-    Connection.disableRemoteMethodByName('create'); // POST
-    Connection.disableRemoteMethodByName('find'); // GET
-    Connection.disableRemoteMethodByName('upsert'); // PATCH
-    Connection.disableRemoteMethodByName('replaceOrCreate'); // PUT
+  Connection.afterRemote("*", (context, unused, next) => {
+    const audit = Connection.app.get("AuditInstance");
+    audit.logAudit(context, "Connection");
+    next();
+  });
 
-    Connection.disableRemoteMethodByName('findById');
+  Connection.afterRemoteError("*", (context, next) => {
+    const audit = Connection.app.get("AuditInstance");
+    audit.logError(context, "Connection");
+    next();
+  });
 
-    Connection.disableRemoteMethodByName('replaceById');
-    Connection.disableRemoteMethodByName('deleteById');
-    Connection.disableRemoteMethodByName('prototype.updateAttributes');
+  Connection.disableRemoteMethodByName("create"); // POST
+  Connection.disableRemoteMethodByName("find"); // GET
+  Connection.disableRemoteMethodByName("upsert"); // PATCH
+  Connection.disableRemoteMethodByName("replaceOrCreate"); // PUT
 
-    Connection.disableRemoteMethodByName('update');
-    Connection.disableRemoteMethodByName('upsertWithWhere');
+  Connection.disableRemoteMethodByName("findById");
 
-    Connection.disableRemoteMethodByName('count');
-    Connection.disableRemoteMethodByName('findOne');
+  Connection.disableRemoteMethodByName("replaceById");
+  Connection.disableRemoteMethodByName("deleteById");
+  Connection.disableRemoteMethodByName("prototype.updateAttributes");
 
-    Connection.disableRemoteMethodByName('createChangeStream');
+  Connection.disableRemoteMethodByName("update");
+  Connection.disableRemoteMethodByName("upsertWithWhere");
 
-    Connection.testConnection = async (type) => {
-        return await connection.testConnection(type);
-    };
+  Connection.disableRemoteMethodByName("count");
+  Connection.disableRemoteMethodByName("findOne");
 
-    Connection.createConnection = async (conn) => {
-        return await connection.saveConnection(conn);
-    };
+  Connection.disableRemoteMethodByName("createChangeStream");
 
-    Connection.patchConnection = async (conn) => {
-        return await connection.saveConnection(conn);
-    };
+  Connection.testConnection = async (type, body) => {
+    return await connection.testConnection(type, body);
+  };
 
-    Connection.findConnection = async (filter) => {
-        return await connection.findConnection(filter);
-    };
+  Connection.createConnection = async (conn) => {
+    return await connection.saveConnection(conn);
+  };
 
-    Connection.findSCPConnectionsAndCopy = async (conn) => {
-        return await connection.findSCPConnectionsAndCopy(conn);
-    };
+  Connection.patchConnection = async (conn) => {
+    return await connection.saveConnection(conn);
+  };
 
-    // ====================================================
-    // ================ Remote methods ====================
-    // ====================================================
+  Connection.findConnection = async (filter) => {
+    return await connection.findConnection(filter);
+  };
 
-    Connection.remoteMethod('patchConnection', {
-        http: {verb: 'PATCH', status: 200, path: '/'},
-        accepts: [
-            {arg: 'connection', type: 'connection', http: {source: 'body'}},
-        ],
-        description: 'Patch an existing model instance or insert a new one into the data source.',
-        returns: {arg: 'model', type: 'connection', root: true},
-    });
+  Connection.findSCPConnectionsAndCopy = async (conn) => {
+    return await connection.findSCPConnectionsAndCopy(conn);
+  };
 
-    Connection.remoteMethod('findConnection', {
-        http: {verb: 'GET', status: 200, path: '/'},
-        accepts: [
-            {arg: 'filter', type: 'string', http: {source: 'query'}},
-        ],
-        description: 'Find all instances of the model matched by filter from the data source.',
-        returns: {arg: 'model', type: 'connection', root: true},
-    });
+  Connection.deleteConnection = async (id) => {
+    return await connection.deleteConnection(id);
+  };
 
-    Connection.remoteMethod('testConnection', {
-        http: {verb: 'GET', status: 200, path: '/testConnection'},
-        accepts: [
-            {arg: 'type', type: 'string'},
-        ],
-        description: 'Tests given connection based on given type.',
-        returns: {arg: 'ret', type: 'boolean', root: true},
-    });
+  // ====================================================
+  // ================ Remote methods ====================
+  // ====================================================
+
+  Connection.remoteMethod("patchConnection", {
+    http: { verb: "PATCH", status: 200, path: "/" },
+    accepts: [
+      { arg: "connection", type: "connection", http: { source: "body" } },
+    ],
+    description:
+      "Patch an existing model instance or insert a new one into the data source.",
+    returns: { arg: "model", type: "connection", root: true },
+  });
+
+  Connection.remoteMethod("findConnection", {
+    http: { verb: "GET", status: 200, path: "/" },
+    accepts: [{ arg: "filter", type: "string", http: { source: "query" } }],
+    description:
+      "Find all instances of the model matched by filter from the data source.",
+    returns: { arg: "model", type: "connection", root: true },
+  });
+
+  Connection.remoteMethod("deleteConnection", {
+    http: { verb: "DELETE", status: 204, path: "/:id" },
+    accepts: [{ arg: "id", type: "string", http: { source: "path" } }],
+    description: "Delete a model instance by {{id}} from the data source.",
+  });
+
+  Connection.remoteMethod("testConnection", {
+    http: { verb: "POST", status: 200, path: "/testConnection" },
+    accepts: [
+      { arg: "type", type: "string" },
+      { arg: "connection", type: "connection", http: { source: "body" } },
+    ],
+    description: "Tests given connection based on given connection details.",
+    returns: { arg: "ret", type: "boolean", root: true },
+  });
 };

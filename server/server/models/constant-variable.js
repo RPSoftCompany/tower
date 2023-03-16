@@ -22,14 +22,14 @@ let constantVariable = null;
 
 const initiate = (main) => {
     if (main.app !== undefined && main.app.booted
-            && main.app.hookSingleton !== undefined
-            && main.app.dataSources['mongoDB'] !== undefined
-            && main.app.dataSources['mongoDB'].connected) {
+        && main.app.hookSingleton !== undefined
+        && main.app.dataSources['mongoDB'] !== undefined
+        && main.app.dataSources['mongoDB'].connected) {
         constantVariable = new ConstantVariableModel(main.app);
 
         main.app.hookSingleton.createHook('variableChanged', 'ConstantVariable', 'description');
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             initiate(main);
         }, 200);
     }
@@ -37,6 +37,18 @@ const initiate = (main) => {
 
 module.exports = function(Constantvariable) {
     initiate(Constantvariable);
+
+    Constantvariable.afterRemote('*', (context, unused, next) => {
+        const audit = Constantvariable.app.get('AuditInstance');
+        audit.logAudit(context, 'ConstantVariable');
+        next();
+    });
+
+    Constantvariable.afterRemoteError('*', (context, next) => {
+        const audit = Constantvariable.app.get('AuditInstance');
+        audit.logError(context, 'ConstantVariable');
+        next();
+    });
 
     Constantvariable.disableRemoteMethodByName('create'); // POST
     Constantvariable.disableRemoteMethodByName('find'); // GET

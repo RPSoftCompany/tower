@@ -221,7 +221,7 @@ module.exports = class ConfigurationModel {
 
         const baseAll = await this.app.get('BaseConfigurationInstance').getConfigurationModelFromCache();
 
-        const baseExists = baseAll.find( (el) => {
+        const baseExists = baseAll.find((el) => {
             return el.name === model.base;
         });
 
@@ -325,7 +325,7 @@ module.exports = class ConfigurationModel {
         this.log('debug', 'upsertConfigurationModel', 'STARTED');
 
         const hookBase = {};
-        if (model.base !== undefined && model.base !== null ) {
+        if (model.base !== undefined && model.base !== null) {
             hookBase[model.base] = model.name;
         }
 
@@ -494,7 +494,7 @@ module.exports = class ConfigurationModel {
         const Rule = this.app.models.rule;
         let isValid = true;
 
-        Object.getOwnPropertyNames(Rule.definition.rawProperties).forEach( (el) => {
+        Object.getOwnPropertyNames(Rule.definition.rawProperties).forEach((el) => {
             const req = Rule.definition.rawProperties[el].required === undefined
                 ? false : Rule.definition.rawProperties[el].required;
             if (req) {
@@ -607,7 +607,7 @@ module.exports = class ConfigurationModel {
         const Rule = this.app.models.rule;
         let isValid = true;
 
-        Object.getOwnPropertyNames(Rule.definition.rawProperties).forEach( (el) => {
+        Object.getOwnPropertyNames(Rule.definition.rawProperties).forEach((el) => {
             const req = Rule.definition.rawProperties[el].required === undefined
                 ? false : Rule.definition.rawProperties[el].required;
             if (req) {
@@ -717,7 +717,7 @@ module.exports = class ConfigurationModel {
 
         const isIn = model.restrictions.find((el) => {
             let same = true;
-            Object.keys(restriction).forEach( (key) => {
+            Object.keys(restriction).forEach((key) => {
                 if (key !== '__id') {
                     if (!el[key]) {
                         same = false;

@@ -24,7 +24,7 @@ const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
         configModel = new ConfigModel(main.app);
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             initiate(main);
         }, 200);
     }
@@ -32,6 +32,18 @@ const initiate = (main) => {
 
 module.exports = function(Baseconfiguration) {
     initiate(Baseconfiguration);
+
+    Baseconfiguration.afterRemote('*', (context, unused, next) => {
+        const audit = Baseconfiguration.app.get('AuditInstance');
+        audit.logAudit(context, 'BaseConfiguration');
+        next();
+    });
+
+    Baseconfiguration.afterRemoteError('*', (context, next) => {
+        const audit = Baseconfiguration.app.get('AuditInstance');
+        audit.logError(context, 'BaseConfiguration');
+        next();
+    });
 
     Baseconfiguration.validatesUniquenessOf('name', {message: 'Name is not unique'});
 

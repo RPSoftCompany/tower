@@ -44,10 +44,8 @@ module.exports = function(app) {
                 }
             }
 
-            const decryptedToken = app.get('ConfigurationInstance').decryptPassword(accessToken);
-
-            if (decryptedToken) {
-                context.req.accessToken = await getAccessTokenDetails(app, decryptedToken);
+            if (accessToken) {
+                context.req.accessToken = accessToken;
                 if (context.args.options === undefined) {
                     context.args.options = {};
                 }
@@ -80,12 +78,17 @@ module.exports = function(app) {
 
         const member = app.get('MemberInstance');
 
-        if (context.accessToken.userId === undefined || context.accessToken.userId === null
-            || context.accessToken.userId === '') {
+        let tokenWithDetails = context.accessToken;
+
+        if (typeof tokenWithDetails === 'string') {
+            tokenWithDetails = await getAccessTokenDetails(app, context.accessToken);
+        }
+
+        if (!tokenWithDetails || !tokenWithDetails.userId) {
             return false;
         }
 
-        const roles = await member.getUserRoles(context.accessToken.userId);
+        const roles = await member.getUserRoles(tokenWithDetails.userId);
 
         if (roles.includes('admin')) {
             logger.log('debug', `groupSolver => FINISHED`);

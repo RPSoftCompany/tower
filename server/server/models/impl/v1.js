@@ -14,468 +14,519 @@
 //    You should have received a copy of the GNU General Public License
 //    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
 
-const HttpErrors = require('http-errors');
-const axios = require('axios');
-const ConstantVariableClass = require('./constantVariable');
+const HttpErrors = require("http-errors");
+const axios = require("axios");
+const ConstantVariableClass = require("./constantVariable");
 
 module.exports = class V1 {
-    /**
-     * Constructor
-     *
-     * @param {object} app APP
-     * @param {string} modelName model name
-     */
-    constructor(app, modelName) {
-        this.configurationName = modelName;
-        this.logger = null;
+  /**
+   * Constructor
+   *
+   * @param {object} app APP
+   * @param {string} modelName model name
+   */
+  constructor(app, modelName) {
+    this.configurationName = modelName;
+    this.logger = null;
 
-        this.app = app;
+    this.app = app;
+  }
+
+  /**
+   * logger
+   *
+   * @param {string} severity Severity
+   * @param {string} method current method
+   * @param {string} message Message to log
+   * @param {string} obj object to log
+   *
+   */
+  log(severity, method, message, obj) {
+    if (this.logger === null) {
+      this.logger = this.app.get("winston");
     }
 
-    /**
-     * logger
-     *
-     * @param {string} severity Severity
-     * @param {string} method current method
-     * @param {string} message Message to log
-     * @param {string} obj object to log
-     *
-     */
-    log(severity, method, message, obj) {
-        if (this.logger === null) {
-            this.logger = this.app.get('winston');
-        }
+    if (obj !== undefined) {
+      this.logger.log(
+        severity,
+        `${this.configurationName}.${method} ${message}`,
+        obj
+      );
+    } else {
+      this.logger.log(
+        severity,
+        `${this.configurationName}.${method} ${message}`
+      );
+    }
+  }
 
-        if (obj !== undefined) {
-            this.logger.log(severity, `${this.configurationName}.${method} ${message}`, obj);
-        } else {
-            this.logger.log(severity, `${this.configurationName}.${method} ${message}`);
-        }
+  /**
+   * match configuration url
+   *
+   * @param {string} url url to check
+   *
+   * @return {[restConfiguration]} matched configuration array
+   */
+  async matchConfigurationURL(url) {
+    this.log("debug", "matchConfigurationURL", "STARTED");
+
+    const restConfiguration = this.app.models.restConfiguration;
+    const baseConfiguration = this.app.models.baseConfiguration;
+    const all = await restConfiguration.find({
+      where: {
+        type: this.configurationName,
+      },
+      order: "sequenceNumber ASC",
+    });
+
+    if (!url.startsWith("/")) {
+      url = "/" + url;
     }
 
-    /**
-     * match configuration url
-     *
-     * @param {string} url url to check
-     *
-     * @return {[restConfiguration]} matched configuration array
-     */
-    async matchConfigurationURL(url) {
-        this.log('debug', 'matchConfigurationURL', 'STARTED');
+    const toReturn = [];
 
-        const restConfiguration = this.app.models.restConfiguration;
-        const baseConfiguration = this.app.models.baseConfiguration;
-        const all = await restConfiguration.find({
-            where: {
-                type: this.configurationName,
-            },
-            order: 'sequenceNumber ASC',
-        });
+    const bases = await baseConfiguration.find({});
 
-        if (!url.startsWith('/')) {
-            url = '/' + url;
+    const basesArray = [];
+    bases.forEach((base) => {
+      basesArray.push(`{${base.name}}`);
+    });
+
+    const split = url.split("/");
+    if (split[0] === "") {
+      split.shift();
+    }
+
+    all.forEach((config) => {
+      const configSplit = config.url.split("/");
+      if (configSplit[0] === "") {
+        configSplit.shift();
+      }
+
+      let matchedUrl = config.url;
+      if (!matchedUrl.startsWith("/")) {
+        matchedUrl = "/" + matchedUrl;
+      }
+
+      if (config.type === "v1") {
+        if (configSplit.length === split.length) {
+          basesArray.forEach((base) => {
+            matchedUrl = matchedUrl.replace(base, "[^\\/]*");
+          });
+
+          matchedUrl.replace("/", "\\/");
+
+          const regex = new RegExp(matchedUrl);
+
+          if (regex.test(url)) {
+            toReturn.push(config);
+          }
+        }
+      } else {
+        for (let i = 0; i < bases.length; i++) {
+          matchedUrl += "/[^\\/]*";
         }
 
-        const toReturn = [];
+        matchedUrl += "/*";
 
-        const bases = await baseConfiguration.find({});
+        const regex = new RegExp(matchedUrl);
+        if (regex.test(url)) {
+          toReturn.push(config);
+        }
+      }
+    });
 
-        const basesArray = [];
-        bases.forEach((base) => {
-            basesArray.push(`{${base.name}}`);
+    this.log("debug", "matchConfigurationURL", "FINISHED");
+
+    return toReturn;
+  }
+
+  /**
+   * Resolves variable from Vault
+   *
+   * @param {string} path path to variable
+   * @param {Map} model model map
+   *
+   * @return {string} resolved string
+   */
+  async getDataFromVault(path, model) {
+    this.log("debug", "getDataFromVault", "STARTED");
+
+    const prePath = path.substring(0, path.lastIndexOf("/"));
+    const variableName = path.substring(path.lastIndexOf("/") + 1, path.length);
+
+    const Configuration = this.app.get("ConfigurationInstance");
+    const Connection = this.app.models.connection;
+
+    const VaultConnection = await Connection.findOne({
+      where: {
+        system: "Vault",
+        enabled: true,
+      },
+    });
+
+    const bases = await this.app
+      .get("BaseConfigurationInstance")
+      .getConfigurationModelFromCache();
+
+    if (VaultConnection === null || VaultConnection === undefined) {
+      throw new HttpErrors.InternalServerError(
+        "Vault connection not configured"
+      );
+    }
+
+    if (VaultConnection.useGlobalToken) {
+      const token = Configuration.decryptPassword(VaultConnection.globalToken);
+      let vaultValue = null;
+      try {
+        vaultValue = await axios({
+          url: `${VaultConnection.url}/v1/${path}`,
+          method: "GET",
+          headers: {
+            "X-Vault-Token": token,
+          },
+        });
+      } catch (e) {
+        // Ignore
+      }
+
+      if (
+        vaultValue &&
+        vaultValue.data &&
+        vaultValue.data.data &&
+        vaultValue.data.data.data
+      ) {
+        const valueData = vaultValue.data.data.data;
+        if (valueData[variableName]) {
+          this.log("debug", "getDataFromVault", "FINISHED");
+          return valueData[variableName];
+        }
+      }
+    } else {
+      for (const base of bases) {
+        const token = VaultConnection.tokens.find((el) => {
+          return (
+            el.name === model.get(base.name) &&
+            el.base === base.name &&
+            el.token
+          );
         });
 
-        const split = url.split('/');
-        if (split[0] === '') {
-            split.shift();
+        if (token) {
+          let vaultValue = null;
+          try {
+            vaultValue = await axios({
+              url: `${VaultConnection.url}/v1/${path}`,
+              method: "GET",
+              headers: {
+                "X-Vault-Token": Configuration.decryptPassword(token.token),
+              },
+            });
+          } catch (e) {
+            // Ignore
+          }
+
+          if (
+            vaultValue &&
+            vaultValue.data &&
+            vaultValue.data.data &&
+            vaultValue.data.data.data
+          ) {
+            const valueData = vaultValue.data.data.data;
+            if (valueData[variableName]) {
+              this.log("debug", "getDataFromVault", "FINISHED");
+              return valueData[variableName];
+            }
+          }
         }
+      }
+    }
 
-        all.forEach((config) => {
-            const configSplit = config.url.split('/');
-            if (configSplit[0] === '') {
-                configSplit.shift();
-            }
+    this.log("debug", "getDataFromVault", "FINISHED");
 
-            let matchedUrl = config.url;
-            if (!matchedUrl.startsWith('/')) {
-                matchedUrl = '/' + matchedUrl;
-            }
+    return null;
+  }
 
-            if (config.type === 'v1') {
-                if (configSplit.length === split.length) {
-                    basesArray.forEach((base) => {
-                        matchedUrl = matchedUrl.replace(base, '[^\\/]*');
-                    });
+  /**
+   * updates variables with default values from models
+   *
+   * @param {[object]} variables variables
+   * @param {object} fullModel full model
+   * @param {object} configurationObject configuration object from query
+   * @param {object} options request options
+   *
+   * @return {[object]} updated configuration
+   */
+  async updateVariablesWithDefaults(
+    variables,
+    fullModel,
+    configurationObject,
+    options
+  ) {
+    this.log("debug", "updateVariablesWithDefaults", "STARTED");
 
-                    matchedUrl.replace('/', '\\/');
+    const filter = {};
+    fullModel.forEach((el) => {
+      filter[el.name] = configurationObject[el.name];
+    });
 
-                    const regex = new RegExp(matchedUrl);
+    const ConfigurationModel = new ConstantVariableClass(this.app);
 
-                    if (regex.test(url)) {
-                        toReturn.push(config);
-                    }
-                }
+    const latest = await ConfigurationModel.findLatest(filter, options);
+
+    const newVariables = [...variables];
+
+    latest.forEach((el) => {
+      let found = false;
+
+      for (let i = 0; i < newVariables.length; i++) {
+        const temp = newVariables[i];
+        if (temp.name === el.name) {
+          found = true;
+
+          if (el.forced) {
+            temp.type = el.type;
+            temp.value = el.value;
+            i = newVariables.length;
+          }
+        }
+      }
+
+      if (!found && el.addIfAbsent) {
+        newVariables.push({
+          name: el.name,
+          type: el.type,
+          value: el.value,
+        });
+      }
+    });
+
+    this.log("debug", "updateVariablesWithDefaults", "FINISHED");
+
+    return Array.from(newVariables);
+  }
+
+  /**
+   * updates variables with data from globals/Vault etc.
+   *
+   * @param {object} configuration
+   *
+   * @return {[object]} updated configuration
+   */
+  async updateVariables(configuration, models) {
+    this.log("debug", "updateVariables", "STARTED");
+
+    const current = configuration;
+    const retValue = {
+      variables: current.variables,
+      effectiveDate: current.effectiveDate,
+      version: current.version,
+    };
+
+    const modelForVault = new Map();
+
+    models.forEach((model) => {
+      const modelValue = current[model.name];
+      if (modelValue !== undefined) {
+        retValue[model.name] = modelValue;
+        modelForVault.set(model.name, modelValue);
+      }
+    });
+
+    retValue.variables = await this.updateVariablesWithDefaults(
+      retValue.variables,
+      models,
+      current,
+      options
+    );
+
+    for (let i = 0; i < retValue.variables.length; i++) {
+      const item = retValue.variables[i];
+      if (item.type === "Vault") {
+        retValue.variables[i].value = await this.getDataFromVault(
+          item.value,
+          modelForVault
+        );
+      }
+    }
+
+    this.log("debug", "updateVariables", "FINISHED");
+
+    return retValue;
+  }
+
+  /**
+   * match configuration url
+   *
+   * @param {restConfiguration} configuration configuration to get data from
+   * @param {string} url url to check
+   * @param {object} options request options
+   * @param {object} fullConfiguration optional full configuration
+   *
+   * @return {Configuration} matched configuration
+   */
+  async getDataFromConfiguration(
+    configuration,
+    url,
+    options,
+    fullConfiguration
+  ) {
+    this.log("debug", "getDataFromConfiguration", "STARTED");
+
+    const values = {};
+
+    const BaseConfiguration = this.app.models.baseConfiguration;
+    const models = await BaseConfiguration.find({
+      order: "sequenceNumber ASC",
+    });
+
+    const splittedUrl = url.split("/");
+    if (splittedUrl[0] === "") {
+      splittedUrl.shift();
+    }
+
+    if (this.configurationName === "v2") {
+      if (configuration.url.endsWith("/")) {
+        configuration.url = configuration.url.slice(0, -1);
+      }
+
+      models.forEach((model) => {
+        configuration.url += `/{${model.name}}`;
+      });
+    }
+
+    const split = configuration.url.split("/");
+    if (split[0] === "") {
+      split.shift();
+    }
+    split.forEach((str, i) => {
+      const check = str.split("{");
+      if (str.indexOf("{") === 0) {
+        check.shift();
+      } else {
+        splittedUrl[i] = splittedUrl[i].substring(
+          str.indexOf("{"),
+          splittedUrl[i].length
+        );
+      }
+
+      check.forEach((part) => {
+        while (part !== "") {
+          if (part.includes("}")) {
+            const key = part.substring(0, part.indexOf("}"));
+            if (part.indexOf("}") + 1 < part.length) {
+              part = part.substring(part.indexOf("}"), part.length);
+              const before = part.substring(part.indexOf("}") + 1);
+              values[key] = splittedUrl[i].substring(
+                0,
+                splittedUrl[i].lastIndexOf(before)
+              );
+
+              splittedUrl[i] = splittedUrl[i].substring(
+                splittedUrl[i].lastIndexOf(before) + before.length,
+                splittedUrl[i].length
+              );
+
+              part = part.substring(
+                part.indexOf(before) + before.length,
+                part.length
+              );
             } else {
-                for (let i = 0; i < bases.length; i++) {
-                    matchedUrl += '/[^\\/]*';
-                }
-
-                matchedUrl += '/*';
-
-                const regex = new RegExp(matchedUrl);
-                if (regex.test(url)) {
-                    toReturn.push(config);
-                }
+              values[key] = splittedUrl[i];
+              part = "";
             }
-        });
+          } else {
+            part = "";
+          }
+        }
+      });
+    });
 
-        this.log('debug', 'matchConfigurationURL', 'FINISHED');
+    values.draft = false;
+    values.deleted = false;
 
-        return toReturn;
+    models.forEach((el) => {
+      if (values[el.name] === undefined) {
+        values[el.name] = null;
+      }
+    });
+
+    const Config = this.app.get("ConfigurationInstance");
+
+    let full;
+
+    if (!fullConfiguration) {
+      full = await Config.findWithPermissions(
+        {
+          where: values,
+          order: "version DESC",
+          limit: 1,
+        },
+        options
+      );
+    } else {
+      full = [fullConfiguration];
     }
 
-    /**
-     * Resolves variable from Vault
-     *
-     * @param {string} path path to variable
-     * @param {Map} model model map
-     *
-     * @return {string} resolved string
-     */
-    async getDataFromVault(path, model) {
-        this.log('debug', 'getDataFromVault', 'STARTED');
+    if (full.length > 0) {
+      const current = full[0];
+      const retValue = {
+        variables: current.variables,
+        effectiveDate: current.effectiveDate,
+        version: current.version,
+      };
 
-        const prePath = path.substring(0, path.lastIndexOf('/'));
-        const variableName = path.substring(path.lastIndexOf('/') + 1, path.length);
+      const modelForVault = new Map();
 
-        const BaseConfiguration = this.app.models.baseConfiguration;
-        const Connection = this.app.models.connection;
-
-        const models = await BaseConfiguration.find({
-            order: 'sequenceNumber DESC',
-        });
-
-        const VaultConnection = await Connection.findOne({
-            where: {
-                system: 'Vault',
-                enabled: true,
-            },
-        });
-
-        if (VaultConnection === null || VaultConnection === undefined) {
-            throw new HttpErrors.InternalServerError(`Vault connection not configured`);
+      models.forEach((model) => {
+        const modelValue = current[model.name];
+        if (modelValue !== undefined) {
+          retValue[model.name] = modelValue;
+          modelForVault.set(model.name, modelValue);
         }
+      });
 
-        if (VaultConnection.useGlobalToken) {
-            token = VaultConnection.globalToken;
-            const value = await axios({
-                url: `${VaultConnection.url}/v1/${prePath}`,
-                method: 'GET',
-                headers: {
-                    'X-Vault-Token': newtoken.token,
-                },
-            });
+      retValue.variables = await this.updateVariablesWithDefaults(
+        retValue.variables,
+        models,
+        current,
+        options
+      );
 
-            let context = value.data.data;
-            if (value.data.data.data !== undefined) {
-                context = value.data.data.data;
-            }
-
-            if (context) {
-                return context[variableName];
-            }
-        } else {
-            let found = false;
-            for (const base of models) {
-                if (!found) {
-                    const tempModel = model.get(base.name);
-                    const newtoken = VaultConnection.tokens.find( (el) => {
-                        return el.base === base.name && el.name === tempModel && el.token !== null && el.token !== '';
-                    });
-
-                    if (newtoken !== undefined) {
-                        try {
-                            const value = await axios({
-                                url: `${VaultConnection.url}/v1/${prePath}`,
-                                method: 'GET',
-                                headers: {
-                                    'X-Vault-Token': newtoken.token,
-                                },
-                            });
-
-                            let context = value.data.data;
-                            if (value.data.data.data !== undefined) {
-                                context = value.data.data.data;
-                            }
-
-                            if (context) {
-                                found = context[variableName];
-                            }
-                        } catch (e) {
-                            if (e.response !== undefined) {
-                                if (e.response.status !== 403) {
-                                    throw new HttpErrors.InternalServerError(
-                                        `Variable '${path}' does not exist in Vault or invalid token`);
-                                }
-                            } else {
-                                e.message = 'Vault connection error';
-                                throw e;
-                            }
-                        }
-                    }
-                }
-            };
-
-            if (found === false || found === undefined || found === null) {
-                throw new HttpErrors.InternalServerError(`Variable '${path}' does not exist in Vault or invalid token`);
-            }
-
-            return found;
+      for (let i = 0; i < retValue.variables.length; i++) {
+        const item = retValue.variables[i];
+        if (item.type === "Vault") {
+          retValue.variables[i].value = await this.getDataFromVault(
+            item.value,
+            modelForVault
+          );
         }
+      }
 
-        this.log('debug', 'getDataFromVault', 'FINISHED');
+      if (configuration.type === "v2") {
+        const leng = configuration.url.split("/").length;
+        const rest = url.split("/");
+        rest.splice(0, leng);
+
+        if (rest.length > 0) {
+          let regex = rest.join("/");
+          regex = `^${regex}`;
+
+          regex = `${regex}$|${regex}[\\/]+.*`;
+
+          const expression = new RegExp(regex);
+
+          retValue.variables = retValue.variables.filter((toFilter) => {
+            return expression.test(toFilter.name);
+          });
+        }
+      }
+
+      this.log("debug", "getDataFromConfiguration", "FINISHED");
+      return retValue;
+    } else {
+      this.log("debug", "getDataFromConfiguration", "FINISHED");
+      return [];
     }
-
-    /**
-     * updates variables with default values from models
-     *
-     * @param {[object]} variables variables
-     * @param {object} fullModel full model
-     * @param {object} configurationObject configuration object from query
-     * @param {object} options request options
-     *
-     * @return {[object]} updated configuration
-     */
-    async updateVariablesWithDefaults(variables, fullModel, configurationObject, options) {
-        this.log('debug', 'updateVariablesWithDefaults', 'STARTED');
-
-        const filter = {};
-        fullModel.forEach( (el) => {
-            filter[el.name] = configurationObject[el.name];
-        });
-
-        const ConfigurationModel = new ConstantVariableClass(this.app);
-
-        const latest = await ConfigurationModel.findLatest(filter, options);
-
-        const newVariables = [...variables];
-
-        latest.forEach( (el) => {
-            let found = false;
-
-            for (let i = 0; i < newVariables.length; i++) {
-                const temp = newVariables[i];
-                if (temp.name === el.name) {
-                    found = true;
-
-                    if (el.forced) {
-                        temp.type = el.type;
-                        temp.value = el.value;
-                        i = newVariables.length;
-                    }
-                }
-            }
-
-            if (!found && el.addIfAbsent) {
-                newVariables.push({
-                    name: el.name,
-                    type: el.type,
-                    value: el.value,
-                });
-            }
-        });
-
-        this.log('debug', 'updateVariablesWithDefaults', 'FINISHED');
-
-        return Array.from(newVariables);
-    }
-
-    /**
-     * updates variables with data from globals/Vault etc.
-     *
-     * @param {object} configuration
-     *
-     * @return {[object]} updated configuration
-     */
-    async updateVariables(configuration, models) {
-        this.log('debug', 'updateVariables', 'STARTED');
-
-        const current = configuration;
-        const retValue = {
-            variables: current.variables,
-            effectiveDate: current.effectiveDate,
-            version: current.version,
-        };
-
-        const modelForVault = new Map();
-
-        models.forEach((model) => {
-            const modelValue = current[model.name];
-            if (modelValue !== undefined) {
-                retValue[model.name] = modelValue;
-                modelForVault.set(model.name, modelValue);
-            }
-        });
-
-        retValue.variables = await this.updateVariablesWithDefaults(retValue.variables, models, current, options);
-
-        for (let i = 0; i < retValue.variables.length; i++) {
-            const item = retValue.variables[i];
-            if (item.type === 'Vault') {
-                retValue.variables[i].value = await this.getDataFromVault(item.value, modelForVault);
-            }
-        }
-
-        this.log('debug', 'updateVariables', 'FINISHED');
-
-        return retValue;
-    }
-
-    /**
-     * match configuration url
-     *
-     * @param {restConfiguration} configuration configuration to get data from
-     * @param {string} url url to check
-     * @param {object} options request options
-     * @param {object} fullConfiguration optional full configuration
-     *
-     * @return {Configuration} matched configuration
-     */
-    async getDataFromConfiguration(configuration, url, options, fullConfiguration) {
-        this.log('debug', 'getDataFromConfiguration', 'STARTED');
-
-        const values = {};
-
-        const BaseConfiguration = this.app.models.baseConfiguration;
-        const models = await BaseConfiguration.find({
-            order: 'sequenceNumber ASC',
-        });
-
-        const splittedUrl = url.split('/');
-        if (splittedUrl[0] === '') {
-            splittedUrl.shift();
-        }
-
-        if (this.configurationName === 'v2') {
-            if (configuration.url.endsWith('/')) {
-                configuration.url = configuration.url.slice(0, -1);
-            }
-
-            models.forEach((model) => {
-                configuration.url += `/{${model.name}}`;
-            });
-        }
-
-        const split = configuration.url.split('/');
-        if (split[0] === '') {
-            split.shift();
-        }
-        split.forEach((str, i) => {
-            const check = str.split('{');
-            if (str.indexOf('{') === 0) {
-                check.shift();
-            } else {
-                splittedUrl[i] = splittedUrl[i].substring(str.indexOf('{'), splittedUrl[i].length);
-            }
-
-            check.forEach((part) => {
-                while (part !== '') {
-                    if (part.includes('}')) {
-                        const key = part.substring(0, part.indexOf('}'));
-                        if (part.indexOf('}') + 1 < part.length) {
-                            part = part.substring(part.indexOf('}'), part.length);
-                            const before = part.substring(part.indexOf('}') + 1);
-                            values[key] = splittedUrl[i].substring(0, splittedUrl[i].lastIndexOf(before));
-
-                            splittedUrl[i] = splittedUrl[i].substring(splittedUrl[i].lastIndexOf(before) +
-                                before.length, splittedUrl[i].length);
-
-                            part = part.substring(part.indexOf(before) + before.length, part.length);
-                        } else {
-                            values[key] = splittedUrl[i];
-                            part = '';
-                        }
-                    } else {
-                        part = '';
-                    }
-                }
-            });
-        });
-
-        values.draft = false;
-        values.deleted = false;
-
-        models.forEach( (el) => {
-            if (values[el.name] === undefined) {
-                values[el.name] = null;
-            }
-        });
-
-        const Config = this.app.get('ConfigurationInstance');
-
-        let full;
-
-        if (!fullConfiguration) {
-            full = await Config.findWithPermissions({
-                where: values,
-                order: 'version DESC',
-                limit: 1,
-            }, options);
-        } else {
-            full = [fullConfiguration];
-        }
-
-        if (full.length > 0) {
-            const current = full[0];
-            const retValue = {
-                variables: current.variables,
-                effectiveDate: current.effectiveDate,
-                version: current.version,
-            };
-
-            const modelForVault = new Map();
-
-            models.forEach((model) => {
-                const modelValue = current[model.name];
-                if (modelValue !== undefined) {
-                    retValue[model.name] = modelValue;
-                    modelForVault.set(model.name, modelValue);
-                }
-            });
-
-            retValue.variables = await this.updateVariablesWithDefaults(retValue.variables, models, current, options);
-
-            for (let i = 0; i < retValue.variables.length; i++) {
-                const item = retValue.variables[i];
-                if (item.type === 'Vault') {
-                    retValue.variables[i].value = await this.getDataFromVault(item.value, modelForVault);
-                }
-            }
-
-            if (configuration.type === 'v2') {
-                const leng = configuration.url.split('/').length;
-                const rest = url.split('/');
-                rest.splice(0, leng);
-
-                if (rest.length > 0) {
-                    let regex = rest.join('/');
-                    regex = `^${regex}`;
-
-                    regex = `${regex}$|${regex}[\\/]+.*`;
-
-                    const expression = new RegExp(regex);
-
-                    retValue.variables = retValue.variables.filter((toFilter) => {
-                        return expression.test(toFilter.name);
-                    });
-                }
-            }
-
-            this.log('debug', 'getDataFromConfiguration', 'FINISHED');
-            return retValue;
-        } else {
-            this.log('debug', 'getDataFromConfiguration', 'FINISHED');
-            return [];
-        }
-    }
+  }
 };

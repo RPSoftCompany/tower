@@ -23,20 +23,20 @@ let group = null;
 const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
         if (main.app.dataSources['mongoDB'] === undefined) {
-            setTimeout( () => {
+            setTimeout(() => {
                 initiate(main);
             }, 200);
         } else {
             if (main.app.dataSources['mongoDB'].connected) {
                 group = new GroupModel(main.app);
             } else {
-                setTimeout( () => {
+                setTimeout(() => {
                     initiate(main);
                 }, 200);
             }
         }
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             initiate(main);
         }, 200);
     }
@@ -44,6 +44,18 @@ const initiate = (main) => {
 
 module.exports = function(Group) {
     initiate(Group);
+
+    Group.afterRemote('*', (context, unused, next) => {
+        const audit = Group.app.get('AuditInstance');
+        audit.logAudit(context, 'Group');
+        next();
+    });
+
+    Group.afterRemoteError('*', (context, next) => {
+        const audit = Group.app.get('AuditInstance');
+        audit.logError(context, 'Group');
+        next();
+    });
 
     Group.disableRemoteMethodByName('createChangeStream');
     Group.disableRemoteMethodByName('exists');

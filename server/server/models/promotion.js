@@ -24,7 +24,7 @@ const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
         promModel = new PromotionModel(main.app);
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             initiate(main);
         }, 200);
     }
@@ -32,6 +32,18 @@ const initiate = (main) => {
 
 module.exports = function(promotion) {
     initiate(promotion);
+
+    promotion.afterRemote('*', (context, unused, next) => {
+        const audit = promotion.app.get('AuditInstance');
+        audit.logAudit(context, 'Promotion');
+        next();
+    });
+
+    promotion.afterRemoteError('*', (context, next) => {
+        const audit = promotion.app.get('AuditInstance');
+        audit.logError(context, 'Promotion');
+        next();
+    });
 
     promotion.disableRemoteMethodByName('upsert'); // PATCH
     promotion.disableRemoteMethodByName('createChangeStream');

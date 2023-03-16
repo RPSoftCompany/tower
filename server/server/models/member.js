@@ -24,7 +24,7 @@ let member = null;
 const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
         if (main.app.dataSources['mongoDB'] === undefined) {
-            setTimeout( () => {
+            setTimeout(() => {
                 initiate(main);
             }, 200);
         } else {
@@ -32,13 +32,13 @@ const initiate = (main) => {
                 member = new MemberClass(main.app);
                 member.createCache();
             } else {
-                setTimeout( () => {
+                setTimeout(() => {
                     initiate(main);
                 }, 200);
             }
         }
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             initiate(main);
         }, 200);
     }
@@ -46,6 +46,18 @@ const initiate = (main) => {
 
 module.exports = (Member) => {
     initiate(Member);
+
+    Member.afterRemote('*', (context, unused, next) => {
+        const audit = Member.app.get('AuditInstance');
+        audit.logAudit(context, 'Member');
+        next();
+    });
+
+    Member.afterRemoteError('*', (context, next) => {
+        const audit = Member.app.get('AuditInstance');
+        audit.logError(context, 'Member');
+        next();
+    });
 
     Member.disableRemoteMethodByName('replaceOrCreate');
     Member.disableRemoteMethodByName('update');
@@ -285,12 +297,12 @@ module.exports = (Member) => {
     Member.remoteMethod('getTechnicalUserToken', {
         http: {verb: 'GET', status: 200, path: '/getTechnicalUserToken'},
         accepts:
-        {
-            arg: 'userId',
-            type: 'string',
-            required: true,
-            http: {source: 'query'},
-        },
+            {
+                arg: 'userId',
+                type: 'string',
+                required: true,
+                http: {source: 'query'},
+            },
         description: 'Get technical user token',
         returns: {
             arg: 'accessToken',

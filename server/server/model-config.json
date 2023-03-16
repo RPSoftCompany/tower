@@ -148,5 +148,9 @@
   "constantVariable": {
     "dataSource": "mongoDB",
     "public": true
+  },
+  "audit": {
+    "dataSource": "mongoDB",
+    "public": true
   }
 }

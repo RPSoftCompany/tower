@@ -35,6 +35,18 @@ const initiate = (main) => {
 module.exports = function(V2) {
     initiate(V2);
 
+    V2.afterRemote('*', (context, unused, next) => {
+        const audit = V2.app.get('AuditInstance');
+        audit.logAudit(context, 'V2');
+        next();
+    });
+
+    V2.afterRemoteError('*', (context, next) => {
+        const audit = V2.app.get('AuditInstance');
+        audit.logError(context, 'V2');
+        next();
+    });
+
     V2.disableRemoteMethodByName('upsert');
     V2.disableRemoteMethodByName('upsertWithWhere');
     V2.disableRemoteMethodByName('update');

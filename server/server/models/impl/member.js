@@ -179,14 +179,19 @@ module.exports = class Member {
 
         await this.initializeLDAP();
 
-        const user = await User.findOne({
+        const foundUser = await User.findOne({
             where: {
                 username: credentials.username,
                 type: 'local',
             },
         });
 
-        if (this.ldapServer && credentials.username !== 'admin' && !user) {
+        if (foundUser && foundUser.blocked) {
+            this.log('debug', 'login', 'FINISHED');
+            throw new HttpErrors.Forbidden('User blocked');
+        }
+
+        if (this.ldapServer && credentials.username !== 'admin' && !foundUser) {
             try {
                 const configuration = new ConfigurationClass(this.app);
                 await configuration.createCrypt();
@@ -202,6 +207,7 @@ module.exports = class Member {
                     userSearchBase: this.ldapServer.searchBase,
                     usernameAttribute: this.ldapServer.usernameAttribute,
                 });
+
 
                 credentials.dn = auth.dn;
 
@@ -221,6 +227,11 @@ module.exports = class Member {
                 },
             });
 
+            if (user && user.blocked) {
+                this.log('debug', 'login', 'FINISHED');
+                throw new HttpErrors.Forbidden('User blocked');
+            }
+
             if (user === null) {
                 user = await User.create({
                     username: `${credentials.dn}:${credentials.username}`,
@@ -230,6 +241,7 @@ module.exports = class Member {
                     groups: this.ldapServer.defaultGroups ? this.ldapServer.defaultGroups : [],
                     display: credentials.display,
                     technicalUser: false,
+                    blocked: false,
                 });
             }
 
@@ -244,44 +256,28 @@ module.exports = class Member {
                 ttl: ldapUser.ttl,
                 userId: ldapUser.userId,
                 created: ldapUser.created,
-                id: this.app.get('ConfigurationInstance').encryptPassword(ldapUser.id),
+                id: ldapUser.id,
             };
 
             if (include === 'user') {
                 output.user = {
+                    username: user.username,
                     groups: user.groups,
                     newUser: false,
                     type: user.type,
                     display: credentials.display,
+                    blocked: user.blocked ? user.blocked : false,
                 };
             }
 
-            const AccessToken = this.app.models.AccessToken;
-            const tokens = await AccessToken.find({
-                where: {
-                    userId: ldapUser.userId,
-                },
-            });
-
-            tokens.forEach((el) => {
-                el.validate((_err, isValid) => {
-                    if (!isValid) {
-                        el.destroy();
-                    }
-                });
-            });
+            this.invalidateTokens();
 
             this.log('info', 'login', `User '${credentials.username}' logged in`);
             this.log('debug', 'login', 'FINISHED');
 
             return output;
-        } else if (user) {
-            const member = await User.findOne({
-                where: {
-                    username: credentials.username,
-                    type: 'local',
-                },
-            });
+        } else if (foundUser) {
+            const member = foundUser;
 
             if (member) {
                 if (member.technicalUser) {
@@ -302,8 +298,10 @@ module.exports = class Member {
             try {
                 user = await User.login(credentials, include);
             } catch (e) {
-                if (e.code !== undefined && e.code === 'LOGIN_FAILED') {
+                this.log('debug', 'login', 'FINISHED');
+                if (e.code && e.code === 'LOGIN_FAILED') {
                     await this.sleep(random.int(500, 1000));
+                    throw new HttpErrors.Unauthorized('Invalid username or password');
                 }
                 throw e;
             }
@@ -312,11 +310,12 @@ module.exports = class Member {
                 ttl: user.ttl,
                 userId: user.userId,
                 created: user.created,
-                id: this.app.get('ConfigurationInstance').encryptPassword(user.id),
+                id: user.id,
             };
 
             if (include === 'user') {
                 output.user = {
+                    username: member.username,
                     groups: member.groups,
                     newUser: member.newUser,
                     type: member.type,
@@ -324,20 +323,7 @@ module.exports = class Member {
                 };
             }
 
-            const AccessToken = this.app.models.AccessToken;
-            const tokens = await AccessToken.find({
-                where: {
-                    userId: user.userId,
-                },
-            });
-
-            tokens.forEach((el) => {
-                el.validate((_err, isValid) => {
-                    if (!isValid) {
-                        el.destroy();
-                    }
-                });
-            });
+            this.invalidateTokens();
 
             this.log('info', 'login', `User ${credentials.username} logged in`);
             this.log('debug', 'login', 'FINISHED');
@@ -347,6 +333,36 @@ module.exports = class Member {
             this.log('debug', 'login', 'FINISHED');
             throw new HttpErrors.Unauthorized('Invalid username or password');
         }
+    }
+
+    /**
+     * invalidateTokens validates all the access tokens in the DB and deletes expired
+     *
+     * @return {Promise<void>}
+     */
+    async invalidateTokens() {
+        await this.app.dataSources['mongoDB'].connector.collection('AccessToken').aggregate([
+            {
+                '$project': {
+                    '_id': 1,
+                    'date': {
+                        '$dateAdd': {
+                            'startDate': '$created',
+                            'unit': 'second',
+                            'amount': '$ttl',
+                        },
+                    },
+                },
+            }, {
+                '$match': {
+                    'date': {
+                        '$lt': new Date(),
+                    },
+                },
+            },
+        ]).forEach((doc) => {
+            this.app.dataSources['mongoDB'].connector.collection('AccessToken').remove({'_id': doc._id});
+        });
     }
 
     /**
