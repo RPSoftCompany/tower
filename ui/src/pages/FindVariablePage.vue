@@ -241,6 +241,8 @@ const search = async () => {
 			emptyOutput.value = false;
 			createResponseTree(response.data.variables);
 			createResponseTreeForGlobals(response.data.constantVariables);
+
+			sortTree(treeNodes.value);
 		}
 	}
 
@@ -353,10 +355,24 @@ const createResponseTreeForGlobals = (
 /**
  * sortTree
  */
-const sortTree = () => {
-	if (treeNodes.value.length > 0) {
-		// ddd
+const sortTree = (tree: Array<QTreeNode>) => {
+	if (tree.length > 0) {
+		for (let item of tree) {
+			if (item.children) {
+				item.children = sortTree(item.children);
+			}
+		}
+
+		return tree.sort((a: QTreeNode, b: QTreeNode) => {
+			if (a.label && b.label) {
+				return a.label.toLowerCase() > b.label.toLowerCase() ? 1 : -1;
+			}
+
+			return 1;
+		});
 	}
+
+	return [];
 };
 
 /**
