@@ -69,14 +69,20 @@ const archiveLinks: LinkProps[] = [
 		icon: 'sym_o_inventory_2',
 		link: '/archive',
 		title: 'Archive',
-		checkRegEx: /^\/archive/
+		checkRegEx: /^\/archive/,
 	},
 	{
 		icon: 'sym_o_history',
 		link: '/timeArchive',
 		title: 'Time Archive',
-		checkRegEx: /^\/timeArchive/
-	}
+		checkRegEx: /^\/timeArchive/,
+	},
+	{
+		icon: 'sym_o_search',
+		link: '/findVariable',
+		title: 'Find Variable',
+		checkRegEx: /^\/findVariable/,
+	},
 ];
 
 //====================================================
@@ -85,22 +91,20 @@ const archiveLinks: LinkProps[] = [
 /**
  * allBases
  */
-const allBases = computed(
-	(): Array<LinkProps> => {
-		const array: Array<LinkProps> = [];
+const allBases = computed((): Array<LinkProps> => {
+	const array: Array<LinkProps> = [];
 
-		basesSt.getBases.forEach((el: Base) => {
-			array[el.sequenceNumber] = {
-				icon: el.icon,
-				link: `/bases/${el.name}`,
-				title: el.name,
-				checkRegEx: new RegExp(`^/bases/${el.name}`)
-			};
-		});
+	basesSt.getBases.forEach((el: Base) => {
+		array[el.sequenceNumber] = {
+			icon: el.icon,
+			link: `/bases/${el.name}`,
+			title: el.name,
+			checkRegEx: new RegExp(`^/bases/${el.name}`),
+		};
+	});
 
-		return array;
-	}
-);
+	return array;
+});
 
 /**
  * hasAdminRights

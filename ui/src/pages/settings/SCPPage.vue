@@ -115,8 +115,18 @@
 								color="secondary"
 								v-model="currentConnectionClone.password"
 								dense
+								:type="passwordVisible ? 'text' : 'password'"
 								label="Password"
-							/>
+							>
+								<template #append>
+									<q-btn
+										:icon="passwordVisible ? 'sym_o_lock' : 'sym_o_lock_open'"
+										flat
+										padding="sm"
+										@click="passwordVisible = !passwordVisible"
+									></q-btn>
+								</template>
+							</q-input>
 						</div>
 					</div>
 				</div>
@@ -206,7 +216,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, Ref } from 'vue';
+import { computed, nextTick, onMounted, ref, Ref, watch } from 'vue';
 import TowerSelect from 'components/basic/towerSelect.vue';
 import { towerAxios } from 'boot/axios';
 import { basesStore } from 'stores/bases';
@@ -215,12 +225,14 @@ import { RestConfiguration } from 'pages/settings/types/restConfiguration';
 import { QInput, useQuasar } from 'quasar';
 import { ConfigurationModel } from 'components/configurationModel/configurationModel';
 import { AxiosError } from 'axios/index';
+import { navigationStore } from 'stores/navigation';
 
 //====================================================
 // Const
 //====================================================
 const $q = useQuasar();
 const basesSt = basesStore();
+const navigationSt = navigationStore();
 
 //====================================================
 // Interfaces
@@ -257,6 +269,8 @@ const allConnections: Ref<Array<SCPConnection>> = ref([]);
 const allModels: Ref<Map<string, Array<string>>> = ref(new Map());
 
 const allTemplates: Ref<Array<RestConfiguration>> = ref([]);
+
+const passwordVisible = ref(false);
 
 const loading = ref(false);
 
@@ -771,6 +785,20 @@ const testConnection = async () => {
 
 	loading.value = false;
 };
+
+//====================================================
+// Watch
+//====================================================
+watch(
+	() => isDifferent.value,
+	(current) => {
+		if (current && !loading.value) {
+			navigationSt.preventNavigation();
+		} else {
+			navigationSt.allowNavigation();
+		}
+	}
+);
 </script>
 
 <style scoped></style>

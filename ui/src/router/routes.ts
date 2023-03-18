@@ -1,4 +1,4 @@
-import { RouteRecordRaw } from 'vue-router';
+import {RouteRecordRaw} from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
 	{
@@ -51,6 +51,11 @@ const routes: RouteRecordRaw[] = [
 				name: 'Bases',
 				path: 'bases/:base',
 				component: () => import('pages/BasesPage.vue'),
+			},
+			{
+				name: 'FindVariable',
+				path: 'findVariable',
+				component: () => import('pages/FindVariablePage.vue'),
 			},
 			{
 				name: 'Settings',

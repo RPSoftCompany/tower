@@ -29,6 +29,8 @@ module.exports = class BaseConfiguration {
         this.app = app;
 
         app.set('AuditInstance', this);
+
+        this.createTTLIndex();
     }
 
     /**
@@ -64,6 +66,22 @@ module.exports = class BaseConfiguration {
             statusCode,
             errorDescription,
         });
+    }
+
+    /**
+     * createTTLIndex
+     *
+     * @return {Promise<void>}
+     */
+    async createTTLIndex() {
+        const allIndexes = await this.app.dataSources['mongoDB'].connector.collection('audit').indexes();
+        for (const index of allIndexes) {
+            if (index.name === 'date_1') {
+                await this.app.dataSources['mongoDB'].connector.collection('audit').dropIndex(index.name);
+            }
+        }
+
+        await this.app.dataSources['mongoDB'].connector.collection('audit').createIndex( {'date': 1 }, { expireAfterSeconds: this.app.get('auditTTL') });
     }
 
     /**

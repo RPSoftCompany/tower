@@ -44,6 +44,7 @@ if (process.env.NODE_ENV === 'production') {
     mainConfig.config.logLevel = userMainConfig.logLevel;
     mainConfig.config.nonSafe = userMainConfig.nonSafe;
     mainConfig.config.tokenHeaders = userMainConfig.tokenHeaders;
+    mainConfig.config.auditTTL = userMainConfig.auditTTL;
     mainConfig.config.fullEncryption = userMainConfig.fullEncryption;
     mainConfig.config.versionLimit = userMainConfig.versionLimit || -1;
 
@@ -94,6 +95,9 @@ app.nonSafe = nonSafe;
 app.fullEncryption = mainConfig.config.fullEncryption === undefined ? false : mainConfig.config.fullEncryption;
 
 const tokenHeaders = mainConfig.config.tokenHeaders === undefined ? [] : mainConfig.config.tokenHeaders;
+
+const auditTTL = mainConfig.config.auditTTL === undefined ? 20 : mainConfig.config.auditTTL;
+app.set('auditTTL', auditTTL * 86400);
 
 const winstonFormat = winston.format.printf(({level, message, _label, timestamp}) => {
     const date = new Date(timestamp);
@@ -166,7 +170,7 @@ app.start = () => {
             console.log('<!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!>');
             console.log('<!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!>');
             console.log();
-            console.log(`<!> WARNING!!! Non-Safe mode is on, don't use it on production environment <!>`);
+            console.log('<!> WARNING!!! Non-Safe mode is on, don\'t use it on production environment <!>');
             console.log();
             console.log('<!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!>');
             console.log('<!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!>');
