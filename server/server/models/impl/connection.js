@@ -135,8 +135,6 @@ module.exports = class Connection {
 
       const sftp = new SCPClient();
 
-      console.log(scpConnection);
-
       try {
         if (scpConnection.authType === "userpass") {
           await sftp.connect({

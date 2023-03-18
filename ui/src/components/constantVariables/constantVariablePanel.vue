@@ -4,7 +4,7 @@
 		flat
 	>
 		<q-inner-loading :showing="loading">
-			<q-spinner-clock color="secondary" size="3em"/>
+			<q-spinner-clock color="secondary" size="3em" />
 			<div class="tw-mt-3">Please wait, loading...</div>
 		</q-inner-loading>
 		<div
@@ -13,7 +13,10 @@
 		>
 			<div class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400">
 				There aren't any constant variables in this configuration
-				<div class="tw-text-center tw-text-xs tw-text-gray-500" v-if="userCanModify">
+				<div
+					class="tw-text-center tw-text-xs tw-text-gray-500"
+					v-if="userCanModify"
+				>
 					You can create one using panel below
 				</div>
 			</div>
@@ -22,14 +25,14 @@
 			v-if="!loading && constVariables?.variables"
 			:class="{
 				'tower-max-height': userCanModify,
-				'tower-max-height-readOnly': !userCanModify
+				'tower-max-height-readOnly': !userCanModify,
 			}"
 			class="tw-w-full"
 		>
 			<div
 				:class="{
 					'tw-grid-cols-5': constVariablesArchive.length > 0,
-					'tw-grid-cols-2': constVariablesArchive.length === 0
+					'tw-grid-cols-2': constVariablesArchive.length === 0,
 				}"
 				class="tw-grid tw-w-full tw-gap-3 tw-justify-items-stretch tw-place-items-center tw-text-sm tw-font-semibold tw-min-h-[2.5rem]"
 			>
@@ -60,7 +63,7 @@
 							</div>
 						</div>
 						<div v-if="userCanModify" class="tw-flex tw-self-center">
-							<q-separator inset vertical/>
+							<q-separator inset vertical />
 							<q-btn
 								:disable="!differentThanShownVersion"
 								flat
@@ -69,7 +72,7 @@
 								@click="fullRevert"
 							>
 								<q-tooltip v-if="differentThanShownVersion"
-								>Revert to this version
+									>Revert to this version
 								</q-tooltip>
 							</q-btn>
 						</div>
@@ -124,8 +127,8 @@
 			<div
 				v-if="
 					constVariablesWithCurrentArchive.length === 0 &&
-						filter &&
-						constVariables?.variables.length > 0
+					filter &&
+					constVariables?.variables.length > 0
 				"
 				class="tw-w-full tw-h-full tw-flex tw-justify-center tw-items-center"
 			>
@@ -163,24 +166,24 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, onBeforeMount, Ref, ref, watch} from 'vue';
-import {towerAxios} from 'boot/axios';
-import {useQuasar} from 'quasar';
-import {ConfigurationModel} from 'components/configurationModel/configurationModel';
-import {basesStore} from 'stores/bases';
+import { computed, onBeforeMount, Ref, ref, watch } from 'vue';
+import { towerAxios } from 'boot/axios';
+import { useQuasar } from 'quasar';
+import { ConfigurationModel } from 'components/configurationModel/configurationModel';
+import { basesStore } from 'stores/bases';
 import ConstantVariableRow from 'components/constantVariables/constantVariableRow.vue';
 import {
 	ConstantVariable,
 	ConstantVariableValue,
 	ConstantVariableValueToDisplay,
 	valueAsString,
-	valueConverter
+	valueConverter,
 } from 'components/constantVariables/constantVariable';
 import SavePanel from 'components/basic/savePanel.vue';
 import NewConstantVariablePanel from 'components/constantVariables/newConstantVariablePanel.vue';
-import {Export, ImportDetails} from 'components/models';
-import {userStore} from 'stores/user';
-import {navigationStore} from 'stores/navigation';
+import { Export, ImportDetails } from 'components/models';
+import { userStore } from 'stores/user';
+import { navigationStore } from 'stores/navigation';
 
 //====================================================
 // Const
@@ -202,7 +205,7 @@ interface constantVariablePanelProps {
 const props = withDefaults(defineProps<constantVariablePanelProps>(), {
 	configModel: () => [],
 	filter: '',
-	showDiff: true
+	showDiff: true,
 });
 
 //====================================================
@@ -278,7 +281,7 @@ const constVariableNames = computed(() => {
 	const array: Array<string> = [];
 
 	if (constVariables.value?.variables) {
-		constVariables.value.variables.forEach(el => {
+		constVariables.value.variables.forEach((el) => {
 			array.push(el.name);
 		});
 	}
@@ -297,32 +300,34 @@ const constVariablesWithCurrentArchive = computed(() => {
 	}
 
 	if (constVariablesArchive.value.length > 0) {
-		constVariablesArchive.value[version.value].variables.forEach(archiveEl => {
-			const exists = array.some(currentEl => {
-				return archiveEl.name === currentEl.name;
-			});
-
-			if (!exists) {
-				array.push({
-					name: archiveEl.name,
-					addIfAbsent: archiveEl.addIfAbsent,
-					forced: archiveEl.forced,
-					type: archiveEl.type,
-					value: archiveEl.value,
-					deleted: true
+		constVariablesArchive.value[version.value].variables.forEach(
+			(archiveEl) => {
+				const exists = array.some((currentEl) => {
+					return archiveEl.name === currentEl.name;
 				});
+
+				if (!exists) {
+					array.push({
+						name: archiveEl.name,
+						addIfAbsent: archiveEl.addIfAbsent,
+						forced: archiveEl.forced,
+						type: archiveEl.type,
+						value: archiveEl.value,
+						deleted: true,
+					});
+				}
 			}
-		});
+		);
 	}
 
 	array.sort((a, b) => {
-		return a.name.localeCompare(b.name, undefined, {sensitivity: 'base'});
+		return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
 	});
 
 	if (props.filter) {
 		const lowerFilter = props.filter.toLocaleLowerCase('en-US');
 
-		array = array.filter(el => {
+		array = array.filter((el) => {
 			if (el.name.toLocaleLowerCase('en-US').includes(lowerFilter)) {
 				return true;
 			}
@@ -373,14 +378,14 @@ const getConstantVariables = async () => {
 	const filter: any = {
 		order: 'effectiveDate DESC',
 		include: ['member'],
-		where: {}
+		where: {},
 	};
 
-	baseSt.getBases.forEach(el => {
-		filter.where[el.name] = {$eq: null};
+	baseSt.getBases.forEach((el) => {
+		filter.where[el.name] = { $eq: null };
 	});
 
-	props.configModel.forEach(el => {
+	props.configModel.forEach((el) => {
 		if (el) {
 			filter.where[el.base] = el.name;
 		}
@@ -410,7 +415,7 @@ const getConstantVariables = async () => {
 			position: 'top',
 			textColor: 'secondary',
 			icon: 'sym_o_error',
-			message: 'Error collecting constant variable data'
+			message: 'Error collecting constant variable data',
 		});
 	}
 
@@ -429,7 +434,7 @@ const constVariableArchiveVersion = (variableName: string, ver?: number) => {
 	}
 
 	const variables = constVariablesArchive.value[ver].variables;
-	return variables.find(el => {
+	return variables.find((el) => {
 		return el.name === variableName;
 	});
 };
@@ -441,7 +446,7 @@ const constVariableArchiveVersion = (variableName: string, ver?: number) => {
 const removeConstantVariable = (variableName: string) => {
 	if (constVariables.value) {
 		constVariables.value.variables = constVariables.value?.variables.filter(
-			el => {
+			(el) => {
 				return el.name !== variableName;
 			}
 		);
@@ -459,10 +464,10 @@ const addNewConstantVariable = (variable: ConstantVariableValueToDisplay) => {
 			effectiveDate: new Date(),
 			createdBy: '',
 			id: '',
-			variables: [variable]
+			variables: [variable],
 		};
 
-		props.configModel.forEach(el => {
+		props.configModel.forEach((el) => {
 			if (el && constVariables.value) {
 				(constVariables.value as any)[el.base] = el.name;
 			}
@@ -478,20 +483,20 @@ const saveConstantVariables = async () => {
 
 	if (constVariables.value) {
 		const full: any = {
-			variables: []
+			variables: [],
 		};
 
-		constVariables.value.variables.forEach(el => {
+		constVariables.value.variables.forEach((el) => {
 			full.variables.push({
 				name: el.name,
 				type: el.type,
 				value: el.value,
 				addIfAbsent: el.addIfAbsent,
-				forced: el.forced
+				forced: el.forced,
 			});
 		});
 
-		baseSt.getBases.forEach(el => {
+		baseSt.getBases.forEach((el) => {
 			if (constVariables.value && (constVariables.value as any)[el.name]) {
 				full[el.name] = (constVariables.value as any)[el.name];
 			}
@@ -506,7 +511,7 @@ const saveConstantVariables = async () => {
 				position: 'top',
 				textColor: 'secondary',
 				icon: 'sym_o_check',
-				message: 'Constant variables saved correctly'
+				message: 'Constant variables saved correctly',
 			});
 		} catch (e) {
 			$q.notify({
@@ -514,7 +519,7 @@ const saveConstantVariables = async () => {
 				position: 'top',
 				textColor: 'secondary',
 				icon: 'sym_o_error',
-				message: 'Error saving constant variables'
+				message: 'Error saving constant variables',
 			});
 		}
 	}
@@ -535,17 +540,17 @@ const importConfiguration = () => {
 
 const importJSON = () => {
 	const obj: ImportDetails = {
-		constantVariables: []
+		constantVariables: [],
 	};
 
-	constVariables.value?.variables.forEach(el => {
+	constVariables.value?.variables.forEach((el) => {
 		if (obj.constantVariables) {
 			obj.constantVariables.push({
 				name: el.name,
 				type: el.type,
 				value: el.value,
 				addIfAbsent: el.addIfAbsent,
-				forced: el.forced
+				forced: el.forced,
 			});
 		}
 	});
@@ -567,7 +572,7 @@ const exportConfiguration = (exportDetails: Export) => {
 			position: 'top',
 			textColor: 'secondary',
 			icon: 'sym_o_error',
-			message: 'Error exporting configuration - invalid file data'
+			message: 'Error exporting configuration - invalid file data',
 		});
 
 		return;
@@ -581,7 +586,7 @@ const exportConfiguration = (exportDetails: Export) => {
 				textColor: 'secondary',
 				icon: 'sym_o_error',
 				message:
-					'Error exporting constant variables - constant variables data not present'
+					'Error exporting constant variables - constant variables data not present',
 			});
 
 			return;
@@ -591,7 +596,7 @@ const exportConfiguration = (exportDetails: Export) => {
 				createdBy: '',
 				effectiveDate: new Date(),
 				id: '',
-				variables: []
+				variables: [],
 			};
 		}
 
@@ -603,7 +608,7 @@ const exportConfiguration = (exportDetails: Export) => {
 				type: el.type,
 				value: valueConverter(el.value, el.type),
 				addIfAbsent: el.addIfAbsent,
-				forced: el.forced
+				forced: el.forced,
 			});
 		});
 
@@ -613,7 +618,7 @@ const exportConfiguration = (exportDetails: Export) => {
 			color: 'positive',
 			position: 'top',
 			textColor: 'secondary',
-			message: 'Constant variables exported successfully'
+			message: 'Constant variables exported successfully',
 		});
 	}
 };
@@ -624,13 +629,13 @@ const exportConfiguration = (exportDetails: Export) => {
 const fullRevert = () => {
 	if (constVariables.value && constVariablesArchive.value[version.value]) {
 		constVariables.value.variables = [];
-		constVariablesArchive.value[version.value].variables.forEach(el => {
+		constVariablesArchive.value[version.value].variables.forEach((el) => {
 			constVariables.value?.variables.push({
 				name: el.name,
 				type: el.type,
 				value: el.value,
 				forced: el.forced,
-				addIfAbsent: el.addIfAbsent
+				addIfAbsent: el.addIfAbsent,
 			});
 		});
 	}
@@ -667,8 +672,8 @@ const isDifferentThan = (version?: number) => {
 			return true;
 		}
 
-		return currentVariables.variables.some(el => {
-			const local = constVariables.value?.variables.find(constVar => {
+		return currentVariables.variables.some((el) => {
+			const local = constVariables.value?.variables.find((constVar) => {
 				return constVar.name === el.name;
 			});
 
@@ -678,7 +683,7 @@ const isDifferentThan = (version?: number) => {
 				return (
 					local.type !== el.type ||
 					local.forced !== el.forced ||
-					local.value !== el.value ||
+					valueAsString(local.value) !== valueAsString(el.value) ||
 					local.addIfAbsent !== el.addIfAbsent
 				);
 			}
@@ -693,7 +698,7 @@ const isDifferentThan = (version?: number) => {
 //====================================================
 watch(() => props.configModel, getConstantVariables, {
 	immediate: false,
-	deep: true
+	deep: true,
 });
 
 watch(isDifferent, (current: boolean) => {
@@ -711,7 +716,7 @@ defineExpose({
 	importConfiguration,
 	exportConfiguration,
 	userCanModify,
-	importEnabled
+	importEnabled,
 });
 </script>
 

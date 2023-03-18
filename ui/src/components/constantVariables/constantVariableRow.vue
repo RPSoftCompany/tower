@@ -499,7 +499,7 @@ const revertEnabled = computed(() => {
 		const archive = props.currentArchive;
 		return (
 			archive.type !== localType.value.value ||
-			archive.value !== localValue.value ||
+			valueAsString(archive.value) !== valueAsString(localValue.value) ||
 			archive.addIfAbsent !== localAddIfAbsent.value ||
 			archive.forced !== localForced.value
 		);
@@ -518,7 +518,7 @@ const wasModified = computed(() => {
 		const archive = props.currentVersion;
 		return (
 			archive.type !== localType.value.value ||
-			archive.value !== localValue.value ||
+			valueAsString(archive.value) !== valueAsString(localValue.value) ||
 			archive.addIfAbsent !== localAddIfAbsent.value ||
 			archive.forced !== localForced.value
 		);
