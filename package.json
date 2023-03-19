@@ -7,7 +7,8 @@
     "inst": "npm-recursive-install",
     "instProd": "npm-recursive-install --production",
     "dev": "(cd ui && npm start) & (cd server; NODE_ENV=development npm start)",
-    "test": "(cd ui && npm start) & (cd server; npm run startTest)"
+    "test": "(cd ui && npm start) & (cd server; npm run startTest)",
+    "runProd": "NODE_ENN=production node ./server"
   },
   "repository": {
     "type": "git",

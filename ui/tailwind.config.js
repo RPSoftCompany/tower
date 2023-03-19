@@ -13,9 +13,9 @@ module.exports = {
 				darkPage: '#1A1E21',
 
 				positive: '#21BA45',
-				negative: '#ba2222'
-			}
-		}
+				negative: '#ba2222',
+			},
+		},
 	},
-	plugins: []
+	plugins: [],
 };
