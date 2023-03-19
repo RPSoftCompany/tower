@@ -1,49 +1,29 @@
 version: 2.1
+orbs:
+  docker: circleci/docker@2.2.0
 jobs:
     build_tower:
         docker:
-            - image: circleci/node:16.3.0
+            # replace with your preferred image
+            - image: cimg/base:stable
         steps:
             - checkout
-            - run:
-                name: Install main dependencies
-                command: |
-                    npm install
-            - run:
-                name: Install deep dependencies
-                command: |
-                    npm run instProd
-            - run:
-                name: Install Vue cli service
-                command: |
-                    cd ui && npm i @vue/cli-service@4.4.6
-            - run:
-                name: Build UI
-                command: |
-                    cd ui && npm run build
-            - run:
-                name: Install pkg
-                command: |
-                    sudo npm install -g pkg@5.1.0
-            - run:
-                name: Build Server
-                command: |
-                    cd server && npm run package
-            - run:
-                  name: Rename
-                  command: |
-                      mv dist tower
-            - run:
-                name: Zip dist
-                command: |
-                    zip -r tower.zip tower
-            - store_artifacts:
-                path: tower.zip
+            - docker/build:
+                path: ./docker/
+                image: rpsofttower/tower
+                tag: $VERSION
+                debug: false
+                lint-dockerfile: false
+                treat-warnings-as-errors: false
+                use-buildkit: false
 workflows:
     build_tower:
         jobs:
-            - build_tower:
-                filters:
-                    branches:
-                        only:
-                            - master
+            - docker/publish:
+                tag: $VERSION 
+                image: rpsofttower/tower 
+                path: ./docker/ 
+                use-docker-credentials-store: false 
+                deploy: true 
+                docker-password: DOCKER_PASSWORD 
+                docker-username: DOCKER_USERNAME 
