@@ -44,8 +44,8 @@ RUN cp -r ./dist/spa/* ../server/client/ui/
 
 WORKDIR /home/tower/tower/server
 
-COPY config.json .
-COPY database-config.json_template .
-COPY dockerStart.sh .
+COPY docker/config.json .
+COPY docker/database-config.json_template .
+COPY docker/dockerStart.sh .
 
 ENTRYPOINT ["./dockerStart.sh"]
