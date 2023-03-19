@@ -1,18 +1,20 @@
-//    Copyright RPSoft 2019,2020. All Rights Reserved.
-//    This file is part of RPSoft Tower.
-//
-//    Tower is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation; either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    Tower is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
+/*
+ * Copyright RPSoft 2019,2023. All Rights Reserved.
+ * This file is part of RPSoft Tower.
+ *
+ * Tower is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Tower is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
+ */
 
 'use strict';
 
@@ -23,7 +25,7 @@ let configModel = null;
 const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
         if (main.app.dataSources['mongoDB'] === undefined) {
-            setTimeout( () => {
+            setTimeout(() => {
                 initiate(main);
             }, 200);
         } else {
@@ -32,13 +34,13 @@ const initiate = (main) => {
                 configModel.createCache();
                 hook(main);
             } else {
-                setTimeout( () => {
+                setTimeout(() => {
                     initiate(main);
                 }, 200);
             }
         }
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             initiate(main);
         }, 200);
     }
@@ -64,7 +66,7 @@ const hook = (main) => {
         main.app.hookSingleton.createHook('beforeModifyRule', 'ConfigurationModel', 'description');
         main.app.hookSingleton.createHook('afterModifyRule', 'ConfigurationModel', 'description');
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             hook(main);
         }, 200);
     }
@@ -72,6 +74,18 @@ const hook = (main) => {
 
 module.exports = function(Configurationmodel) {
     initiate(Configurationmodel);
+
+    Configurationmodel.afterRemote('*', (context, unused, next) => {
+        const audit = Configurationmodel.app.get('AuditInstance');
+        audit.logAudit(context, 'ConfigurationModel');
+        next();
+    });
+
+    Configurationmodel.afterRemoteError('*', (context, next) => {
+        const audit = Configurationmodel.app.get('AuditInstance');
+        audit.logError(context, 'ConfigurationModel');
+        next();
+    });
 
     Configurationmodel.disableRemoteMethodByName('create'); // POST
     Configurationmodel.disableRemoteMethodByName('find'); // GET
@@ -197,8 +211,10 @@ module.exports = function(Configurationmodel) {
         http: {path: '/:id/rule', status: 201, verb: 'POST'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'rule', type: 'rule', required: true,
-                http: {source: 'body'}},
+            {
+                arg: 'rule', type: 'rule', required: true,
+                http: {source: 'body'},
+            },
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
         description: 'Creates validation rule for given configuration model',
@@ -209,8 +225,10 @@ module.exports = function(Configurationmodel) {
         http: {path: '/:id/rule', status: 200, verb: 'DELETE'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'ruleId', type: 'string', required: true,
-                http: {source: 'query'}},
+            {
+                arg: 'ruleId', type: 'string', required: true,
+                http: {source: 'query'},
+            },
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
         description: 'Removes validation rule from given configuration model',
@@ -220,8 +238,10 @@ module.exports = function(Configurationmodel) {
         http: {path: '/:id/rule', status: 200, verb: 'PATCH'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'rule', type: 'rule', required: true,
-                http: {source: 'body'}},
+            {
+                arg: 'rule', type: 'rule', required: true,
+                http: {source: 'body'},
+            },
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
         description: 'Updates validation rule from given configuration model',
@@ -232,8 +252,10 @@ module.exports = function(Configurationmodel) {
         http: {path: '/:id/options', status: 200, verb: 'PATCH'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'modelOptions', type: 'modelOptions', required: true,
-                http: {source: 'body'}},
+            {
+                arg: 'modelOptions', type: 'modelOptions', required: true,
+                http: {source: 'body'},
+            },
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
         returns: {arg: 'variable', type: 'modelOptions', root: true},
@@ -244,8 +266,10 @@ module.exports = function(Configurationmodel) {
         http: {path: '/:id/restriction', status: 200, verb: 'POST'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'restriction', type: 'object', required: true,
-                http: {source: 'body'}},
+            {
+                arg: 'restriction', type: 'object', required: true,
+                http: {source: 'body'},
+            },
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
         description: 'Adds restriction to given configuration model',
@@ -255,8 +279,10 @@ module.exports = function(Configurationmodel) {
         http: {path: '/:id/restriction', status: 200, verb: 'DELETE'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'restrictionId', type: 'string', required: true,
-                http: {source: 'query'}},
+            {
+                arg: 'restrictionId', type: 'string', required: true,
+                http: {source: 'query'},
+            },
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
         description: 'Removes restriction from given configuration model',
@@ -266,8 +292,10 @@ module.exports = function(Configurationmodel) {
         http: {path: '/:id/restriction', status: 200, verb: 'PATCH'},
         accepts: [
             {arg: 'id', type: 'string', required: true, http: {source: 'path'}},
-            {arg: 'restriction', type: 'object', required: true,
-                http: {source: 'body'}},
+            {
+                arg: 'restriction', type: 'object', required: true,
+                http: {source: 'body'},
+            },
             {arg: 'options', type: 'object', http: 'optionsFromRequest'},
         ],
         description: 'Modifies restriction in given configuration model',

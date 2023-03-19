@@ -1,18 +1,20 @@
-//    Copyright RPSoft 2019,2020. All Rights Reserved.
-//    This file is part of RPSoft Tower.
-//
-//    Tower is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation; either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    Tower is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
+/*
+ * Copyright RPSoft 2019,2023. All Rights Reserved.
+ * This file is part of RPSoft Tower.
+ *
+ * Tower is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Tower is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
+ */
 
 const HttpErrors = require('http-errors');
 
@@ -221,7 +223,7 @@ module.exports = class ConfigurationModel {
 
         const baseAll = await this.app.get('BaseConfigurationInstance').getConfigurationModelFromCache();
 
-        const baseExists = baseAll.find( (el) => {
+        const baseExists = baseAll.find((el) => {
             return el.name === model.base;
         });
 
@@ -325,7 +327,7 @@ module.exports = class ConfigurationModel {
         this.log('debug', 'upsertConfigurationModel', 'STARTED');
 
         const hookBase = {};
-        if (model.base !== undefined && model.base !== null ) {
+        if (model.base !== undefined && model.base !== null) {
             hookBase[model.base] = model.name;
         }
 
@@ -494,7 +496,7 @@ module.exports = class ConfigurationModel {
         const Rule = this.app.models.rule;
         let isValid = true;
 
-        Object.getOwnPropertyNames(Rule.definition.rawProperties).forEach( (el) => {
+        Object.getOwnPropertyNames(Rule.definition.rawProperties).forEach((el) => {
             const req = Rule.definition.rawProperties[el].required === undefined
                 ? false : Rule.definition.rawProperties[el].required;
             if (req) {
@@ -607,7 +609,7 @@ module.exports = class ConfigurationModel {
         const Rule = this.app.models.rule;
         let isValid = true;
 
-        Object.getOwnPropertyNames(Rule.definition.rawProperties).forEach( (el) => {
+        Object.getOwnPropertyNames(Rule.definition.rawProperties).forEach((el) => {
             const req = Rule.definition.rawProperties[el].required === undefined
                 ? false : Rule.definition.rawProperties[el].required;
             if (req) {
@@ -717,7 +719,7 @@ module.exports = class ConfigurationModel {
 
         const isIn = model.restrictions.find((el) => {
             let same = true;
-            Object.keys(restriction).forEach( (key) => {
+            Object.keys(restriction).forEach((key) => {
                 if (key !== '__id') {
                     if (!el[key]) {
                         same = false;

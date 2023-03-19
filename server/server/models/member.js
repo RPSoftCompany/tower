@@ -1,18 +1,20 @@
-//    Copyright RPSoft 2019,2020. All Rights Reserved.
-//    This file is part of RPSoft Tower.
-//
-//    Tower is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation; either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    Tower is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
+/*
+ * Copyright RPSoft 2019,2023. All Rights Reserved.
+ * This file is part of RPSoft Tower.
+ *
+ * Tower is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Tower is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
+ */
 
 'use strict';
 
@@ -24,7 +26,7 @@ let member = null;
 const initiate = (main) => {
     if (main.app !== undefined && main.app.booted) {
         if (main.app.dataSources['mongoDB'] === undefined) {
-            setTimeout( () => {
+            setTimeout(() => {
                 initiate(main);
             }, 200);
         } else {
@@ -32,13 +34,13 @@ const initiate = (main) => {
                 member = new MemberClass(main.app);
                 member.createCache();
             } else {
-                setTimeout( () => {
+                setTimeout(() => {
                     initiate(main);
                 }, 200);
             }
         }
     } else {
-        setTimeout( () => {
+        setTimeout(() => {
             initiate(main);
         }, 200);
     }
@@ -46,6 +48,18 @@ const initiate = (main) => {
 
 module.exports = (Member) => {
     initiate(Member);
+
+    Member.afterRemote('*', (context, unused, next) => {
+        const audit = Member.app.get('AuditInstance');
+        audit.logAudit(context, 'Member');
+        next();
+    });
+
+    Member.afterRemoteError('*', (context, next) => {
+        const audit = Member.app.get('AuditInstance');
+        audit.logError(context, 'Member');
+        next();
+    });
 
     Member.disableRemoteMethodByName('replaceOrCreate');
     Member.disableRemoteMethodByName('update');
@@ -285,12 +299,12 @@ module.exports = (Member) => {
     Member.remoteMethod('getTechnicalUserToken', {
         http: {verb: 'GET', status: 200, path: '/getTechnicalUserToken'},
         accepts:
-        {
-            arg: 'userId',
-            type: 'string',
-            required: true,
-            http: {source: 'query'},
-        },
+            {
+                arg: 'userId',
+                type: 'string',
+                required: true,
+                http: {source: 'query'},
+            },
         description: 'Get technical user token',
         returns: {
             arg: 'accessToken',

@@ -40,6 +40,11 @@
     "dn": {
       "type": "string",
       "required": false
+    },
+    "blocked": {
+      "type": "boolean",
+      "required": false,
+      "default": false
     }
   },
   "validations": [],

@@ -1,0 +1,232 @@
+/*!
+ * Copyright RPSoft 2019,2023. All Rights Reserved.
+ * This file is part of RPSoft Tower.
+ *
+ * Tower is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Tower is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
+ */
+
+// app global css in SCSS form
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+	background-color: $dark-page;
+	color: $secondary;
+}
+
+#q-app {
+	max-height: 100vh;
+}
+
+/**
+	Quasar overwrites
+ */
+.q-menu--dark {
+	box-shadow: 0 1px 5px $dark-page, 0 2px 2px $dark-page, 0 3px 1px -2px $dark-page;
+}
+
+.q-card--dark {
+	box-shadow: 0 1px 5px $dark-page, 0 2px 2px $dark-page, 0 3px 1px -2px $dark-page;
+}
+
+.q-checkbox__inner {
+	min-width: 40px;
+	min-height: 40px;
+	width: 40px;
+	height: 40px;
+}
+
+.q-checkbox__inner:before {
+	border-radius: 0.25rem !important;
+}
+
+.q-chip {
+	background-color: $dark-page;
+}
+
+.q-btn > .q-btn__content > div {
+	font-size: 0.75rem;
+}
+
+.q-btn > .q-btn__content > .block {
+	font-size: 0.75rem;
+}
+
+.q-chip--dense > .q-chip__content {
+	font-size: 0.75rem;
+}
+
+.tower-configuration-row {
+	min-height: 40px;
+}
+
+.q-dialog__inner--minimized > div {
+	max-width: 100%;
+}
+
+/**
+	Configuration variables
+ */
+
+.configurationRowModified {
+	background-color: rgba(111, 130, 141, 0.06);
+}
+
+.configurationRowError {
+	background-color: rgba(186, 34, 34, 0.1);
+}
+
+.booleanErrorField {
+	font-size: 11px;
+	line-height: 11px;
+}
+
+.fullWordWrap {
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+.tower-compareTableIntersection > div {
+	height: 100%;
+}
+
+/**
+	Material icons
+ */
+.material-symbols-outlined {
+	color: $secondary;
+	font-variation-settings: 'FILL' 0,
+	'wght' 200,
+	'GRAD' 0,
+	'opsz' 48
+}
+
+.material-symbols-outlined.deleted {
+	color: rgb(107 114 128);
+	font-variation-settings: 'FILL' 0,
+	'wght' 200,
+	'GRAD' 0,
+	'opsz' 48
+}
+
+.material-symbols-outlined.filled {
+	color: $secondary;
+	font-variation-settings: 'FILL' 1,
+	'wght' 200,
+	'GRAD' 0,
+	'opsz' 48
+}
+
+.material-symbols-outlined.heavy {
+	color: $secondary;
+	font-variation-settings: 'FILL' 0,
+	'wght' 500,
+	'GRAD' 0,
+	'opsz' 48
+}
+
+.material-symbols-outlined.filledLight {
+	color: $secondary;
+	font-variation-settings: 'FILL' 1,
+	'wght' 100,
+	'GRAD' 0,
+	'opsz' 48
+}
+
+.material-symbols-outlined.light {
+	color: $secondary;
+	font-variation-settings: 'FILL' 0,
+	'wght' 100,
+	'GRAD' 0,
+	'opsz' 48
+}
+
+/**
+	Ace edtior
+ */
+.tower-editor.ace-monokai {
+	background-color: $dark;
+}
+
+.tower-editor > .ace_gutter {
+	border-right: solid 2px $primary;
+	background-color: $dark;
+}
+
+.ace-monokai .ace_marker-layer .ace_active-line {
+	background-color: #323b40;
+}
+
+.ace-monokai .ace_gutter-active-line {
+	background-color: #323b40;
+}
+
+.ace-monokai .ace_marker-layer .ace_selection {
+	background-color: #637580;
+}
+
+/**
+	Additional grid-cols
+ */
+@for $i from 6 through 24 {
+	.tw-grid-cols-#{$i} {
+		grid-template-columns: repeat($i, minmax(0, 1fr));
+	}
+}
+
+/**
+	Scrollbar
+ */
+::-webkit-scrollbar {
+	width: 0.65rem;
+}
+
+::-webkit-scrollbar-track {
+	background: $dark;
+	border-radius: 0.5rem;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #888;
+	border-radius: 0.5rem;
+	border: 2px solid transparent;
+	background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #555;
+	border-radius: 0.5rem;
+	border: 2px solid transparent;
+	background-clip: content-box;
+}
+
+/**
+	Browser autofill
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+	border: 1px solid $secondary;
+	-webkit-text-fill-color: $accent;
+	-webkit-box-shadow: 0 0 0 1000px $dark inset;
+	transition: background-color 2000s ease-in-out 0s;
+}

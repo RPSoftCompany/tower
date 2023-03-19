@@ -5,67 +5,117 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e16bfb61-4cb0-49e0-8a6e-5dbd8447af86" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/archive/comparisonTable.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/archive/comparisonTable.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/base/advancedRule.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/base/advancedRule.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/base/rule.vue" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configuration/configurationRow.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/footerElement.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/footerElement.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/core/profileButton.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/core/profileButton.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/highlight/tower_highlight.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Base.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Connection.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Connection.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Hook.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Hook.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Permissions.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Promotion.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Promotion.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/components/settings/Rest.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/settings/Rest.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/plugins/vuetify.js" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/plugins/vuetify.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Archive.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Archive.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Base.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Configuration.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Configuration.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Login.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/Settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/Settings.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/views/TimeArchive.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/datasources.development.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/datasources.development.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="tsconfig.json" />
+        <option value="Vue Single File Component" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="1.17.0" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="OptimizeOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
   </component>
   <component name="ProjectId" id="1mZ9zKySii6wUlnjIkDmJ8mVU1T" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="node.js.detected.package.eslint" value="true" />
-    <property name="node.js.detected.package.standard" value="true" />
-    <property name="node.js.detected.package.tslint" value="true" />
-    <property name="node.js.path.for.package.eslint" value="project" />
-    <property name="node.js.path.for.package.tslint" value="project" />
-    <property name="node.js.selected.package.eslint" value="(autodetect)" />
-    <property name="node.js.selected.package.standard" value="" />
-    <property name="node.js.selected.package.tslint" value="(autodetect)" />
-    <property name="nodejs_package_manager_path" value="npm" />
-    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
-    <property name="vue.rearranger.settings.migration" value="true" />
-  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;code.cleanup.on.save&quot;: &quot;true&quot;,
+    &quot;js.linters.configure.manually.selectedeslint&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/radzio/javascript/tower/ui/src/stores&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;/home/radzio/javascript/tower/ui/node_modules/eslint&quot;,
+    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs.mocha.mocha_node_package_dir&quot;: &quot;/home/radzio/javascript/tower/server/node_modules/mocha&quot;,
+    &quot;nodejs_interpreter_path&quot;: &quot;/home/radzio/.nvm/versions/node/v16.15.0/bin/node&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/home/radzio/javascript/tower/ui/node_modules/prettier&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/home/radzio/javascript/tower/ui/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/ui/src/stores" />
+      <recent name="$PROJECT_DIR$/server/server/models/impl" />
+      <recent name="$PROJECT_DIR$/server/server/models" />
+      <recent name="$PROJECT_DIR$/server/server" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/server/server/boot" />
       <recent name="$PROJECT_DIR$/server/server/boot/server" />
     </key>
   </component>
   <component name="RunManager" selected="npm.dev">
+    <configuration name="insert" type="K6ConfigurationType" factoryName="k6" show_console_on_std_err="false" show_console_on_std_out="false">
+      <option name="allowRunningInParallel" value="false" />
+      <option name="data">
+        <K6RunData>
+          <option name="additionalParams" value="--vus 2 --duration 1200s" />
+          <option name="envs">
+            <map />
+          </option>
+          <option name="pty" value="true" />
+          <option name="script" value="$PROJECT_DIR$/server/test/performance/insert.js" />
+          <option name="thresholdsAsTests" value="true" />
+          <option name="type" value="local" />
+        </K6RunData>
+      </option>
+      <option name="projectPathOnTarget" />
+      <option name="selectedOptions">
+        <list />
+      </option>
+      <option name="additionalParams" value="--vus 2 --duration 1200s" />
+      <option name="envs">
+        <map />
+      </option>
+      <option name="pty" value="true" />
+      <option name="script" value="$PROJECT_DIR$/server/test/performance/insert.js" />
+      <option name="thresholdsAsTests" value="true" />
+      <option name="type" value="local" />
+      <method v="2" />
+    </configuration>
+    <configuration name="updateBrowsers" type="ShConfigurationType">
+      <option name="SCRIPT_TEXT" value="npx browserslist@latest --update-db" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/ui" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="false" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <configuration name="build" type="js.build_tools.npm" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/ui/package.json" />
       <command value="run" />
@@ -96,25 +146,108 @@
       <envs />
       <method v="2" />
     </configuration>
-    <configuration name="startTest" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+    <configuration name="start" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/server/package.json" />
       <command value="run" />
       <scripts>
-        <script value="startTest" />
+        <script value="start" />
       </scripts>
       <node-interpreter value="project" />
       <envs />
       <method v="2" />
     </configuration>
+    <configuration name="Hooks" type="mocha-javascript-test-runner" temporary="true" nameIsGenerated="true">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/server/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$/server</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>SUITE</test-kind>
+      <test-file>$PROJECT_DIR$/server/test/hooks.js</test-file>
+      <test-names>
+        <name value="Hooks" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="Member" type="mocha-javascript-test-runner" temporary="true" nameIsGenerated="true">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/server/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$/server</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>SUITE</test-kind>
+      <test-file>$PROJECT_DIR$/server/test/member.js</test-file>
+      <test-names>
+        <name value="Member" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="Promotion" type="mocha-javascript-test-runner" temporary="true" nameIsGenerated="true">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/server/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$/server</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>SUITE</test-kind>
+      <test-file>$PROJECT_DIR$/server/test/promotion.js</test-file>
+      <test-names>
+        <name value="Promotion" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="Rest Configuration" type="mocha-javascript-test-runner" temporary="true" nameIsGenerated="true">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/server/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$/server</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>SUITE</test-kind>
+      <test-file>$PROJECT_DIR$/server/test/restConfiguration.js</test-file>
+      <test-names>
+        <name value="Rest Configuration" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="server/test" type="mocha-javascript-test-runner" nameIsGenerated="true">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/server/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>DIRECTORY</test-kind>
+      <test-directory>$PROJECT_DIR$/server/test</test-directory>
+      <recursive>false</recursive>
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Mocha.server/test" />
+      <item itemvalue="Mocha.Hooks" />
+      <item itemvalue="Mocha.Member" />
+      <item itemvalue="Mocha.Promotion" />
+      <item itemvalue="Mocha.Rest Configuration" />
       <item itemvalue="npm.package" />
       <item itemvalue="npm.dev" />
       <item itemvalue="npm.build" />
-      <item itemvalue="npm.startTest" />
+      <item itemvalue="npm.start" />
+      <item itemvalue="Shell Script.updateBrowsers" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.startTest" />
+        <item itemvalue="npm.start" />
+        <item itemvalue="Mocha.Rest Configuration" />
+        <item itemvalue="Mocha.Promotion" />
+        <item itemvalue="Mocha.Member" />
+        <item itemvalue="Mocha.Hooks" />
       </list>
     </recent_temporary>
   </component>
@@ -150,6 +283,50 @@
       <workItem from="1636183481512" duration="9620000" />
       <workItem from="1636425001034" duration="16997000" />
       <workItem from="1636792201370" duration="1281000" />
+      <workItem from="1666143708618" duration="1818000" />
+      <workItem from="1666415023669" duration="17322000" />
+      <workItem from="1666503131478" duration="1296000" />
+      <workItem from="1666590343220" duration="2388000" />
+      <workItem from="1666699787142" duration="218000" />
+      <workItem from="1666716364723" duration="611000" />
+      <workItem from="1667067229108" duration="51000" />
+      <workItem from="1667144762916" duration="16000" />
+      <workItem from="1667235771046" duration="5000" />
+      <workItem from="1667504589407" duration="56000" />
+      <workItem from="1667560977942" duration="1167000" />
+      <workItem from="1668011354187" duration="413000" />
+      <workItem from="1670059736456" duration="495000" />
+      <workItem from="1670060238461" duration="29357000" />
+      <workItem from="1670477300458" duration="17000" />
+      <workItem from="1670512858018" duration="8512000" />
+      <workItem from="1670612353932" duration="45000" />
+      <workItem from="1670747601390" duration="21209000" />
+      <workItem from="1671765394070" duration="548000" />
+      <workItem from="1671767337706" duration="531000" />
+      <workItem from="1671767876107" duration="762000" />
+      <workItem from="1671768647282" duration="1958000" />
+      <workItem from="1671773008951" duration="822000" />
+      <workItem from="1671774337112" duration="950000" />
+      <workItem from="1671782058758" duration="15000" />
+      <workItem from="1672042807234" duration="2446000" />
+      <workItem from="1672638041291" duration="1832000" />
+      <workItem from="1673796859305" duration="619000" />
+      <workItem from="1674822750223" duration="1592000" />
+      <workItem from="1674898700304" duration="4501000" />
+      <workItem from="1675274655470" duration="7000" />
+      <workItem from="1675275086071" duration="12784000" />
+      <workItem from="1675601515213" duration="11288000" />
+      <workItem from="1676195274275" duration="97000" />
+      <workItem from="1676708720256" duration="10844000" />
+      <workItem from="1676726551169" duration="23221000" />
+      <workItem from="1676872485802" duration="6908000" />
+      <workItem from="1676952017643" duration="25591000" />
+      <workItem from="1677233257680" duration="23235000" />
+      <workItem from="1677327219144" duration="33198000" />
+      <workItem from="1678514911873" duration="5868000" />
+      <workItem from="1678634000093" duration="259000" />
+      <workItem from="1678634290359" duration="9771000" />
+      <workItem from="1678778107690" duration="16485000" />
     </task>
     <servers />
   </component>
@@ -166,7 +343,6 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />

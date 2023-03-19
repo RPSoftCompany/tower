@@ -1,5 +1,23 @@
 #!/bin/bash
 
+#
+# Copyright RPSoft 2019,2023. All Rights Reserved.
+# This file is part of RPSoft Tower.
+#
+# Tower is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# Tower is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
+#
+
 # =============================
 # secret
 # =============================
@@ -46,6 +64,12 @@ then
   __NON_SAFE="false"
 fi
 
+__AUDIT_TTL=${AUDIT_TTL}
+if [ -z "${__AUDIT_TTL}" ]
+then
+  __AUDIT_TTL="30"
+fi
+
 __FULL_ENCRYPTION=${FULL_ENCRYPTION}
 if [ -z "${__FULL_ENCRYPTION}" ]
 then
@@ -78,4 +102,4 @@ fi
 
 awk -v database="${__DATABASE}" '{sub(/\$DATABASE/, database)}1' database-config.json_template > database-config.json
 
-exec ./tower-linux
+exec node .

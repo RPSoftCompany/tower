@@ -104,6 +104,7 @@ node_modules
 server/client
 server/secret
 server/server/datasources.test*
+server/server/datasources.development*
 
 dist/tower-*
 

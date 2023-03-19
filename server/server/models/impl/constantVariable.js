@@ -1,18 +1,20 @@
-//    Copyright RPSoft 2019,2020. All Rights Reserved.
-//    This file is part of RPSoft Tower.
-//
-//    Tower is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation; either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    Tower is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with Tower.  If not, see http://www.gnu.org/licenses/gpl-3.0.html.
+/*
+ * Copyright RPSoft 2019,2023. All Rights Reserved.
+ * This file is part of RPSoft Tower.
+ *
+ * Tower is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Tower is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
+ */
 
 const HttpErrors = require('http-errors');
 
@@ -74,9 +76,11 @@ module.exports = class BaseConfiguration {
             throw new HttpErrors.Unauthorized();
         }
 
-        const roles = await Roles.find( {where: {
-            name: /^constantVariable./,
-        }});
+        const roles = await Roles.find({
+            where: {
+                name: /^constantVariable./,
+            },
+        });
 
         const allBases = await baseConfiguration.find();
         let baseExists = false;
@@ -112,7 +116,7 @@ module.exports = class BaseConfiguration {
                     throw new HttpErrors.Unauthorized();
                 }
 
-                const roleFound = roles.find( (el) => {
+                const roleFound = roles.find((el) => {
                     return el.name === `constantVariable.${base.name}.${constantVariable[base.name]}.modify`;
                 });
 
@@ -154,7 +158,7 @@ module.exports = class BaseConfiguration {
             variables: constantVariable.variables,
         });
 
-        bases.forEach( (value, key) => {
+        bases.forEach((value, key) => {
             if (!value || value === '__NONE__') {
                 newVariable[key] = null;
             } else {
@@ -200,12 +204,14 @@ module.exports = class BaseConfiguration {
             },
         ]);
 
-        cursor.each( async (_err, item) => {
+        cursor.each(async (_err, item) => {
             if (item) {
                 const configurationModel = this.app.models.configuration;
-                const filter = {where: {
-                    version: item.version,
-                }};
+                const filter = {
+                    where: {
+                        version: item.version,
+                    },
+                };
                 for (const base of bases) {
                     filter.where[base.name] = item[base.name];
                 }
@@ -260,7 +266,6 @@ module.exports = class BaseConfiguration {
         const ConstantVariable = this.app.models.constantVariable;
         const baseConfiguration = this.app.models.baseConfiguration;
         const Role = this.app.models.Role;
-        const ConfModelInstance = this.app.get('ConfModelInstance');
 
         const allBases = await baseConfiguration.find();
 
@@ -427,7 +432,7 @@ module.exports = class BaseConfiguration {
         const hierarchyArray = [];
         for (const base of allBases) {
             currentTest[base.name] = filter[base.name];
-            const foundElement = tempArray.find( (el) => {
+            const foundElement = tempArray.find((el) => {
                 for (const innerBase of allBases) {
                     if (el[innerBase.name]) {
                         if (currentTest[innerBase.name] !== el[innerBase.name]) {
@@ -444,7 +449,7 @@ module.exports = class BaseConfiguration {
             });
 
             if (foundElement) {
-                tempArray = tempArray.filter( (el) => {
+                tempArray = tempArray.filter((el) => {
                     return el._id !== foundElement._id;
                 });
                 hierarchyArray.push(foundElement);
@@ -459,7 +464,7 @@ module.exports = class BaseConfiguration {
             if (allRow.length > 0) {
                 row = allRow[0];
 
-                row.variables = row.variables.map( (el) => {
+                row.variables = row.variables.map((el) => {
                     for (const base of allBases) {
                         if (row[base.name]) {
                             el[base.name] = row[base.name];
@@ -478,13 +483,17 @@ module.exports = class BaseConfiguration {
 
                 for (const tempVar of tempVariables) {
                     let updated = false;
-                    all.variables.map( (el) => {
+                    all.variables.map((el) => {
                         if (el.name === tempVar.name) {
                             updated = true;
                             el.value = tempVar.value;
                             el.type = tempVar.type;
                             el.forced = tempVar.forced;
                             el.addIfAbsent = tempVar.addIfAbsent;
+
+                            for (const base of allBases) {
+                                el[base.name] = tempVar[base.name];
+                            }
                         }
                     });
 
