@@ -64,6 +64,12 @@ then
   __NON_SAFE="false"
 fi
 
+__AUDIT_TTL=${AUDIT_TTL}
+if [ -z "${__AUDIT_TTL}" ]
+then
+  __AUDIT_TTL="30"
+fi
+
 __FULL_ENCRYPTION=${FULL_ENCRYPTION}
 if [ -z "${__FULL_ENCRYPTION}" ]
 then
@@ -96,4 +102,4 @@ fi
 
 awk -v database="${__DATABASE}" '{sub(/\$DATABASE/, database)}1' database-config.json_template > database-config.json
 
-exec ./tower-linux
+exec node .
