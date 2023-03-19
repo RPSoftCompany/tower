@@ -27,3 +27,11 @@ workflows:
                 deploy: true 
                 docker-password: DOCKER_PASSWORD 
                 docker-username: DOCKER_USERNAME 
+            - docker/publish:
+                tag: latest 
+                image: rpsofttower/tower 
+                path: ./docker/ 
+                use-docker-credentials-store: false 
+                deploy: true 
+                docker-password: DOCKER_PASSWORD 
+                docker-username: DOCKER_USERNAME 
