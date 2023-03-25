@@ -76,6 +76,11 @@ module.exports = class BaseConfiguration {
      * @return {Promise<void>}
      */
     async createTTLIndex() {
+        const count = await this.app.models.audit.count();
+        if (count === 0) {
+          await this.app.dataSources.mongoDB.automigrate('audit');
+        }
+
         const allIndexes = await this.app.dataSources['mongoDB'].connector.collection('audit').indexes();
         for (const index of allIndexes) {
             if (index.name === 'date_1') {
