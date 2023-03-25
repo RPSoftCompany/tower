@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM node:19.8.1
 
 ARG VERSION=2.0.0
 
