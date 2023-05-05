@@ -5,9 +5,11 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "3.0.0" ]
+    branches: 
+      - 3.0.0
   pull_request:
-    branches: [ "3.0.0" ]
+    branches:
+      - 3.0.0
 
 jobs:
   build:
