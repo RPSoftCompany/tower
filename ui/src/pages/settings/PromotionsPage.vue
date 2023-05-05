@@ -46,7 +46,7 @@
 			<q-list>
 				<template v-for="model of allModels" :key="model.name">
 					<q-item
-						v-if="model.name !== currentModel.name"
+						v-if="model.name !== currentModel?.name"
 						clickable
 						@click="addOrRemovePromotion(model.name)"
 						:disable="loading"
@@ -54,12 +54,12 @@
 						<q-item-section avatar>
 							<q-icon
 								:name="
-									currentPromotionClone.toModels.includes(model.name)
+									currentPromotionClone?.toModels.includes(model.name)
 										? 'sym_o_check'
 										: 'sym_o_check_box_outline_blank'
 								"
 								:color="
-									currentPromotionClone.toModels.includes(model.name)
+									currentPromotionClone?.toModels.includes(model.name)
 										? 'positive'
 										: 'grey-7'
 								"
@@ -121,7 +121,7 @@ const isDifferent = computed(() => {
 		return false;
 	}
 
-	if (!currentPromotion.value.id) {
+	if (!currentPromotion.value._id) {
 		return true;
 	}
 
@@ -151,6 +151,8 @@ const getAllModels = async () => {
 	if (!currentBase.value) {
 		return;
 	}
+
+	currentModel.value = null;
 
 	loading.value = true;
 
@@ -209,7 +211,7 @@ const getPromotions = async () => {
 				currentPromotion.value = response.data[0];
 				if (currentPromotion.value) {
 					currentPromotionClone.value = {
-						id: currentPromotion.value?.id,
+						_id: currentPromotion.value?._id,
 						toModels: [...currentPromotion.value.toModels],
 						base: currentPromotion.value.base,
 						fromModel: currentPromotion.value.fromModel,
@@ -268,9 +270,9 @@ const save = async () => {
 		let response = null;
 
 		try {
-			if (currentPromotionClone.value.id) {
+			if (currentPromotionClone.value._id) {
 				response = await towerAxios.patch(
-					`/promotions/${currentPromotionClone.value.id}`,
+					`/promotions/${currentPromotionClone.value._id}`,
 					currentPromotionClone.value
 				);
 			} else {

@@ -19,7 +19,7 @@
 import { Configuration } from 'components/configuration/configuration';
 
 export interface ArchiveConfig {
-	id: number;
+	id: string;
 	loading: boolean;
 	version?: number;
 	effectiveDate?: Date;

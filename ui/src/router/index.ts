@@ -30,6 +30,7 @@ import routes from './routes';
 import { basesStore } from 'stores/bases';
 import { towerAxios } from 'boot/axios';
 import { navigationStore } from 'stores/navigation';
+import { AxiosError } from 'axios';
 
 /*
  * If not building with SSR mode, you can
@@ -94,9 +95,28 @@ export default route(function (/* { store, ssrContext } */) {
 			return { name: 'Login' };
 		}
 
+		if (to.name === 'ChangePassword') {
+			return true;
+		}
+
+		if (to.name === 'InsufficientPermissions') {
+			return true;
+		}
+
 		const bases = basesStore();
 		if (bases.getBases.length === 0) {
-			await bases.requestBases(towerAxios);
+			try {
+				await bases.requestBases(towerAxios);
+			} catch (e) {
+				if ((e as AxiosError)?.response?.status === 401) {
+					return { name: 'Login' };
+				}
+				return { name: 'InsufficientPermissions' };
+			}
+
+			if (bases.getBases.length === 0 && to.name !== 'BaseModels') {
+				return { name: 'BaseModels' };
+			}
 		}
 
 		if (!to.path || to.path === '/') {

@@ -26,7 +26,11 @@
 
 				<q-card-section class="tw-bg-dark">
 					Are you sure you want to delete <b>{{ deleteModel?.name }}</b> base
-					model?
+					model?<br />
+					Removing it will also delete all the configuration models related to
+					it.<br />
+					Additionally configurations created with this base model will be
+					<b class="tw-text-negative">inaccessible</b>.
 				</q-card-section>
 
 				<q-card-actions align="right" class="tw-bg-dark">
@@ -109,15 +113,15 @@
 			<q-card
 				v-for="(base, index) of currentBases"
 				:key="base.name"
-				:draggable="canBeDruggedId === base.id ? 'true' : 'false'"
+				:draggable="canBeDruggedId === base._id ? 'true' : 'false'"
 				class="tw-m-1"
-				:class="{ 'tw-opacity-20': draggedId === base.id }"
-				@dragstart="dragStart(base.id)"
+				:class="{ 'tw-opacity-20': draggedId === base._id }"
+				@dragstart="dragStart(base._id)"
 				@dragend="dragEnd"
 				@dragenter="dragEnter(index)"
 			>
 				<q-card-section
-					:class="{ 'tw-opacity-0': draggedId === base.id }"
+					:class="{ 'tw-opacity-0': draggedId === base._id }"
 					class="tw-p-0"
 				>
 					<div class="tw-flex tw-justify-between tw-p-2">
@@ -125,7 +129,7 @@
 							<q-icon
 								name="sym_o_drag_indicator"
 								class="tw-mr-3 tw-cursor-grab"
-								@mouseover="canBeDruggedId = base.id"
+								@mouseover="canBeDruggedId = base._id"
 								@mouseleave="canBeDruggedId = ''"
 								size="sm"
 							></q-icon>
@@ -145,6 +149,17 @@
 					</div>
 				</q-card-section>
 			</q-card>
+		</div>
+		<div
+			v-if="currentBases.length === 0"
+			class="tw-w-full tw-h-full tw-flex tw-justify-center tw-items-center"
+		>
+			<div class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400">
+				You have no <b>Base models</b> configured
+				<div class="tw-text-center tw-text-xs tw-text-gray-500">
+					Please use the input above to create one
+				</div>
+			</div>
 		</div>
 		<div>
 			<save-panel
@@ -180,8 +195,8 @@ const navigationSt = navigationStore();
 //====================================================
 const currentBases: Ref<Array<Base>> = ref([]);
 
-const draggedId = ref('');
-const canBeDruggedId = ref('');
+const draggedId: Ref<string | undefined> = ref('');
+const canBeDruggedId: Ref<string | undefined> = ref('');
 
 const chooseIconDialog = ref(false);
 const chooseIconIndex = ref(-1);
@@ -228,7 +243,7 @@ const isDifferent = computed(() => {
 	}
 
 	return currentBases.value.some((base: Base, index: number) => {
-		if (base.id !== basesSt.getBases[index].id) {
+		if (base._id !== basesSt.getBases[index]._id) {
 			return true;
 		}
 
@@ -245,7 +260,7 @@ const isDifferent = computed(() => {
 /**
  * dragStart
  */
-const dragStart = (id: string) => {
+const dragStart = (id?: string) => {
 	setTimeout(() => {
 		draggedId.value = id;
 	}, 10);
@@ -262,9 +277,9 @@ const dragEnd = () => {
  * dragEnter
  */
 const dragEnter = (index: number) => {
-	if (currentBases.value[index].id !== draggedId.value) {
+	if (currentBases.value[index]._id !== draggedId.value) {
 		const draggedIndex = currentBases.value.findIndex((el) => {
-			return el.id === draggedId.value;
+			return el._id === draggedId.value;
 		});
 
 		if (draggedIndex >= 0) {
@@ -308,7 +323,7 @@ const updateCurrentBases = () => {
 		currentBases.value.push({
 			sequenceNumber: base.sequenceNumber,
 			icon: base.icon,
-			id: base.id,
+			_id: base._id,
 			name: base.name,
 		});
 	});
@@ -328,18 +343,18 @@ const saveBases = async () => {
 
 	const toDeleteArray = basesSt.getBases.filter((el) => {
 		return !currentBases.value.some((base) => {
-			return el.id === base.id;
+			return el._id === base._id;
 		});
 	});
 
 	for (let toDelete of toDeleteArray) {
-		await towerAxios.delete(`/baseConfigurations/${toDelete.id}`);
+		await towerAxios.delete(`/baseConfigurations/${toDelete._id}`);
 	}
 
 	for (let base of currentBases.value) {
 		try {
-			if (base.id) {
-				await towerAxios.patch(`/baseConfigurations/${base.id}`, base);
+			if (base._id) {
+				await towerAxios.patch(`/baseConfigurations/${base._id}`, base);
 			} else {
 				await towerAxios.post('/baseConfigurations', base);
 			}
@@ -400,13 +415,13 @@ const showDeleteDialog = (base: Base) => {
  */
 const deleteBaseModel = async () => {
 	if (deleteModel.value) {
-		if (deleteModel.value.id) {
+		if (deleteModel.value._id) {
 			currentBases.value = currentBases.value.filter((el) => {
-				return el.id !== deleteModel.value?.id;
+				return el._id !== deleteModel.value?._id;
 			});
 		} else {
 			currentBases.value = currentBases.value.filter((el) => {
-				return !!el.id;
+				return !!el._id;
 			});
 		}
 	}

@@ -20,10 +20,9 @@ import { Member } from 'components/user/user';
 
 export interface ConstantVariable {
 	effectiveDate: Date;
-	createdBy: string;
 	variables: Array<ConstantVariableValue>;
 	id: string;
-	member?: Member;
+	createdBy?: Member;
 }
 
 export interface ConstantVariableValue {

@@ -75,11 +75,11 @@
 										<div
 											class="tw-ml-3"
 											:class="{
-												'tw-text-negative': currentUserClone.blocked,
-												'tw-text-positive': !currentUserClone.blocked,
+												'tw-text-negative': currentUserClone?.blocked,
+												'tw-text-positive': !currentUserClone?.blocked,
 											}"
 										>
-											{{ currentUserClone.blocked ? 'Blocked' : 'Active' }}
+											{{ currentUserClone?.blocked ? 'Blocked' : 'Active' }}
 										</div>
 									</template>
 									<template v-else>
@@ -100,11 +100,11 @@
 										<span
 											class="tw-ml-3"
 											:class="{
-												'tw-text-negative': currentUserClone.blocked,
-												'tw-text-positive': !currentUserClone.blocked,
+												'tw-text-negative': currentUserClone?.blocked,
+												'tw-text-positive': !currentUserClone?.blocked,
 											}"
 										>
-											{{ currentUserClone.blocked ? 'Blocked' : 'Active' }}
+											{{ currentUserClone?.blocked ? 'Blocked' : 'Active' }}
 										</span>
 									</template>
 								</div>
@@ -132,7 +132,7 @@
 											"
 										>
 											<div class="tw-ml-3">
-												{{ currentUserClone.technicalUser ? 'Yes' : 'No' }}
+												{{ currentUserClone?.technicalUser ? 'Yes' : 'No' }}
 											</div>
 										</template>
 										<template v-else>
@@ -146,7 +146,7 @@
 													class="tw-pb-1 tw-ml-3"
 												/>
 												<span class="tw-ml-3">{{
-													currentUserClone.technicalUser ? 'Yes' : 'No'
+													currentUserClone?.technicalUser ? 'Yes' : 'No'
 												}}</span>
 											</div>
 										</template>
@@ -163,7 +163,7 @@
 											"
 										>
 											<div class="tw-ml-3">
-												{{ currentUserClone.newUser ? 'Yes' : 'No' }}
+												{{ currentUserClone?.newUser ? 'Yes' : 'No' }}
 											</div>
 										</template>
 										<template v-else>
@@ -177,7 +177,7 @@
 													class="tw-pb-1 tw-ml-3"
 												/>
 												<span class="tw-ml-3">
-													{{ currentUserClone.newUser ? 'Yes' : 'No' }}
+													{{ currentUserClone?.newUser ? 'Yes' : 'No' }}
 												</span>
 											</div>
 										</template>
@@ -194,7 +194,7 @@
 							</div>
 						</div>
 						<div
-							v-if="currentUserClone.username !== 'admin'"
+							v-if="currentUserClone?.username !== 'admin'"
 							class="tw-mt-3 tw-py-3 tw-self-start tw-rounded tw-border tw-border-dark tw-bg-dark"
 						>
 							<div class="tw-text-xl tw-font-medium tw-mb-3 tw-px-3">
@@ -231,7 +231,7 @@
 								</template>
 								<template v-slot:selected>
 									<template
-										v-for="group of currentUserClone.groups"
+										v-for="group of currentUserClone?.groups"
 										:key="group"
 									>
 										<template v-if="currentUser?.groups.includes(group)">
@@ -259,7 +259,7 @@
 					</div>
 					<div class="tw-w-[20rem]">
 						<div
-							v-if="currentUserClone.type !== 'ldap' && currentUser"
+							v-if="currentUserClone?.type !== UserType.LDAP && currentUser"
 							class="tw-mt-5 tw-flex tw-flex-col tw-py-3 tw-self-start tw-rounded tw-border tw-border-dark tw-bg-dark"
 						>
 							<div class="tw-text-xl tw-font-medium tw-mx-3">
@@ -284,17 +284,19 @@
 									size="sm"
 								/>
 								{{
-									currentUserClone.newUser
+									currentUserClone?.newUser
 										? 'Undo password reset'
 										: 'Reset user password'
 								}}
 							</q-btn>
 						</div>
 						<div
-							v-if="currentUserClone.username !== 'admin'"
+							v-if="currentUserClone?.username !== 'admin'"
 							:class="{
-								'tw-mt-5': currentUserClone.type === 'ldap' || !currentUser,
-								'tw-mt-3': currentUserClone.type !== 'ldap' && currentUser,
+								'tw-mt-5':
+									currentUserClone?.type === UserType.LDAP || !currentUser,
+								'tw-mt-3':
+									currentUserClone?.type !== UserType.LDAP && currentUser,
 							}"
 							class="tw-flex tw-flex-col tw-py-3 tw-self-start tw-rounded tw-border tw-border-dark tw-bg-dark"
 						>
@@ -302,7 +304,7 @@
 							<div class="tw-text-gray-500 tw-mx-3">Lock user account</div>
 							<q-separator spaced class="tw-bg-darkPage tw-mx-[-1px]" />
 							<q-btn
-								v-if="currentUserClone.username !== 'admin'"
+								v-if="currentUserClone?.username !== 'admin'"
 								class="tw-bg-secondary tw-mx-3 tw-flex-grow"
 								flat
 								text-color="primary"
@@ -314,13 +316,13 @@
 									name="sym_o_lock"
 									size="sm"
 								/>
-								{{ !currentUserClone.blocked ? 'Block user' : 'Unblock user' }}
+								{{ !currentUserClone?.blocked ? 'Block user' : 'Unblock user' }}
 							</q-btn>
 						</div>
 						<div
 							v-if="
-								currentUserClone.type !== 'ldap' &&
-								currentUserClone.username !== 'admin'
+								currentUserClone?.type !== UserType.LDAP &&
+								currentUserClone?.username !== 'admin'
 							"
 							class="tw-mt-3 tw-py-3 tw-flex tw-flex-col tw-self-start tw-rounded tw-border tw-border-dark tw-bg-dark"
 						>
@@ -348,7 +350,7 @@
 									size="sm"
 								/>
 								{{
-									currentUserClone.technicalUser
+									currentUserClone?.technicalUser
 										? 'Revoke technical user'
 										: 'Set as technical user'
 								}}
@@ -474,7 +476,7 @@ const getUsers = async () => {
 				dn: user.dn,
 				type: user.type,
 				username: user.username,
-				id: user.id,
+				_id: user._id,
 				realm: user.realm,
 			});
 		});
@@ -572,7 +574,7 @@ const saveUser = async () => {
 
 	try {
 		if (!newUser) {
-			await towerAxios.patch(`/members/${currentUserClone.value.id}`, toSave);
+			await towerAxios.patch(`/members/${currentUserClone.value._id}`, toSave);
 		} else {
 			await towerAxios.post('/members', toSave);
 		}
@@ -583,7 +585,7 @@ const saveUser = async () => {
 			if (newUser) {
 				return el.username === currentUserClone.value?.username;
 			} else {
-				return el.id === currentUser.value?.id;
+				return el._id === currentUser.value?._id;
 			}
 		});
 
@@ -593,7 +595,7 @@ const saveUser = async () => {
 				currentUser.value?.technicalUser
 			) {
 				await towerAxios.post(
-					`/members/setAsTechnicalUser?isTechUser=${currentUserClone.value.technicalUser}&userId=${user.id}`
+					`/members/setAsTechnicalUser?isTechUser=${currentUserClone.value.technicalUser}&userId=${user._id}`
 				);
 			}
 
@@ -636,7 +638,7 @@ watch(
 			if (current.technicalUser) {
 				try {
 					const response = await towerAxios.get(
-						`/members/getTechnicalUserToken?userId=${current.id}`
+						`/members/getTechnicalUserToken?userId=${current._id}`
 					);
 					if (response.status === 200) {
 						accessToken.value = response.data;
@@ -655,7 +657,7 @@ watch(
 				newUser: current.newUser,
 				type: current.type,
 				realm: current.realm,
-				id: current.id,
+				_id: current._id,
 				blocked: current.blocked,
 			};
 		} else {

@@ -229,7 +229,7 @@ interface LDAP {
 	url: string;
 	usernameAttribute: string;
 	defaultGroups: Array<string>;
-	id: string;
+	_id: string;
 }
 
 //====================================================
@@ -245,7 +245,7 @@ const currentConfiguration: Ref<LDAP> = ref({
 	url: '',
 	usernameAttribute: '',
 	defaultGroups: [],
-	id: '',
+	_id: '',
 });
 
 const savedConfiguration: Ref<LDAP | null> = ref(null);
@@ -298,6 +298,10 @@ const isDifferent = computed(() => {
 		return true;
 	}
 
+	if (currentConfiguration.value.defaultGroups.length === 0) {
+		return false;
+	}
+
 	return !currentConfiguration.value.defaultGroups.some((group) => {
 		return savedConfiguration.value?.defaultGroups.some((el) => {
 			return el === group;
@@ -342,7 +346,7 @@ const getCurrentLDAPConfiguration = async () => {
 				: null,
 			enabled: response.data[0].enabled,
 			system: 'LDAP',
-			id: response.data[0].id ? response.data[0].id : null,
+			_id: response.data[0]._id ? response.data[0]._id : null,
 		};
 		currentConfiguration.value = {
 			defaultGroups: response.data[0].defaultGroups
@@ -364,7 +368,7 @@ const getCurrentLDAPConfiguration = async () => {
 				: null,
 			enabled: response.data[0].enabled,
 			system: 'LDAP',
-			id: response.data[0].id ? response.data[0].id : null,
+			_id: response.data[0]._id ? response.data[0]._id : null,
 		};
 	}
 
@@ -437,7 +441,7 @@ const saveConnection = async () => {
 		searchBase: currentConfiguration.value.searchBase,
 		enabled: currentConfiguration.value.enabled,
 		system: 'LDAP',
-		id: currentConfiguration.value.id,
+		_id: currentConfiguration.value._id,
 	};
 
 	$q.notify({

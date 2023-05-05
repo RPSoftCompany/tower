@@ -359,6 +359,7 @@ import { Export, ImportDetails } from 'components/models';
 import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
 import cryptoRandomString from 'crypto-random-string';
+import { AxiosError } from 'axios';
 //====================================================
 // Const
 //====================================================
@@ -476,7 +477,8 @@ const currentVersionDate = computed(() => {
  */
 const currentVersionAuthor = computed(() => {
 	if (version.value >= 0) {
-		return configurationVariablesArchive.value[version.value].member?.username;
+		return configurationVariablesArchive.value[version.value].createdBy
+			?.username;
 	}
 
 	return '';
@@ -712,8 +714,7 @@ const getConfiguration = async () => {
 	loading.value = true;
 
 	const rulesFilter: any = {
-		rules: { $gt: { $size: 0 } },
-		where: { or: [] },
+		where: { or: [], rules: { $gt: { $size: 0 } } },
 	};
 
 	const filter: any = {
@@ -773,8 +774,13 @@ const getConfiguration = async () => {
 					version.value = configurationVariablesArchive.value.length - 1;
 
 					if (userCanModify.value) {
-						// Ignore async
-						getPromotionCandidates();
+						getPromotionCandidates()
+							.then(() => {
+								// Ignore async
+							})
+							.catch(() => {
+								// Ignore errors
+							});
 					}
 				}
 			}
@@ -847,7 +853,7 @@ const configurationArchiveVersion = (variableName: string) => {
 const addNewVariable = (variable: ConfigurationVariable) => {
 	if (!configurationVariables.value) {
 		configurationVariables.value = {
-			createdBy: '',
+			createdBy: undefined,
 			description: '',
 			draft: false,
 			effectiveDate: new Date(),
@@ -957,17 +963,25 @@ const saveConfiguration = async () => {
 			});
 
 			response = await towerAxios.post('/configurations', data);
-		} catch (e) {
+		} catch (err) {
+			let error = (err as any).message;
+
+			if (err instanceof AxiosError) {
+				error = err.response?.data?.message
+					? err.response?.data?.message
+					: err.message;
+			}
+
 			$q.notify({
 				color: 'negative',
 				position: 'top',
 				textColor: 'secondary',
 				icon: 'sym_o_error',
-				message: 'Error saving configuration data',
+				message: `Error saving configuration data: ${error}`,
 			});
 		}
 
-		if (response && response.status === 200) {
+		if (response && response.status === 201) {
 			$q.notify({
 				color: 'positive',
 				position: 'top',
@@ -1050,7 +1064,7 @@ const exportConfiguration = (exportDetails: Export) => {
 		}
 		if (!configurationVariables.value) {
 			configurationVariables.value = {
-				createdBy: '',
+				createdBy: undefined,
 				description: '',
 				draft: false,
 				effectiveDate: new Date(),
@@ -1295,13 +1309,19 @@ watch(() => props.configModel, getConfiguration, {
 	deep: true,
 });
 
-watch(isDifferent, (current: boolean) => {
-	if (current && !loading.value) {
-		navigationSt.preventNavigation();
-	} else {
-		navigationSt.allowNavigation();
-	}
-});
+watch(
+	isDifferent,
+	(current: boolean) => {
+		console.log('isDifferent');
+
+		if (current && !loading.value) {
+			navigationSt.preventNavigation();
+		} else {
+			navigationSt.allowNavigation();
+		}
+	},
+	{ immediate: true }
+);
 
 watch(localPromotionCandidates, (current) => {
 	emit('update:promotionCandidates', current);

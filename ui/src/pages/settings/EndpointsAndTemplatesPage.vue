@@ -68,10 +68,7 @@
 									size="sm"
 								></q-icon>
 								<span
-									><b>{{ index + 1 }}.</b> /{{ endpoint.type }}/<b>{{
-										endpoint.url
-									}}</b
-									>{{ endpoint.type === 'v2' ? '/' + urlExample : '' }}</span
+									><b>{{ index + 1 }}.</b> /v1/<b>{{ endpoint.url }}</b></span
 								>
 							</div>
 							<div>
@@ -123,8 +120,9 @@
 					<q-item v-bind="scope.itemProps">
 						<q-item-section>
 							<q-item-label
-								><b>{{ scope.opt.sequenceNumber + 1 }}.</b>
-								{{ scope.opt.type }}/{{ scope.opt.url }}</q-item-label
+								><b>{{ scope.opt.sequenceNumber + 1 }}.</b> v1/{{
+									scope.opt.url
+								}}</q-item-label
 							>
 						</q-item-section>
 					</q-item>
@@ -167,17 +165,10 @@
 				label="URL"
 				v-model="currentEndpointClone.url"
 				:rules="urlRules"
-				:hint="
-					currentEndpointClone?.type === 'v2'
-						? 'e.g. myUrl'
-						: `e.g. ${urlExample}`
-				"
+				:hint="`e.g. ${urlExample}`"
 				dense
 				color="secondary"
-				:prefix="`/${currentEndpointClone.type}/`"
-				:suffix="
-					currentEndpointClone?.type === 'v2' ? `/${urlExample}` : undefined
-				"
+				:prefix="`/v1/`"
 			/>
 			<div class="tw-flex tw-mt-2">
 				<div class="tw-flex-grow">
@@ -215,22 +206,6 @@
 							class="tw-mx-3"
 						/>
 					</div>
-					<div
-						class="tw-mt-5 tw-flex tw-flex-col tw-py-3 tw-self-start tw-rounded tw-border tw-border-dark tw-bg-dark"
-					>
-						<div class="tw-text-xl tw-font-medium tw-mx-3">API version</div>
-						<div class="tw-text-gray-500 tw-mx-3">
-							Sets the REST API version
-						</div>
-						<q-separator spaced class="tw-bg-darkPage tw-mx-[-1px]" />
-						<q-select
-							v-model="currentEndpointClone.type"
-							label="API version"
-							color="secondary"
-							:options="['v1', 'v2']"
-							class="tw-mx-3"
-						/>
-					</div>
 				</div>
 			</div>
 		</div>
@@ -248,10 +223,7 @@
 <script lang="ts" setup>
 import TowerSelect from 'components/basic/towerSelect.vue';
 import { computed, nextTick, onMounted, Ref, ref, watch } from 'vue';
-import {
-	RestConfiguration,
-	RestConfigurationType,
-} from 'pages/settings/types/restConfiguration';
+import { RestConfiguration } from 'pages/settings/types/restConfiguration';
 import { towerAxios } from 'boot/axios';
 import { VAceEditor } from 'vue3-ace-editor';
 import modeLiquidUrl from 'ace-builds/src-noconflict/mode-liquid?url';
@@ -304,6 +276,7 @@ onMounted(async () => {
 	urlRules.value.push(existingUrl);
 	urlRules.value.push(notEmpty);
 	urlRules.value.push(atLeastOneBase);
+	urlRules.value.push(baseModelsCantBeNextToEachOther);
 
 	await getAllEndpoints();
 });
@@ -388,7 +361,6 @@ const newEndpoint = () => {
 	nextTick(() => {
 		currentEndpointClone.value = {
 			url: '',
-			type: RestConfigurationType.V1,
 			returnType: 'json',
 			sequenceNumber: allEndpoints.value.length,
 			template:
@@ -448,13 +420,20 @@ const notEmpty = (value: string) => {
 };
 
 /**
- * urlRules at least one base
+ * urlRules baseModelsCantBeNextToEachOther
  */
-const atLeastOneBase = (value: string) => {
-	if (currentEndpointClone.value?.type === RestConfigurationType.V2) {
+const baseModelsCantBeNextToEachOther = (value: string) => {
+	if (!value.includes('}{')) {
 		return true;
 	}
 
+	return "Base Models can't be next to each other";
+};
+
+/**
+ * urlRules at least one base
+ */
+const atLeastOneBase = (value: string) => {
 	let hasBase = false;
 
 	if (value) {
@@ -507,10 +486,12 @@ const deleteEndpoint = async () => {
 /**
  * dragStart
  */
-const dragStart = (id: string) => {
-	setTimeout(() => {
-		draggedId.value = id;
-	}, 10);
+const dragStart = (id: string | undefined) => {
+	if (id) {
+		setTimeout(() => {
+			draggedId.value = id;
+		}, 10);
+	}
 };
 
 /**
@@ -620,7 +601,6 @@ const isDifferent = computed(() => {
 				currentEndpoint.value?.returnType ||
 			currentEndpointClone.value?.template !==
 				currentEndpoint.value?.template ||
-			currentEndpointClone.value?.type !== currentEndpoint.value?.type ||
 			currentEndpointClone.value.url !== currentEndpoint.value?.url ||
 			currentEndpointClone.value?.sequenceNumber !==
 				currentEndpoint.value?.sequenceNumber
@@ -688,7 +668,6 @@ watch(
 	(current) => {
 		if (current) {
 			currentEndpointClone.value = {
-				type: current.type,
 				id: current.id,
 				returnType: current.returnType,
 				template: current.template,

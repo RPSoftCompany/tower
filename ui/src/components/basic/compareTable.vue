@@ -18,11 +18,9 @@
 
 <template>
 	<div
-		:class="
-			`tw-grid-cols-${configs.length * 2 + 1} ${
-				hasScroll ? 'tw-mr-[0.65rem]' : ''
-			}`
-		"
+		:class="`tw-grid-cols-${configs?.length * 2 + 1} ${
+			hasScroll ? 'tw-mr-[0.65rem]' : ''
+		}`"
 		class="tw-grid"
 	>
 		<div class="tw-text-sm tw-font-semibold tw-self-center tw-text-center">
@@ -75,9 +73,15 @@
 									class="tw-text-center tw-text-gray-600 tw-font-light tw-text-xs"
 								>
 									created by
-									<span class="tw-font-medium">{{
-										config.configuration[config.version].member.username
-									}}</span>
+									<span
+										class="tw-font-medium"
+										v-if="
+											config.configuration[config.version]?.createdBy?.username
+										"
+										>{{
+											config.configuration[config.version]?.createdBy?.username
+										}}</span
+									>
 								</div>
 							</div>
 							<div class="tw-self-center tw-flex tw-ml-3">
@@ -221,7 +225,7 @@ import { ConfigurationVariable } from 'components/configuration/configuration';
 import {
 	ConfigurationVariableType,
 	valueAsString,
-	valueConverter
+	valueConverter,
 } from 'components/constantVariables/constantVariable';
 import { diffChars } from 'diff';
 import { computed, ref } from 'vue';
@@ -254,7 +258,7 @@ const contentRef = ref(null);
 const emit = defineEmits([
 	'removeConfiguration',
 	'versionChanged',
-	'switchPlaces'
+	'switchPlaces',
 ]);
 
 //====================================================
@@ -267,7 +271,7 @@ const filteredVariables = computed(() => {
 
 	const lowerFilter = props.filter.toLowerCase();
 
-	return props.variables?.filter(el => {
+	return props.variables?.filter((el) => {
 		if (props.configs) {
 			if (el.toLowerCase().includes(lowerFilter)) {
 				return true;
@@ -324,7 +328,7 @@ const getVariableFromConfiguration = (
 	variableName: string,
 	variables: Array<ConfigurationVariable>
 ) => {
-	const variable = variables.find(el => {
+	const variable = variables.find((el) => {
 		return el.name === variableName;
 	});
 
@@ -359,7 +363,7 @@ const diffStrings = (current: string, archive: string) => {
 const versionChanged = (configId: number, version: number) => {
 	emit('versionChanged', {
 		configId,
-		version
+		version,
 	});
 };
 
@@ -382,7 +386,7 @@ const onDrop = (data: DragEvent) => {
 
 	emit('switchPlaces', {
 		sourceId: draggedId.value,
-		targetId: (data.target as any).id
+		targetId: (data.target as any).id,
 	});
 };
 

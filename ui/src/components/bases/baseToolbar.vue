@@ -52,7 +52,6 @@
 			:label="base.name"
 			:loading="bases.loading[index]"
 			:options="bases.items[index]"
-			class="tw-col-auto"
 			clearable
 			option-label="name"
 			@update:modelValue="baseChanged"
@@ -113,7 +112,7 @@ const emit = defineEmits(['update:baseModels']);
 const bases = ref({
 	items: [] as Array<Array<ConfigurationModel>>,
 	values: [] as Array<ConfigurationModel | string | null>,
-	loading: [] as Array<boolean>
+	loading: [] as Array<boolean>,
 });
 
 const loading = ref(false);
@@ -149,7 +148,7 @@ const basesClasses = computed(() => {
  */
 const currentPath = computed(() => {
 	let path = '';
-	bases.value.values.forEach(el => {
+	bases.value.values.forEach((el) => {
 		if (el) {
 			if (!path) {
 				path = (el as ConfigurationModel).name;
@@ -186,9 +185,9 @@ const setBases = async (sequenceNumber: number) => {
 
 	const filter = {
 		where: {
-			base: allBases.value[sequenceNumber].name
+			base: allBases.value[sequenceNumber].name,
 		},
-		order: 'name'
+		order: 'name',
 	};
 
 	const response = await towerAxios.get(
@@ -200,9 +199,9 @@ const setBases = async (sequenceNumber: number) => {
 			{
 				base: allBases.value[sequenceNumber].name,
 				name: '__NONE__',
-				options: { hasRestrictions: false }
+				options: { hasRestrictions: false },
 			},
-			...response.data
+			...response.data,
 		];
 		if (sequenceNumber === 0) {
 			bases.value.items[sequenceNumber] = tempBases;
@@ -222,7 +221,7 @@ const setBases = async (sequenceNumber: number) => {
 				} else {
 					const forbidden = el.restrictions.some((restriction: any) => {
 						return Object.keys(restriction).some((restrictionKey: string) => {
-							if (restrictionKey !== '__id') {
+							if (restrictionKey !== '__id' && restriction[restrictionKey]) {
 								return (
 									restriction[restrictionKey] !== currentBases[restrictionKey]
 								);
@@ -272,7 +271,7 @@ const baseChanged = async (value: ConfigurationModel) => {
 	}
 
 	if (value) {
-		const base = allBases.value.find(el => {
+		const base = allBases.value.find((el) => {
 			return el.name === value.base;
 		});
 

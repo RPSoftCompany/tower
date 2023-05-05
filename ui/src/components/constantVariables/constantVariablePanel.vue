@@ -264,7 +264,7 @@ const currentVersionDate = computed(() => {
  */
 const currentVersionAuthor = computed(() => {
 	if (version.value >= 0) {
-		return constVariablesArchive.value[version.value].member?.username;
+		return constVariablesArchive.value[version.value].createdBy?.username;
 	}
 
 	return '';
@@ -521,16 +521,18 @@ const saveConstantVariables = async () => {
 		});
 
 		try {
-			await towerAxios.post('constantVariables', full);
-			await getConstantVariables();
+			const response = await towerAxios.post('constantVariables', full);
+			if (response.status === 201) {
+				await getConstantVariables();
 
-			$q.notify({
-				color: 'positive',
-				position: 'top',
-				textColor: 'secondary',
-				icon: 'sym_o_check',
-				message: 'Constant variables saved correctly',
-			});
+				$q.notify({
+					color: 'positive',
+					position: 'top',
+					textColor: 'secondary',
+					icon: 'sym_o_check',
+					message: 'Constant variables saved correctly',
+				});
+			}
 		} catch (e) {
 			$q.notify({
 				color: 'negative',

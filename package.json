@@ -1,14 +1,14 @@
 {
   "name": "tower",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "inst": "npm-recursive-install",
-    "instProd": "npm-recursive-install --production",
-    "dev": "(cd ui && npm start) & (cd server; NODE_ENV=development npm start)",
+    "dev": "(cd backend && NODE_ENV=development npm run start:dev) & (cd ui && npm start)",
     "test": "(cd ui && npm start) & (cd server; npm run startTest)",
-    "runProd": "NODE_ENN=production node ./server"
+    "runProd": "NODE_ENN=production node ./backend",
+    "build:ui": "(cd ui && NODE_ENV=production npm run build)",
+    "build:backend": "(cd backend && NODE_ENV=production npm run build)"
   },
   "repository": {
     "type": "git",
@@ -25,9 +25,5 @@
     "url": "https://github.com/RPSoftCompany/tower/issues"
   },
   "homepage": "https://github.com/RPSoftCompany/tower#readme",
-  "devDependencies": {
-    "nodemon": "^2.0.6",
-    "recursive-install": "^1.4.0"
-  },
   "dependencies": {}
 }

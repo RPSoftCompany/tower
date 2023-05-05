@@ -21,12 +21,12 @@
 		<q-dialog v-model="deleteHookDialog">
 			<q-card class="tw-min-w-[30%]">
 				<q-card-section class="tw-bg-negative">
-					<div class="text-h6">Delete {{ currentHookClone.url }} hook</div>
+					<div class="text-h6">Delete {{ currentHookClone?.url }} hook</div>
 				</q-card-section>
 
 				<q-card-section>
 					Are you sure you want to delete
-					<b>{{ currentHookClone.value }}</b> hook?
+					<b>{{ currentHookClone }}</b> hook?
 				</q-card-section>
 
 				<q-card-actions align="right">
@@ -113,7 +113,7 @@
 					@update:modelValue="
 						currentHook = null;
 						currentHookClone = null;
-						currentMethod = null;
+						currentMethod = '';
 					"
 				/>
 				<tower-select
@@ -131,7 +131,7 @@
 					:disable="!currentModel"
 					label="Hook"
 					option-label="url"
-					:options="filteredHooks"
+					:options="filteredHooks as any[]"
 				/>
 			</div>
 			<q-btn
@@ -537,7 +537,7 @@ const deleteHook = async () => {
 		try {
 			if (parent) {
 				await towerAxios.delete(
-					`/hooks/${parent.id}/hookObject/${currentHookClone.value?._id}`
+					`/hooks/${parent._id}/hookObject/${currentHookClone.value?._id}`
 				);
 			}
 
@@ -584,18 +584,18 @@ const save = async () => {
 			let response = null;
 			if (currentHookClone.value?._id) {
 				response = await towerAxios.put(
-					`/hooks/${parent.id}/hookObject`,
+					`/hooks/${parent._id}/hookObject`,
 					currentHookClone.value
 				);
 			} else {
 				currentHookClone.value._id = cryptoRandomString({ length: 10 });
 				response = await towerAxios.post(
-					`/hooks/${parent.id}/hookObject`,
+					`/hooks/${parent._id}/hookObject`,
 					currentHookClone.value
 				);
 			}
 
-			if (response.status === 204 || response.status === 200) {
+			if (response.status === 200 || response.status === 201) {
 				currentHook.value = {
 					_id: response.data._id,
 					url: response.data.url,

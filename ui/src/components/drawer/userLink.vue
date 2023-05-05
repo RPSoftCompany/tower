@@ -68,11 +68,13 @@
 </template>
 
 <script lang="ts" setup>
-import {userStore} from 'stores/user';
-import {useRouter} from 'vue-router';
+import { userStore } from 'stores/user';
+import { useRouter } from 'vue-router';
+import { basesStore } from 'stores/bases';
 
 const userSt = userStore();
 const router = useRouter();
+const baseSt = basesStore();
 
 //====================================================
 // Methods
@@ -82,14 +84,15 @@ const router = useRouter();
  */
 const logout = () => {
 	userSt.logout();
-	router.push({name: 'Login'});
+	baseSt.reset();
+	router.push({ name: 'Login' });
 };
 
 /**
  * changePassword
  */
 const changePassword = () => {
-	router.push({name: 'ChangePassword'});
+	router.push({ name: 'ChangePassword' });
 };
 </script>
 

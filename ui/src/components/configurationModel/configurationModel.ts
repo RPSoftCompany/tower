@@ -24,7 +24,7 @@ export interface ConfigurationModel {
 		hasRestrictions: boolean;
 	};
 	restrictions: Array<any>;
-	id?: string;
+	_id?: string;
 }
 
 export interface ConfigurationModelRule {

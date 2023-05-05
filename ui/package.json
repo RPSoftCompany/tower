@@ -1,6 +1,6 @@
 {
 	"name": "tower-ui",
-	"version": "2.0.0",
+	"version": "3.0.0",
 	"description": "Tower configuration server",
 	"productName": "tower",
 	"author": "RPSoft <radekprzewuski@gmail.com>",
@@ -21,8 +21,8 @@
 		"js-file-download": "^0.4.12",
 		"material-symbols": "^0.4.5",
 		"papaparse": "^5.3.2",
-		"pinia": "^2.0.28",
-		"pinia-plugin-persistedstate": "^3.0.2",
+		"pinia": "^2.0.35",
+		"pinia-plugin-persistedstate-2": "^2.0.14",
 		"quasar": "^2.11.8",
 		"vue": "^3.2.47",
 		"vue-router": "^4.1.6",

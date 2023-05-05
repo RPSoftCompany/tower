@@ -127,7 +127,7 @@ interface Vault {
 	useGlobalToken: boolean;
 	globalToken?: string;
 	url: string;
-	id: string;
+	_id: string;
 }
 
 interface VaultToken {
@@ -240,6 +240,14 @@ const isDifferent = computed(() => {
 		return true;
 	}
 
+	if (
+		currentConfiguration.value?.useGlobalToken &&
+		currentConfigurationClone.value?.globalToken !==
+			currentConfiguration.value?.globalToken
+	) {
+		return true;
+	}
+
 	return currentConfigurationClone.value?.tokens.some((el) => {
 		return !currentConfiguration.value?.tokens.some((token) => {
 			return (
@@ -277,7 +285,7 @@ const getConfigurationData = async () => {
 				globalToken: currentConfiguration.value?.globalToken,
 				system: currentConfiguration.value?.system,
 				tokens: [...currentConfiguration.value?.tokens],
-				id: currentConfiguration.value?.id,
+				_id: currentConfiguration.value?._id,
 				useGlobalToken: currentConfiguration.value?.useGlobalToken,
 			};
 		}
@@ -325,7 +333,7 @@ const testConnection = async () => {
 			currentConfigurationClone.value
 		);
 
-		if (response.status === 200) {
+		if (response.status === 204) {
 			$q.notify({
 				color: 'positive',
 				position: 'top',
@@ -356,6 +364,8 @@ const save = async () => {
 	if (!currentConfigurationClone.value) {
 		return;
 	}
+
+	console.log(currentConfigurationClone.value);
 
 	try {
 		await towerAxios.patch('/connections', currentConfigurationClone.value);

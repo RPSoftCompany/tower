@@ -101,6 +101,16 @@
 						class="tw-flex-grow"
 						:rules="[(val) => !!val || 'Host can\'t be empty']"
 					/>
+					<div class="tw-mt-4 tw-mx-3">:</div>
+					<q-input
+						v-model="currentConnectionClone.port"
+						ref="portInput"
+						label="Port"
+						color="secondary"
+						dense
+						class="tw-flex-grow"
+						:rules="[(val) => !!val || 'Port can\'t be empty']"
+					/>
 				</div>
 				<div class="tw-rounded tw-mt-3 tw-border tw-border-dark tw-bg-dark">
 					<div class="tw-flex">
@@ -127,7 +137,7 @@
 								label="SSH key"
 							/>
 							<q-input
-								v-if="currentConnectionClone.authType === 'userpass'"
+								v-if="currentConnectionClone?.authType === 'userpass'"
 								ref="passwordInput"
 								:rules="[(val) => !!val || 'Password can\'t be empty']"
 								color="secondary"
@@ -168,7 +178,7 @@
 					<div class="tw-flex tw-gap-3 tw-mt-3">
 						<tower-select
 							v-for="base of basesSt.getBases"
-							:key="base.id"
+							:key="base._id"
 							:label="base.name"
 							:options="allModels.get(base.name)"
 							option-label="name"
@@ -256,11 +266,13 @@ const navigationSt = navigationStore();
 // Interfaces
 //====================================================
 interface SCPConnection {
-	id?: string;
+	_id?: string;
 	system: string;
+	enabled: boolean;
 	authType: string;
 	key: string;
 	host: string;
+	port: number;
 	items: Array<ConnectionItem>;
 	username: string;
 	password: string;
@@ -296,6 +308,7 @@ const sshKeyInput = ref(null);
 const passwordInput = ref(null);
 const usernameInput = ref(null);
 const hostInput = ref(null);
+const portInput = ref(null);
 
 const removeConnectionDialog = ref(false);
 
@@ -320,6 +333,7 @@ const isDifferent = computed(() => {
 			currentConnection.value?.username !==
 				currentConnectionClone.value?.username ||
 			currentConnection.value?.host !== currentConnectionClone.value?.host ||
+			currentConnection.value?.port !== currentConnectionClone.value?.port ||
 			currentConnection.value?.authType !==
 				currentConnectionClone.value?.authType
 		) {
@@ -416,10 +430,10 @@ const hasErrors = computed(() => {
 
 		let duplicate = null;
 
-		if (currentConnectionClone.value.id) {
+		if (currentConnectionClone.value._id) {
 			duplicate = allConnections.value.find((el) => {
 				return (
-					el.id !== currentConnectionClone.value?.id &&
+					el._id !== currentConnectionClone.value?._id &&
 					el.host === currentConnectionClone.value?.host &&
 					el.username === currentConnectionClone.value?.username
 				);
@@ -471,11 +485,13 @@ const getAllConnections = async () => {
 			});
 
 			allConnections.value.push({
-				id: el.id,
+				_id: el._id,
+				enabled: true,
 				authType: el.authType,
 				host: el.host,
 				items: items,
 				key: el.key,
+				port: el.port,
 				password: el.password,
 				system: el.system,
 				username: el.username,
@@ -629,9 +645,11 @@ const currentConnectionUpdated = () => {
 		});
 
 		currentConnectionClone.value = {
-			id: currentConnection.value.id,
+			_id: currentConnection.value._id,
+			enabled: true,
 			username: currentConnection.value.username,
 			key: currentConnection.value?.key,
+			port: currentConnection.value?.port,
 			password: currentConnection.value?.password,
 			authType: currentConnection.value?.authType,
 			items: items,
@@ -649,9 +667,9 @@ const currentConnectionUpdated = () => {
  */
 const removeSelectedConnection = async () => {
 	try {
-		if (currentConnection.value?.id) {
+		if (currentConnection.value?._id) {
 			const response = await towerAxios.delete(
-				`/connections/${currentConnection.value.id}`
+				`/connections/${currentConnection.value._id}`
 			);
 
 			if (response.status === 204) {
@@ -683,9 +701,11 @@ const removeSelectedConnection = async () => {
 const addNewConnection = () => {
 	currentConnection.value = {
 		system: 'SCP',
+		enabled: true,
 		key: '',
 		username: '',
 		host: '',
+		port: 22,
 		items: [],
 		password: '',
 		connectionName: 'New connection',
@@ -700,6 +720,9 @@ const addNewConnection = () => {
 		}
 		if (hostInput.value) {
 			(hostInput.value as QInput).validate();
+		}
+		if (portInput.value) {
+			(portInput.value as QInput).validate();
 		}
 		if (sshKeyInput.value) {
 			(sshKeyInput.value as QInput).validate();
