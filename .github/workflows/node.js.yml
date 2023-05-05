@@ -34,7 +34,7 @@ jobs:
       - run: npm run build:backend
       - run: mv backend/.env_template backend/.env
       - run: mkdir -p backend/client
-      - run: cp -R ui/dist/scp/* backend/client/
+      - run: cp -R ui/dist/spa/* backend/client/
       - name: Log in to Docker Hub
         uses: docker/login-action@v2.1.0
         with:
