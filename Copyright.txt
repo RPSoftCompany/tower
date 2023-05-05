@@ -1,4 +1,4 @@
-Copyright RPSoft 2019,2020. All Rights Reserved.
+Copyright RPSoft 2019,2022. All Rights Reserved.
 This file is part of RPSoft Tower.
 
 Tower is free software: you can redistribute it and/or modify

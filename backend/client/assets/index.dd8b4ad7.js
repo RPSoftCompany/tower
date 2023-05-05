@@ -1,1 +1,0 @@
-import{X as o}from"./index.d78f815c.js";const{Axios:a,AxiosError:e,CanceledError:s,isCancel:i,CancelToken:n,VERSION:l,all:x,Cancel:c,isAxiosError:m,spread:t,toFormData:A,AxiosHeaders:C,formToJSON:E,mergeConfig:d}=o;export{e as A};

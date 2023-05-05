@@ -108,6 +108,7 @@ server/server/datasources.development*
 
 backend/src/certs
 backend/.env
+backend/client/*
 
 dist/tower-*
 
