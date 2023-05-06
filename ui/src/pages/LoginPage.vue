@@ -163,6 +163,9 @@ const loginMethod = async () => {
 			icon: ionWarning,
 			message: message,
 		});
+
+		loading.value = false;
+
 		return;
 	}
 
