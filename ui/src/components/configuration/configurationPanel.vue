@@ -1312,8 +1312,6 @@ watch(() => props.configModel, getConfiguration, {
 watch(
 	isDifferent,
 	(current: boolean) => {
-		console.log('isDifferent');
-
 		if (current && !loading.value) {
 			navigationSt.preventNavigation();
 		} else {

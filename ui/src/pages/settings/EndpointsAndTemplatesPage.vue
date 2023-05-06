@@ -52,11 +52,11 @@
 						bordered
 						flat
 						v-for="(endpoint, index) of allEndpointsClone"
-						:key="endpoint.id"
+						:key="endpoint._id"
 						draggable="true"
 						class="tw-bg-darkPage"
-						:class="{ 'tw-opacity-20': draggedId === endpoint.id }"
-						@dragstart="dragStart(endpoint.id)"
+						:class="{ 'tw-opacity-20': draggedId === endpoint._id }"
+						@dragstart="dragStart(endpoint._id)"
 						@dragenter="dragEnter(index)"
 						@dragend="dragEnd"
 					>
@@ -307,14 +307,14 @@ const save = async () => {
 	if (currentEndpointClone.value) {
 		loading.value = true;
 		try {
-			if (!currentEndpointClone.value.id) {
+			if (!currentEndpointClone.value._id) {
 				await towerAxios.post(
 					'/restConfigurations',
 					currentEndpointClone.value
 				);
 			} else {
 				await towerAxios.patch(
-					`/restConfigurations/${currentEndpointClone.value.id}`,
+					`/restConfigurations/${currentEndpointClone.value._id}`,
 					currentEndpointClone.value
 				);
 			}
@@ -372,7 +372,7 @@ const newEndpoint = () => {
 				'\t{% when "number", "boolean" %}\n' +
 				'\t"{{ var.name }}":{{ var.value }}{%- if forloop.last != true -%},{%- endif -%}\n' +
 				'\t{% when "list" %}\n' +
-				'\t"{{ var.name }}":[{% for listVar in var -%}"{{ listVar }}"{%- if forloop.last != true -%},{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%}],{%- endif -%}\n' +
+				'\t"{{ var.name }}":[{% for listVar in var.value -%}"{{ listVar }}"{%- if forloop.last != true -%},{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%}],{%- endif -%}\n' +
 				'\t{% else %}\n' +
 				'\t"{{ var.name }}":"{{ var.value }}"{%- if forloop.last != true -%},{%- endif -%}\n' +
 				'\t{% endcase -%}\n' +
@@ -395,7 +395,7 @@ const existingUrl = () => {
 	const exists = allEndpoints.value.some((el) => {
 		if (currentEndpointClone.value) {
 			return (
-				el.id !== currentEndpointClone.value.id &&
+				el._id !== currentEndpointClone.value._id &&
 				el.url === currentEndpointClone.value.url
 			);
 		}
@@ -456,7 +456,7 @@ const deleteEndpoint = async () => {
 	if (currentEndpoint.value) {
 		try {
 			await towerAxios.delete(
-				`/restConfigurations/${currentEndpoint.value.id}`
+				`/restConfigurations/${currentEndpoint.value._id}`
 			);
 		} catch (e) {
 			$q.notify({
@@ -505,9 +505,9 @@ const dragEnd = () => {
  * dragEnter
  */
 const dragEnter = (index: number) => {
-	if (allEndpointsClone.value[index].id !== draggedId.value) {
+	if (allEndpointsClone.value[index]._id !== draggedId.value) {
 		const draggedIndex = allEndpointsClone.value.findIndex((el) => {
-			return el.id === draggedId.value;
+			return el._id === draggedId.value;
 		});
 
 		if (draggedIndex >= 0) {
@@ -557,7 +557,7 @@ const updateSequence = async () => {
 			try {
 				allEndpointsClone.value[i].sequenceNumber = i;
 				await towerAxios.patch(
-					`/restConfigurations/${allEndpointsClone.value[i].id}`,
+					`/restConfigurations/${allEndpointsClone.value[i]._id}`,
 					allEndpointsClone.value[i]
 				);
 			} catch (e) {
@@ -668,7 +668,7 @@ watch(
 	(current) => {
 		if (current) {
 			currentEndpointClone.value = {
-				id: current.id,
+				_id: current._id,
 				returnType: current.returnType,
 				template: current.template,
 				sequenceNumber: current.sequenceNumber,

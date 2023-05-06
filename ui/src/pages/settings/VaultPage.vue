@@ -365,8 +365,6 @@ const save = async () => {
 		return;
 	}
 
-	console.log(currentConfigurationClone.value);
-
 	try {
 		await towerAxios.patch('/connections', currentConfigurationClone.value);
 

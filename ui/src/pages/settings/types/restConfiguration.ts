@@ -21,5 +21,5 @@ export interface RestConfiguration {
 	returnType: string;
 	template: string;
 	sequenceNumber: number;
-	id?: string;
+	_id?: string;
 }
