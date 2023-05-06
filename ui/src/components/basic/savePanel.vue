@@ -28,11 +28,12 @@
 				v-if="!hasErrors"
 				:class="{
 					'tw-bg-dark': !saveEnabled,
+					'tw-bg-secondary': saveEnabled,
 				}"
 				:disable="!saveEnabled"
 				:loading="loading"
-				class="tw-bg-secondary tw-col-start-2"
-				color="dark"
+				class="tw-text-primary tw-col-start-2"
+				color="primary"
 				flat
 				@click="emit('saveClicked')"
 			>
