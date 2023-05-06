@@ -33,6 +33,22 @@ declare module 'pinia' {
 	}
 }
 
+const parseJwt = (token: string) => {
+	const base64Url = token.split('.')[1];
+	const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+	const jsonPayload = decodeURIComponent(
+		window
+			.atob(base64)
+			.split('')
+			.map(function (c) {
+				return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+			})
+			.join('')
+	);
+
+	return JSON.parse(jsonPayload);
+};
+
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation;
@@ -60,11 +76,23 @@ export default store((ssrContext) => {
 					return null;
 				},
 				setItem: (key, value) => {
-					cookies.set(key, JSON.stringify(value), {
-						expires: process.env.TTL ? `${process.env.TTL}s` : undefined,
-						secure: document.location.protocol == 'https:',
-						path: '/',
-					});
+					if (key === 'tower_user') {
+						let expires = undefined;
+						try {
+							const decoded = parseJwt(value);
+							const date = new Date(0);
+							date.setUTCSeconds(decoded.exp);
+							expires = date;
+						} catch (e) {
+							// IGNORE
+						}
+
+						cookies.set(key, JSON.stringify(value), {
+							expires: expires,
+							secure: document.location.protocol == 'https:',
+							path: '/',
+						});
+					}
 				},
 				removeItem: (key) => {
 					if (cookies.has(key)) {
