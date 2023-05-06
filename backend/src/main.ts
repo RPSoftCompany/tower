@@ -52,7 +52,11 @@ async function bootstrap() {
   });
 
   if (process.env.NODE_ENV === 'production') {
-    app.use(history());
+    app.use(
+      history({
+        htmlAcceptHeaders: ['text/html', 'application/xhtml+xml'],
+      }),
+    );
     app.use('/', express.static(join(__dirname, '..', 'client')));
   }
 
