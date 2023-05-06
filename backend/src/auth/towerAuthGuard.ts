@@ -108,6 +108,7 @@ export class TowerAuthGuard implements CanActivate {
   /**
    * validateToken
    *
+   * @param req
    * @param token
    */
   private async validateToken(req: Request, token: string): Promise<Member> {

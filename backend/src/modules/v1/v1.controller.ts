@@ -34,7 +34,7 @@ export class V1Controller {
   @Roles(['configuration.view'])
   async v1(@Res() response: Response) {
     return CRUDExceptionWrapper(async () => {
-      const url = (this.request as any).originalUrl;
+      const url = (this.request as any)._parsedUrl.pathname;
       const userRoles = (this.request as any).__userData.__roles;
       const rendered = await this.v1Service.matchUrl(userRoles, url);
 
