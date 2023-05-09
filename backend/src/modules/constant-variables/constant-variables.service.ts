@@ -445,8 +445,15 @@ export class ConstantVariablesService {
             const old = allContVariables[index];
             if (!old.forced) {
               allContVariables[index] = variable;
+              for (const key in currentSequence) {
+                allContVariables[index].sourceBase = base.name;
+                allContVariables[index].sourceModel =
+                  currentSequence[base.name];
+              }
             }
           } else {
+            variable.sourceBase = base.name;
+            variable.sourceModel = currentSequence[base.name];
             allContVariables.push(variable);
           }
         }

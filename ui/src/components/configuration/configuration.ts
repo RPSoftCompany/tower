@@ -42,4 +42,6 @@ export interface ConfigurationVariableToDisplay extends ConfigurationVariable {
 	forced?: boolean;
 	addIfAbsent?: boolean;
 	error?: string;
+	sourceBase?: string;
+	sourceModel?: string;
 }

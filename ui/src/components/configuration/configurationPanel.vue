@@ -274,6 +274,8 @@
 							:grid="configurationVariablesArchive.length > 0 ? 3 : 2"
 							:is-constant-variable="row.constantVariable"
 							:name="row.name"
+							:source-base="row.sourceBase"
+							:source-model="row.sourceModel"
 							:showDiff="showDiff"
 							@addVariable="addNewVariable"
 							@removeVariable="removeVariable"
@@ -551,6 +553,8 @@ const configurationWithCurrentArchive = computed(() => {
 					array[currentIndex].forced = true;
 					array[currentIndex].value = el.value;
 					array[currentIndex].type = el.type;
+					array[currentIndex].sourceModel = el.sourceModel;
+					array[currentIndex].sourceBase = el.sourceBase;
 				}
 			} else {
 				if (el.addIfAbsent) {
@@ -561,6 +565,8 @@ const configurationWithCurrentArchive = computed(() => {
 						forced: el.forced,
 						addIfAbsent: el.addIfAbsent,
 						constantVariable: true,
+						sourceBase: el.sourceBase,
+						sourceModel: el.sourceModel,
 					});
 				}
 			}

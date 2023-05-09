@@ -36,6 +36,8 @@ export interface ConstantVariableValue {
 
 export interface ConstantVariableValueToDisplay extends ConstantVariableValue {
 	isNew?: boolean;
+	sourceModel?: string;
+	sourceBase?: string;
 }
 
 export interface ConstantVariableValueToDisplay extends ConstantVariableValue {

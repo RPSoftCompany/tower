@@ -26,6 +26,9 @@ export class ConstantVariableObject {
 
   @Prop({ required: true })
   addIfAbsent: boolean;
+
+  sourceBase?: string;
+  sourceModel?: string;
 }
 
 export type ConstantVariableDocument = HydratedDocument<ConstantVariable>;

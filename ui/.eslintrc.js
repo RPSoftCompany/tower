@@ -87,5 +87,7 @@ module.exports = {
 
 		// any is needed in some cases
 		'@typescript-eslint/no-explicit-any': 'off',
+
+		'@typescript-eslint/no-empty-function': 'off',
 	},
 };

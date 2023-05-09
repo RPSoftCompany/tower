@@ -1,6 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Statement } from '../../helpers/clauses';
-import { filterTranslator } from '../../helpers/filterTranslator';
+import {
+  filterTranslator,
+  prepareAggregateArray,
+} from '../../helpers/filterTranslator';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Audit, AuditDocument } from './audits.schema';
@@ -26,13 +29,52 @@ export class AuditsService implements OnModuleInit {
   find(filter?: Statement): Promise<Array<Audit>> {
     const newFilter = filterTranslator(filter);
 
-    return this.auditModel
-      .find(newFilter.where, newFilter.fields, {
-        sort: newFilter.order,
-        limit: newFilter.limit,
-        skip: newFilter.skip,
-      })
-      .populate('userId', 'username');
+    let aggregation: any[] = [
+      {
+        $lookup: {
+          from: 'member',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          entity: 1,
+          url: 1,
+          method: 1,
+          query: 1,
+          body: 1,
+          status: 1,
+          statusCode: 1,
+          date: 1,
+          userId: {
+            $first: '$userId',
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          entity: 1,
+          url: 1,
+          method: 1,
+          query: 1,
+          body: 1,
+          status: 1,
+          statusCode: 1,
+          date: 1,
+          'userId.username': '$userId.username',
+        },
+      },
+    ];
+
+    const addedFilter = prepareAggregateArray(undefined, newFilter);
+
+    aggregation = [...aggregation, ...addedFilter];
+
+    return this.auditModel.aggregate(aggregation).exec();
   }
 
   async count(filter?: Statement) {

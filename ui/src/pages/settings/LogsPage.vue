@@ -312,7 +312,7 @@ const getCurrentPage = async (page: number) => {
 	if (pagination.value.sortBy) {
 		tempPagination = {};
 		if (pagination.value.sortBy === 'user') {
-			tempPagination['member.username'] = pagination.value.descending ? -1 : 1;
+			tempPagination['userId.username'] = pagination.value.descending ? -1 : 1;
 		} else {
 			tempPagination[pagination.value.sortBy] = pagination.value.descending
 				? -1

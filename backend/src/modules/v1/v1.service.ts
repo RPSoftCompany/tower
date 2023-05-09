@@ -131,7 +131,11 @@ export class V1Service {
     }
 
     return {
-      template: await this.renderTemplate(template.template, configuration),
+      template: await this.renderTemplate(
+        template.template,
+        contentType,
+        configuration,
+      ),
       contentType: contentType,
     };
   }
@@ -211,9 +215,14 @@ export class V1Service {
    * renderTemplate
    *
    * @param template
+   * @param contentType
    * @param configuration
    */
-  async renderTemplate(template: string, configuration: any) {
+  async renderTemplate(
+    template: string,
+    contentType: string,
+    configuration: any,
+  ) {
     const engine = new Liquid();
 
     engine.registerFilter('tower_toBase64', this.towerToBase64);
@@ -228,6 +237,23 @@ export class V1Service {
 
     for (const key in configuration) {
       if (Array.isArray(configuration[key])) {
+        if (contentType === 'application/json') {
+          configuration[key].map((el) => {
+            if (
+              (el.type === 'string' || el.type === 'password') &&
+              el.value.includes('"')
+            ) {
+              el.value = JSON.stringify(el.value).slice(1, -1);
+            } else if (el.type === 'list') {
+              el.value = el.value.map((listEl) => {
+                listEl = JSON.stringify(listEl).slice(1, -1);
+                return listEl;
+              });
+            }
+
+            return el;
+          });
+        }
         clone[key] = [...configuration[key]];
       } else {
         clone[key] = configuration[key];

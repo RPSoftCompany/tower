@@ -198,6 +198,11 @@
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							:hide-bottom-space="true"
 							color="secondary"
 							dense
@@ -215,6 +220,11 @@
 							:error-message="error"
 							:hide-bottom-space="true"
 							:type="passwordVisible ? 'text' : 'password'"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							color="secondary"
 							dense
 						>
@@ -238,6 +248,11 @@
 							:error="!!error"
 							:error-message="error"
 							:hide-bottom-space="true"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							color="secondary"
 							dense
 							input-debounce="300"
@@ -267,6 +282,11 @@
 						>
 							{{ error }}
 						</div>
+						<div
+							v-else-if="!!sourceBase && !!sourceModel && forced"
+							v-text="`Variable value forced by ${sourceBase}`"
+							class="tw-text-disabled booleanErrorField tw-break-words"
+						></div>
 					</template>
 					<!-- Text -->
 					<template v-if="localType?.value === ConfigurationVariableType.TEXT">
@@ -275,6 +295,11 @@
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							:hide-bottom-space="true"
 							color="secondary"
 							dense
@@ -288,6 +313,11 @@
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							:hide-bottom-space="true"
 							color="secondary"
 							dense
@@ -306,6 +336,11 @@
 							v-model="localValue"
 							:disable="forced"
 							:error="!!error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							:error-message="error"
 							:hide-bottom-space="true"
 							color="secondary"
@@ -363,6 +398,8 @@ const props = defineProps<{
 	error?: string;
 	disable?: boolean;
 	showDiff?: boolean;
+	sourceBase?: string;
+	sourceModel?: string;
 	currentArchive?: {
 		type: ConfigurationVariableType;
 		value: string | number | Array<string> | boolean | null | undefined;
