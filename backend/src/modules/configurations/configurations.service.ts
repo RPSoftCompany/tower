@@ -312,7 +312,7 @@ export class ConfigurationsService implements OnModuleInit {
     }
 
     if (numberOfModelsUsed === 0) {
-      throw new BadRequestException(`At least one base model has to be used`);
+      throw new BadRequestException('At least one base model has to be used');
     }
 
     const max = await this.configurationModel.findOne(
@@ -492,9 +492,11 @@ export class ConfigurationsService implements OnModuleInit {
 
     const newFilter = {
       where: tempFilter,
-      sort: 'version DESC',
+      order: 'version DESC',
       limit: 1,
     };
+
+    console.log(JSON.stringify(tempFilter));
 
     const config = await this.find(userRoles, newFilter, true);
 

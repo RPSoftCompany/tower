@@ -229,8 +229,8 @@ import { VAceEditor } from 'vue3-ace-editor';
 import modeLiquidUrl from 'ace-builds/src-noconflict/mode-liquid?url';
 import themeMonokaiUrl from 'ace-builds/src-noconflict/theme-monokai?url';
 import snippetsLiquidUrl from 'ace-builds/src-noconflict/snippets/html?url';
-import ace from 'ace-builds';
 import 'ace-builds/src-noconflict/ext-language_tools';
+import ace from 'ace-builds';
 import SavePanel from 'components/basic/savePanel.vue';
 import { QInput, useQuasar } from 'quasar';
 import { basesStore } from 'stores/bases';
@@ -372,7 +372,7 @@ const newEndpoint = () => {
 				'\t{% when "number", "boolean" %}\n' +
 				'\t"{{ var.name }}":{{ var.value }}{%- if forloop.last != true -%},{%- endif -%}\n' +
 				'\t{% when "list" %}\n' +
-				'\t"{{ var.name }}":[{% for listVar in var.value -%}"{{ listVar }}"{%- if forloop.last != true -%},{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%}],{%- endif -%}\n' +
+				'\t"{{ var.name }}":[{% for listVar in var.value -%}"{{ listVar }}"{%- if forloop.last != true -%},{% else %}]{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%},{%- endif -%}\n' +
 				'\t{% else %}\n' +
 				'\t"{{ var.name }}":"{{ var.value }}"{%- if forloop.last != true -%},{%- endif -%}\n' +
 				'\t{% endcase -%}\n' +

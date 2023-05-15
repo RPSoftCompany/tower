@@ -192,7 +192,7 @@ import { towerAxios } from 'boot/axios';
 import { ConfigurationVariable } from 'components/configuration/configuration';
 import { QTree, QTreeNode } from 'quasar';
 import { basesStore } from 'stores/bases';
-import cryptoRandomString from 'crypto-random-string';
+import { v4 as uuidv4 } from 'uuid';
 import { typeOptions } from 'components/constantVariables/constantVariable';
 import { Base } from 'components/bases/base';
 
@@ -285,7 +285,7 @@ const createResponseTree = (configs: Array<ConfigurationFindItem>) => {
 
 			if (parentIndexTemp === -1) {
 				parent.push({
-					id: cryptoRandomString({ length: 10 }),
+					id: uuidv4(),
 					name: name,
 					label: name === '__NONE__' ? 'EMPTY' : name,
 					icon: base.icon,
@@ -339,7 +339,7 @@ const createResponseTreeForGlobals = (
 
 			if (parentIndexTemp === -1) {
 				parent.push({
-					id: cryptoRandomString({ length: 10 }),
+					id: uuidv4(),
 					name: config[base.name],
 					label: config[base.name] as string,
 					icon: base.icon,

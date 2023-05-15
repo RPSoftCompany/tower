@@ -312,7 +312,7 @@ import {
 import SearchToolbar from 'components/configuration/searchToolbar.vue';
 import SavePanel from 'components/basic/savePanel.vue';
 import RuleRow from 'components/configurationModel/ruleRow.vue';
-import cryptoRandomString from 'crypto-random-string';
+import { v4 as uuidv4 } from 'uuid';
 import { useQuasar } from 'quasar';
 import { userStore } from 'stores/user';
 import RestrictionRow from 'components/configurationModel/restrictionRow.vue';
@@ -628,7 +628,7 @@ const addNewRule = () => {
 	}
 
 	model.value.rules.push({
-		_id: cryptoRandomString({ length: 10 }),
+		_id: uuidv4(),
 		error: newRule.value.error,
 		conditionRegEx: newRule.value.conditionRegEx,
 		conditionType: newRule.value.conditionType,
@@ -681,7 +681,7 @@ const addNewRestriction = () => {
 		}
 
 		const copy = { ...newRestriction.value };
-		copy.__id = cryptoRandomString({ length: 10 });
+		copy.__id = uuidv4();
 		model.value.restrictions.push(copy);
 
 		newRestriction.value = {};

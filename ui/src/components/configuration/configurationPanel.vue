@@ -360,7 +360,7 @@ import SavePanel from 'components/basic/savePanel.vue';
 import { Export, ImportDetails } from 'components/models';
 import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
-import cryptoRandomString from 'crypto-random-string';
+import { v4 as uuidv4 } from 'uuid';
 import { AxiosError } from 'axios';
 //====================================================
 // Const
@@ -435,7 +435,7 @@ const promotionCandidatesCategories = computed(() => {
 
 					if (all.has(key)) {
 						all.get(key)?.push({
-							id: cryptoRandomString({ length: 10 }),
+							id: uuidv4(),
 							base: model.base,
 							name: promote[model.base],
 							configuration: promote,
@@ -443,7 +443,7 @@ const promotionCandidatesCategories = computed(() => {
 					} else {
 						all.set(key, [
 							{
-								id: cryptoRandomString({ length: 10 }),
+								id: uuidv4(),
 								base: model.base,
 								name: promote[model.base],
 								configuration: promote,

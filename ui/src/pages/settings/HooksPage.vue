@@ -251,7 +251,7 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import SavePanel from 'components/basic/savePanel.vue';
 import { ionWarning } from '@quasar/extras/ionicons-v6';
 import { navigationStore } from 'stores/navigation';
-import cryptoRandomString from 'crypto-random-string';
+import { v4 as uuidv4 } from 'uuid';
 
 //====================================================
 // Const
@@ -588,7 +588,7 @@ const save = async () => {
 					currentHookClone.value
 				);
 			} else {
-				currentHookClone.value._id = cryptoRandomString({ length: 10 });
+				currentHookClone.value._id = uuidv4();
 				response = await towerAxios.post(
 					`/hooks/${parent._id}/hookObject`,
 					currentHookClone.value
