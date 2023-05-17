@@ -1,7 +1,7 @@
 import { memberType } from './create-member.dto';
 
 export class UpsertMemberDto {
-  id?: string;
+  _id?: string;
   username?: string;
   password?: string;
   newUser?: boolean;

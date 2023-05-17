@@ -12,22 +12,41 @@ export class GroupsService {
   constructor(
     @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
   ) {}
+
+  /**
+   * create
+   *
+   * @param createGroupDto
+   */
   create(createGroupDto: CreateGroupDto) {
     return CRUDExceptionWrapper(async () => {
       return this.groupModel.create(createGroupDto);
     });
   }
 
+  /**
+   * findAll
+   */
   findAll(): Promise<Array<Group>> {
     return this.groupModel.find();
   }
 
+  /**
+   * count
+   *
+   * @param filter
+   */
   count(filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
 
     return this.groupModel.count(newFilter.where);
   }
 
+  /**
+   * find
+   *
+   * @param filter
+   */
   find(filter?: Statement): Promise<Array<Group>> {
     const newFilter = filterTranslator(filter);
 
@@ -38,6 +57,11 @@ export class GroupsService {
     });
   }
 
+  /**
+   * findWithMongoFilter
+   *
+   * @param filter
+   */
   async findWithMongoFilter(filter: MongoFilter) {
     return this.groupModel.find(filter.where, filter.fields, {
       sort: filter.order,
@@ -46,22 +70,43 @@ export class GroupsService {
     });
   }
 
+  /**
+   * findOne
+   *
+   * @param filter
+   */
   findOne(filter?: Statement): Promise<Group> {
     const newFilter = filterTranslator(filter);
 
     return this.groupModel.findOne(newFilter.where, newFilter.fields);
   }
 
+  /**
+   * findById
+   *
+   * @param id
+   */
   findById(id: string): Promise<Group> {
     return this.groupModel.findById(id);
   }
 
+  /**
+   * remove
+   *
+   * @param id
+   */
   remove(id: string) {
     return CRUDExceptionWrapper(async () => {
       return this.groupModel.findByIdAndDelete(id);
     });
   }
 
+  /**
+   * addNewRole
+   *
+   * @param id
+   * @param role
+   */
   async addNewRole(id: string, role: string) {
     const group = await this.groupModel.findById(id);
     if (group) {
@@ -73,6 +118,12 @@ export class GroupsService {
     }
   }
 
+  /**
+   * removeRoleFromGroup
+   *
+   * @param id
+   * @param role
+   */
   async removeRoleFromGroup(id: string, role: string) {
     const group = await this.groupModel.findById(id);
     if (group) {

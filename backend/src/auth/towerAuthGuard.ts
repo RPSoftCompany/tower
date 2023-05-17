@@ -218,10 +218,6 @@ export class TowerAuthGuard implements CanActivate {
       or.push({ name: role });
     }
 
-    if (requiredRoles.length === 0) {
-      return true;
-    }
-
     const groups = await this.groupsService.findWithMongoFilter({
       where: {
         $or: or,
@@ -240,6 +236,10 @@ export class TowerAuthGuard implements CanActivate {
       });
 
       (req as any).__userData.__roles = Array.from(allRoles);
+
+      if (requiredRoles.length === 0) {
+        return true;
+      }
 
       if (allRoles.size === 0) {
         return false;

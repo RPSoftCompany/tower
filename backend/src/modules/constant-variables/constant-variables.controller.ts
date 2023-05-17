@@ -187,6 +187,6 @@ export class ConstantVariablesController {
       (this.request as any).__userData.__roles,
       id,
     );
-    return { exists: exists };
+    return { exists: !!exists };
   }
 }

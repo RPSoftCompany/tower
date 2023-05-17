@@ -179,7 +179,8 @@ export class AccessTokenService {
   }
 
   async logout(id: string) {
-    return this.accessTokenModel.findByIdAndDelete(id);
+    const token = await this.validateToken(id);
+    return this.accessTokenModel.findByIdAndDelete(token._id);
   }
 
   async createTechnicalUserToken(id: string, createNewToken: boolean) {

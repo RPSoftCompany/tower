@@ -29,6 +29,13 @@ export class MembersService implements OnModuleInit {
   private ldapConnection: null | LDAP;
   private ldapInitialized: boolean;
 
+  /**
+   * constructor
+   *
+   * @param memberModel
+   * @param connectionsModel
+   * @param accessTokenService
+   */
   constructor(
     @InjectModel(Member.name) private memberModel: Model<MemberDocument>,
     @InjectModel(Connection.name)
@@ -40,11 +47,17 @@ export class MembersService implements OnModuleInit {
     this.ldapInitialized = false;
   }
 
+  /**
+   * onModuleInit
+   */
   async onModuleInit() {
     await this.checkIfAdminUserExists();
     this.logger.debug('Admin check finished');
   }
 
+  /**
+   * checkIfAdminUserExists
+   */
   async checkIfAdminUserExists() {
     const exists = await this.find({
       where: {
@@ -66,6 +79,9 @@ export class MembersService implements OnModuleInit {
     }
   }
 
+  /**
+   * initializeLdap
+   */
   async initializeLdap() {
     const connections: LDAP[] = await this.connectionsModel.find({
       where: {
@@ -151,6 +167,12 @@ export class MembersService implements OnModuleInit {
     });
   }
 
+  /**
+   * setAsTechnicalUser
+   *
+   * @param id
+   * @param techUser
+   */
   async setAsTechnicalUser(id: string, techUser: boolean) {
     await this.upsert(id, {
       technicalUser: techUser,
@@ -159,6 +181,12 @@ export class MembersService implements OnModuleInit {
     return await this.accessTokenService.createTechnicalUserToken(id, techUser);
   }
 
+  /**
+   * update
+   *
+   * @param id
+   * @param updateMemberDto
+   */
   async update(id: string, updateMemberDto: UpdateMemberDto) {
     return CRUDExceptionWrapper(async () => {
       const existingMember = await this.memberModel.findById(id);
@@ -176,9 +204,17 @@ export class MembersService implements OnModuleInit {
     });
   }
 
+  /**
+   * replace
+   *
+   * @param id
+   * @param updateMemberDto
+   */
   async replace(id: string, updateMemberDto: UpdateMemberDto) {
     return CRUDExceptionWrapper(async () => {
-      this.memberModel.findByIdAndUpdate(id, updateMemberDto);
+      return this.memberModel.findByIdAndUpdate(id, updateMemberDto, {
+        new: true,
+      });
     });
   }
 

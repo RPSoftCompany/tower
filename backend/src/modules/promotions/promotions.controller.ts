@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Head,
   HttpException,
   Injectable,
   Logger,
@@ -109,7 +108,7 @@ export class PromotionsController {
     return this.promotionsService.fullUpdate(id, updatePromotionDto);
   }
 
-  @Head(':id')
+  @Get(':id/exists')
   @Roles(['admin'])
   async exists(
     @Param('id') id: string,

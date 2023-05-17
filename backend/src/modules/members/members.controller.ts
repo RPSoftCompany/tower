@@ -3,7 +3,6 @@ import {
   Body,
   Controller,
   Get,
-  Head,
   HttpCode,
   HttpException,
   Inject,
@@ -63,8 +62,8 @@ export class MembersController {
   @ApiBearerAuth()
   @ApiBasicAuth()
   upsert(@Body() upsertMemberDto: UpsertMemberDto) {
-    if (upsertMemberDto.id) {
-      return this.membersService.upsert(upsertMemberDto.id, upsertMemberDto);
+    if (upsertMemberDto._id) {
+      return this.membersService.upsert(upsertMemberDto._id, upsertMemberDto);
     } else {
       return this.membersService.create({
         type: upsertMemberDto.type,
@@ -111,6 +110,8 @@ export class MembersController {
   @Post()
   @UseGuards(TowerAuthGuard)
   @Roles(['admin'])
+  @ApiResponse({ status: 201 })
+  @HttpCode(201)
   @ApiBearerAuth()
   @ApiBasicAuth()
   create(@Body() createMemberDto: CreateMemberDto) {
@@ -190,11 +191,11 @@ export class MembersController {
   }
 
   /**
-   * HEAD /members/:id
+   * GET /members/:id/exists
    *
    * @param id
    */
-  @Head(':id')
+  @Get(':id/exists')
   @UseGuards(TowerAuthGuard)
   @Roles(['admin'])
   @ApiBearerAuth()
@@ -220,7 +221,7 @@ export class MembersController {
     @Param('id') id: string,
     @Body() updateMemberDto: UpdateMemberDto,
   ) {
-    return this.membersService.replace(updateMemberDto.id, updateMemberDto);
+    return this.membersService.replace(id, updateMemberDto);
   }
 
   @Post('/changeUserPassword')
@@ -234,7 +235,7 @@ export class MembersController {
     if (this.request.__userData && (this.request.__userData as any)._id) {
       const id = (this.request.__userData as any)._id;
       return this.membersService.upsert(id, {
-        id,
+        _id: id,
         password: newPassword.newPassword,
         newUser: false,
       });
@@ -263,7 +264,7 @@ export class MembersController {
   @Roles([])
   @ApiBearerAuth()
   @ApiBasicAuth()
-  @ApiResponse({ status: 204, description: 'Logout successfully' })
+  @ApiResponse({ status: 204, description: 'Logout successful' })
   @HttpCode(204)
   async logout() {
     if (this.request.__accessToken) {
