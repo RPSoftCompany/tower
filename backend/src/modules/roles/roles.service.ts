@@ -13,7 +13,7 @@ export class RolesService implements OnModuleInit {
 
   constructor(@InjectModel(Role.name) private roleModel: Model<RoleDocument>) {}
   async create(createRoleDto: CreateRoleDto) {
-    return this.roleModel.create(createRoleDto);
+    return await this.roleModel.create(createRoleDto);
   }
 
   async count(filter?: Statement): Promise<number> {
@@ -84,7 +84,7 @@ export class RolesService implements OnModuleInit {
     return this.roleModel.findByIdAndUpdate(id, updateRoleDto, { new: true });
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     return this.roleModel.findByIdAndRemove(id);
   }
 }

@@ -58,16 +58,17 @@ export class PromotionsService {
   }
 
   fullUpdate(id: string, fullUpdatePromotionDto: FullUpdatePromotionDto) {
-    return this.promotionModel.updateOne(
+    return this.promotionModel.findOneAndUpdate(
       {
         _id: new Types.ObjectId(id),
       },
       fullUpdatePromotionDto,
+      { new: true },
     );
   }
 
-  remove(id: string) {
-    this.promotionModel.deleteOne({
+  async remove(id: string) {
+    await this.promotionModel.deleteOne({
       _id: new Types.ObjectId(id),
     });
   }

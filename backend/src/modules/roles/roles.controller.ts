@@ -3,7 +3,7 @@ import {
   Controller,
   Delete,
   Get,
-  Head,
+  HttpCode,
   HttpException,
   Injectable,
   Logger,
@@ -25,6 +25,7 @@ import {
   ApiBasicAuth,
   ApiBearerAuth,
   ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { AuditInterceptor } from '../../audit-interceptor/audit-interceptor.interceptor';
@@ -128,11 +129,11 @@ export class RolesController {
     return this.rolesService.findOne(id);
   }
 
-  @Head(':id')
+  @Get(':id/exists')
   @Roles(['admin'])
   async checkIfExists(@Param('id') id: string) {
-    const head = await this.rolesService.findOne(id);
-    return { exists: !!head };
+    const exists = await this.rolesService.findOne(id);
+    return { exists: !!exists };
   }
 
   @Patch(':id')
@@ -149,7 +150,9 @@ export class RolesController {
 
   @Delete(':id')
   @Roles(['admin'])
-  remove(@Param('id') id: string) {
-    return this.rolesService.remove(+id);
+  @ApiResponse({ status: 204 })
+  @HttpCode(204)
+  async remove(@Param('id') id: string) {
+    await this.rolesService.remove(id);
   }
 }

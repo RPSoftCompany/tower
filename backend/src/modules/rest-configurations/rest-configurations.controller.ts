@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Head,
   HttpException,
   Injectable,
   Logger,
@@ -75,7 +74,7 @@ export class RestConfigurationsController {
     return this.restConfigurationsService.findById(id);
   }
 
-  @Head(':id')
+  @Get(':id/exists')
   @Roles(['admin'])
   async exists(@Param('id') id: string) {
     const exists = await this.restConfigurationsService.findById(id);

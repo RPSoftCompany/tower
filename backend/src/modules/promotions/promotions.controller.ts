@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   Injectable,
   Logger,
@@ -21,6 +22,7 @@ import {
   ApiBasicAuth,
   ApiBearerAuth,
   ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { TowerAuthGuard } from '../../auth/towerAuthGuard';
@@ -110,12 +112,9 @@ export class PromotionsController {
 
   @Get(':id/exists')
   @Roles(['admin'])
-  async exists(
-    @Param('id') id: string,
-    @Body() updatePromotionDto: FullUpdatePromotionDto,
-  ) {
+  async exists(@Param('id') id: string) {
     const exists = await this.promotionsService.findById(id);
-    return { exists: exists };
+    return { exists: !!exists };
   }
 
   @Put()
@@ -135,6 +134,8 @@ export class PromotionsController {
 
   @Delete(':id')
   @Roles(['admin'])
+  @ApiResponse({ status: 204 })
+  @HttpCode(204)
   remove(@Param('id') id: string) {
     return this.promotionsService.remove(id);
   }
