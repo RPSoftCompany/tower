@@ -36,23 +36,25 @@
 				<q-input
 					v-model="login"
 					:rules="[
-						val => (val && val.length > 0) || 'Please type your username'
+						(val) => (val && val.length > 0) || 'Please type your username',
 					]"
 					class="tw-w-full tw-min-w-[10rem] tw-max-w-[25rem]"
 					color="secondary"
 					label="Username"
+					autocomplete="towerUsername"
 					lazy-rules
 				/>
 				<q-input
 					v-model="password"
 					:rules="[
-						val => (val && val.length > 0) || 'Please type your password'
+						(val) => (val && val.length > 0) || 'Please type your password',
 					]"
 					class="tw-w-full tw-min-w-[10rem] tw-max-w-[25rem]"
 					color="secondary"
 					label="Password"
 					lazy-rules
 					type="password"
+					autocomplete="towerPassword"
 				/>
 				<q-btn
 					:disable="!login || !password"
@@ -63,9 +65,7 @@
 					type="submit"
 				>
 					<q-icon class="tw-mr-3" color="dark" name="sym_o_login"></q-icon>
-					<div>
-						Login
-					</div>
+					<div>Login</div>
 				</q-btn>
 			</q-form>
 		</div>
@@ -73,13 +73,13 @@
 </template>
 
 <script lang="ts" setup>
-import {onMounted, Ref, ref} from 'vue';
-import {towerAxios as axios} from 'boot/axios';
-import {useQuasar} from 'quasar';
-import {ionWarning} from '@quasar/extras/ionicons-v6';
-import {userStore} from 'stores/user';
-import {useRouter} from 'vue-router';
-import {AxiosError} from 'axios';
+import { onMounted, Ref, ref } from 'vue';
+import { towerAxios as axios } from 'boot/axios';
+import { useQuasar } from 'quasar';
+import { ionWarning } from '@quasar/extras/ionicons-v6';
+import { userStore } from 'stores/user';
+import { useRouter } from 'vue-router';
+import { AxiosError } from 'axios';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -113,14 +113,29 @@ const loginMethod = async () => {
 		loading.value = true;
 		const response = await axios.post('/members/login?include=user', {
 			username: login.value,
-			password: password.value
+			password: password.value,
 		});
+
+		if (response.status === 200 && response.data) {
+			if (response.data.user.newUser) {
+				userSt.setUserDetails(
+					response.data.id,
+					response.data.user.display
+						? response.data.user.display
+						: response.data.user.username,
+					[],
+					response.data.user.type === 'ldap'
+				);
+				await router.push({ name: 'ChangePassword' });
+				return;
+			}
+		}
 
 		if (response.status === 200 && response.data) {
 			const responseUserRoles = await axios.get('/members/getUserRoles', {
 				headers: {
-					Authorization: response.data.id
-				}
+					Authorization: response.data.id,
+				},
 			});
 			if (responseUserRoles.status === 200 && responseUserRoles.data) {
 				userSt.setUserDetails(
@@ -131,20 +146,14 @@ const loginMethod = async () => {
 					responseUserRoles.data,
 					response.data.user.type === 'ldap'
 				);
-
-				if (response.data.user.newUser) {
-					await router.push({name: 'ChangePassword'});
-				} else {
-					await router.push({name: 'Configuration'});
-				}
 			}
 		}
 	} catch (e) {
-		let message = 'Invalid username or password'
+		let message = 'Invalid username or password';
 
 		if (e instanceof AxiosError) {
 			if (e.response && e.response.status && e.response.status === 403) {
-				message = 'User is blocked'
+				message = 'User is blocked';
 			}
 		}
 		$q.notify({
@@ -152,9 +161,15 @@ const loginMethod = async () => {
 			position: 'top',
 			textColor: 'secondary',
 			icon: ionWarning,
-			message: message
+			message: message,
 		});
+
+		loading.value = false;
+
+		return;
 	}
+
+	await router.push({ name: 'Configuration' });
 
 	loading.value = false;
 };

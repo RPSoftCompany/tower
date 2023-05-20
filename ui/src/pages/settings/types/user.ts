@@ -26,11 +26,11 @@ export interface User {
 	dn?: string;
 	realm?: string;
 	username: string;
-	id?: string;
+	_id?: string;
 	blocked?: boolean;
 }
 
 export enum UserType {
 	LOCAL = 'local',
-	LDAP = 'ldap'
+	LDAP = 'ldap',
 }

@@ -208,7 +208,7 @@ const addOrRemoveCustomPermission = (name: string) => {
 		)
 	) {
 		const regex = new RegExp(
-			`^configurationModel.${currentBase.value?.name}.${name}.(view|modify)$`
+			`^(configurationModel|constantVariable).${currentBase.value?.name}.${name}.(view|modify)$`
 		);
 		currentRoles.value = currentRoles.value.filter((el) => {
 			return !regex.test(el);
@@ -219,6 +219,10 @@ const addOrRemoveCustomPermission = (name: string) => {
 		);
 		currentRoles.value.push(
 			`configurationModel.${currentBase.value?.name}.${name}.modify`
+		);
+
+		currentRoles.value.push(
+			`constantVariable.${currentBase.value?.name}.${name}.modify`
 		);
 	}
 };

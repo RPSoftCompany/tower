@@ -1,6 +1,0 @@
-{
-    "timeout": 10000,
-    "slow": 0,
-    "watch-files": ["test/**/*.js"],
-    "reporter": "spec"
-}

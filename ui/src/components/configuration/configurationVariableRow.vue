@@ -89,13 +89,13 @@
 								v-if="!forced"
 								:class="{
 									'tw-bg-secondary':
-										currentArchive.type !== localType.value &&
+										currentArchive.type !== localType?.value &&
 										!deleted &&
 										showDiff,
 									deleted: deleted,
 								}"
 								:color="
-									currentArchive.type !== localType.value && showDiff
+									currentArchive.type !== localType?.value && showDiff
 										? 'dark'
 										: undefined
 								"
@@ -119,7 +119,7 @@
 											<template
 												v-for="(diff, index) of diffStrings(
 													valueAsString(localValue),
-													valueAsString(currentArchive.value)
+													valueAsString(currentArchive?.value)
 												)"
 												:key="`${diff.value}_${index}`"
 											>
@@ -189,13 +189,20 @@
 				<!-- value -->
 				<div class="tw-flex-grow tw-mx-2">
 					<!-- String -->
-					<template v-if="localType.value === ConfigurationVariableType.STRING">
+					<template
+						v-if="localType?.value === ConfigurationVariableType.STRING"
+					>
 						<q-input
 							v-model="localValue"
 							:debounce="300"
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							:hide-bottom-space="true"
 							color="secondary"
 							dense
@@ -203,7 +210,7 @@
 					</template>
 					<!-- Password -->
 					<template
-						v-if="localType.value === ConfigurationVariableType.PASSWORD"
+						v-if="localType?.value === ConfigurationVariableType.PASSWORD"
 					>
 						<q-input
 							v-model="localValue"
@@ -213,6 +220,11 @@
 							:error-message="error"
 							:hide-bottom-space="true"
 							:type="passwordVisible ? 'text' : 'password'"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							color="secondary"
 							dense
 						>
@@ -227,13 +239,20 @@
 						</q-input>
 					</template>
 					<!-- Number -->
-					<template v-if="localType.value === ConfigurationVariableType.NUMBER">
+					<template
+						v-if="localType?.value === ConfigurationVariableType.NUMBER"
+					>
 						<q-input
 							v-model="localValue"
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
 							:hide-bottom-space="true"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							color="secondary"
 							dense
 							input-debounce="300"
@@ -242,7 +261,7 @@
 					</template>
 					<!-- Boolean -->
 					<template
-						v-if="localType.value === ConfigurationVariableType.BOOLEAN"
+						v-if="localType?.value === ConfigurationVariableType.BOOLEAN"
 					>
 						<q-btn-toggle
 							v-model="localValue"
@@ -263,14 +282,24 @@
 						>
 							{{ error }}
 						</div>
+						<div
+							v-else-if="!!sourceBase && !!sourceModel && forced"
+							v-text="`Variable value forced by ${sourceBase}`"
+							class="tw-text-disabled booleanErrorField tw-break-words"
+						></div>
 					</template>
 					<!-- Text -->
-					<template v-if="localType.value === ConfigurationVariableType.TEXT">
+					<template v-if="localType?.value === ConfigurationVariableType.TEXT">
 						<q-input
 							v-model="localValue"
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							:hide-bottom-space="true"
 							color="secondary"
 							dense
@@ -278,12 +307,17 @@
 						/>
 					</template>
 					<!-- List -->
-					<template v-if="localType.value === ConfigurationVariableType.LIST">
+					<template v-if="localType?.value === ConfigurationVariableType.LIST">
 						<q-select
 							v-model="localValue"
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							:hide-bottom-space="true"
 							color="secondary"
 							dense
@@ -297,11 +331,16 @@
 						</q-select>
 					</template>
 					<!-- Vault -->
-					<template v-if="localType.value === ConfigurationVariableType.VAULT">
+					<template v-if="localType?.value === ConfigurationVariableType.VAULT">
 						<q-input
 							v-model="localValue"
 							:disable="forced"
 							:error="!!error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by ${sourceBase}`
+									: undefined
+							"
 							:error-message="error"
 							:hide-bottom-space="true"
 							color="secondary"
@@ -359,6 +398,8 @@ const props = defineProps<{
 	error?: string;
 	disable?: boolean;
 	showDiff?: boolean;
+	sourceBase?: string;
+	sourceModel?: string;
 	currentArchive?: {
 		type: ConfigurationVariableType;
 		value: string | number | Array<string> | boolean | null | undefined;

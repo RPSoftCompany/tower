@@ -16,10 +16,11 @@
  * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
  */
 
-import {store} from 'quasar/wrappers';
-import {createPinia} from 'pinia';
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-import {Router} from 'vue-router';
+import { store } from 'quasar/wrappers';
+import { createPinia } from 'pinia';
+import { createPersistedStatePlugin } from 'pinia-plugin-persistedstate-2';
+import { Router } from 'vue-router';
+import { Cookies } from 'quasar';
 
 /*
  * When adding new properties to stores, you should also
@@ -32,6 +33,22 @@ declare module 'pinia' {
 	}
 }
 
+const parseJwt = (token: string) => {
+	const base64Url = token.split('.')[1];
+	const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+	const jsonPayload = decodeURIComponent(
+		window
+			.atob(base64)
+			.split('')
+			.map(function (c) {
+				return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+			})
+			.join('')
+	);
+
+	return JSON.parse(jsonPayload);
+};
+
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation;
@@ -41,11 +58,50 @@ declare module 'pinia' {
  * with the Store instance.
  */
 
-export default store((/* { ssrContext } */) => {
+export default store((ssrContext) => {
 	const pinia = createPinia();
 
+	const cookies = process.env.SERVER ? Cookies.parseSSR(ssrContext) : Cookies; // otherwise we're on client
+
 	// You can add Pinia plugins here
-	pinia.use(piniaPluginPersistedstate);
+	pinia.use(
+		createPersistedStatePlugin({
+			storage: {
+				getItem: (key) => {
+					const value = cookies.get(key);
+					if (value) {
+						return JSON.parse(value);
+					}
+
+					return null;
+				},
+				setItem: (key, value) => {
+					if (key === 'tower_user') {
+						let expires = undefined;
+						try {
+							const decoded = parseJwt(value);
+							const date = new Date(0);
+							date.setUTCSeconds(decoded.exp);
+							expires = date;
+						} catch (e) {
+							// IGNORE
+						}
+
+						cookies.set(key, JSON.stringify(value), {
+							expires: expires,
+							secure: document.location.protocol == 'https:',
+							path: '/',
+						});
+					}
+				},
+				removeItem: (key) => {
+					if (cookies.has(key)) {
+						cookies.remove(key);
+					}
+				},
+			},
+		})
+	);
 
 	return pinia;
 });

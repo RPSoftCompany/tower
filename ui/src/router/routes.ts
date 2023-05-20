@@ -16,7 +16,7 @@
  * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
  */
 
-import {RouteRecordRaw} from 'vue-router';
+import { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
 	{
@@ -141,6 +141,12 @@ const routes: RouteRecordRaw[] = [
 				],
 			},
 		],
+	},
+
+	{
+		path: '/insufficientPermissions',
+		name: 'InsufficientPermissions',
+		component: () => import('pages/InsufficientPermissionsPage.vue'),
 	},
 
 	// Always leave this as last one,

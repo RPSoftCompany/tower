@@ -106,6 +106,10 @@ server/secret
 server/server/datasources.test*
 server/server/datasources.development*
 
+backend/src/certs
+backend/.env
+backend/client/*
+
 dist/tower-*
 
 .idea

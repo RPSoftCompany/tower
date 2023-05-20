@@ -181,7 +181,7 @@ html {
 /**
 	Additional grid-cols
  */
-@for $i from 6 through 24 {
+@for $i from 1 through 24 {
 	.tw-grid-cols-#{$i} {
 		grid-template-columns: repeat($i, minmax(0, 1fr));
 	}

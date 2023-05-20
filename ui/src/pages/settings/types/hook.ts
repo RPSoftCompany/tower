@@ -26,7 +26,7 @@ export interface Hook {
 }
 
 export interface HookParent {
-	id?: string;
+	_id?: string;
 	method: string;
 	model: string;
 	hooks: Array<Hook>;

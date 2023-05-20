@@ -27,7 +27,7 @@
 				<q-btn
 					:disable="
 						allBases.length !== Object.keys(baseModelComputed).length ||
-							archiveConfigs.length > 3
+						archiveConfigs.length > 3
 					"
 					flat
 					icon="sym_o_add"
@@ -79,13 +79,16 @@ import CompareTable from 'components/basic/compareTable.vue';
 import {
 	ArchiveConfig,
 	SwitchPlacesEvent,
-	VersionChangeEvent
+	VersionChangeEvent,
 } from 'components/basic/basics';
+import { valueExists } from 'components/constantVariables/constantVariable';
+import { useQuasar } from 'quasar';
 
 //====================================================
 // Const
 //====================================================
 const baseSt = basesStore();
+const $q = useQuasar();
 
 //====================================================
 // Data
@@ -119,16 +122,16 @@ const addArchiveConfig = async () => {
 	const filter: any = {
 		order: 'effectiveDate DESC',
 		include: ['member'],
-		where: {}
+		where: {},
 	};
 
-	allBases.value.forEach(el => {
+	allBases.value.forEach((el) => {
 		filter.where[el.name] = { $eq: null };
 	});
 
 	let pathArray: Array<string> = [];
 
-	currentBaseModels.value.forEach(el => {
+	currentBaseModels.value.forEach((el) => {
 		if (el && el.name !== '__NONE__') {
 			filter.where[el.base] = el.name;
 			pathArray.push(el.name);
@@ -136,21 +139,43 @@ const addArchiveConfig = async () => {
 	});
 
 	archiveConfigs.value.push({
-		id: Math.random(),
+		id: Math.random().toString(),
 		loading: true,
-		path: pathArray.join(' / ')
+		path: pathArray.join(' / '),
 	});
 
 	const place = archiveConfigs.value.length - 1;
 
-	const response = await towerAxios.get(
-		`configurations?filter=${JSON.stringify(filter, null, '')}`
-	);
+	try {
+		const response = await towerAxios.get(
+			`configurations?filter=${JSON.stringify(filter, null, '')}`
+		);
 
-	if (response.status === 200 && response.data.length > 0) {
-		archiveConfigs.value[place].configuration = response.data.reverse();
-		archiveConfigs.value[place].version = response.data.length - 1;
-		archiveConfigs.value[place].loading = false;
+		if (response.status === 200 && response.data.length > 0) {
+			archiveConfigs.value[place].configuration = response.data.reverse();
+			archiveConfigs.value[place].version = response.data.length - 1;
+			archiveConfigs.value[place].loading = false;
+		} else {
+			$q.notify({
+				color: 'negative',
+				position: 'top',
+				textColor: 'secondary',
+				icon: 'sym_o_error',
+				message: "Configuration doesn't exist",
+			});
+
+			archiveConfigs.value.splice(place, 1);
+		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting configuration data',
+		});
+
+		archiveConfigs.value.splice(place, 1);
 	}
 };
 
@@ -158,8 +183,8 @@ const addArchiveConfig = async () => {
  * removeConfiguration
  */
 const removeConfiguration = (configId: number) => {
-	archiveConfigs.value = archiveConfigs.value.filter(el => {
-		return el.id !== configId;
+	archiveConfigs.value = archiveConfigs.value.filter((el) => {
+		return el.id !== configId.toString();
 	});
 };
 
@@ -168,8 +193,8 @@ const removeConfiguration = (configId: number) => {
  * @param data
  */
 const versionChanged = (data: VersionChangeEvent) => {
-	const configIndex = archiveConfigs.value.findIndex(el => {
-		return el.id === data.configId;
+	const configIndex = archiveConfigs.value.findIndex((el) => {
+		return el.id === data.configId.toString();
 	});
 
 	if (configIndex >= 0) {
@@ -182,17 +207,17 @@ const versionChanged = (data: VersionChangeEvent) => {
  * @param data
  */
 const switchPlaces = (data: SwitchPlacesEvent) => {
-	const sourceConfig = archiveConfigs.value.find(el => {
+	const sourceConfig = archiveConfigs.value.find((el) => {
 		return `${el.id}` === data.sourceId;
 	});
 
 	if (sourceConfig) {
-		const targetIndex = archiveConfigs.value.findIndex(el => {
+		const targetIndex = archiveConfigs.value.findIndex((el) => {
 			return `${el.id}` === data.targetId;
 		});
 
 		if (targetIndex >= 0) {
-			archiveConfigs.value = archiveConfigs.value.filter(el => {
+			archiveConfigs.value = archiveConfigs.value.filter((el) => {
 				return `${el.id}` !== data.sourceId;
 			});
 
@@ -213,7 +238,7 @@ const baseModelComputed = computed(() => {
 
 	const baseModel: any = {};
 
-	currentBaseModels.value.forEach(el => {
+	currentBaseModels.value.forEach((el) => {
 		if (el?.base) {
 			baseModel[el.base] = el.name;
 		}
@@ -231,15 +256,22 @@ const allBases = computed(() => baseSt.getBases);
  */
 const currentVariables = computed(() => {
 	const all = new Set();
-	archiveConfigs.value.forEach(el => {
-		if (el.version && el.configuration && el.configuration[el.version]) {
-			el.configuration[el.version].variables.forEach(variable => {
+
+	archiveConfigs.value.forEach((el) => {
+		if (
+			valueExists(el.version) &&
+			el.configuration &&
+			el.configuration[el.version as number]
+		) {
+			el.configuration[el.version as number].variables.forEach((variable) => {
 				all.add(variable.name);
 			});
 		}
 	});
 
-	return Array.from(all);
+	return Array.from(all).sort((a, b) =>
+		(a as string).localeCompare(b as string, undefined, { sensitivity: 'base' })
+	);
 });
 </script>
 

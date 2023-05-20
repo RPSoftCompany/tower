@@ -5,7 +5,144 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e16bfb61-4cb0-49e0-8a6e-5dbd8447af86" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/server/server/datasources.development.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/server/datasources.development.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/.editorconfig" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/.eslintrc.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/.mocharc.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/.nvmrc" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/redirect/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/boot/authentication.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/boot/autoupdate.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/boot/boot.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/boot/role-resolver.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/boot/script.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/component-config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/component-config.production.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/datasources.development.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/datasources.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/datasources.production.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/explorer/css/loopbackStyles.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/explorer/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/explorer/tower.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/middleware.development.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/middleware.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/model-config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/audit.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/audit.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/base-configuration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/base-configuration.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/configuration-model.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/configuration-model.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/configuration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/configuration.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/connection.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/connection.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/constant-variable.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/constant-variable.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/default-variable-history.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/default-variable-history.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/default-variable.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/default-variable.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/group.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/group.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/hook-object.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/hook-object.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/hook.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/hook.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/audit.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/baseConfiguration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/configuration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/configurationModel.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/connection.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/constantVariable.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/group.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/hook.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/member.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/promotion.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/restConfiguration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/template/extensions/customFunctions.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/template/interpreter.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/impl/v1.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/member-credential.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/member-identity.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/member.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/member.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/model-options.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/model-options.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/promotion.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/promotion.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/rest-configuration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/rest-configuration.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/rule.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/rule.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/v-1.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/v-1.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/v-2.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/v-2.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/variable.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/models/variable.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/server/server.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/baseConfiguration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/configuration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/configurationModel.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/connection.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/constantVariable.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/group.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/hooks.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/member.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/performance/insert.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/promotion.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/restConfiguration.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/scenarios/200Variables/scenario1.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/scenarios/permissions/ConfigurationModel.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/quasar.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/ui/quasar.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/bases/base.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/bases/base.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/bases/baseToolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/bases/baseToolbar.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/basic/basics.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/basic/basics.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/basic/compareTable.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/basic/compareTable.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configuration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configuration/configuration.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configurationPanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configuration/configurationPanel.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/configuration/configurationVariableRow.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configuration/configurationVariableRow.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/configurationModel/configurationModel.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/configurationModel/configurationModel.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/constantVariables/constantVariable.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/constantVariables/constantVariable.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/constantVariables/constantVariablePanel.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/constantVariables/constantVariablePanel.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/constantVariables/constantVariableRow.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/constantVariables/constantVariableRow.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/components/drawer/userLink.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/components/drawer/userLink.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/css/app.scss" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/css/app.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/ArchivePage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/ArchivePage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/BasesPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/BasesPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/LoginPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/LoginPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/TimeArchivePage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/TimeArchivePage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/BaseModelsPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/BaseModelsPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/EndpointsAndTemplatesPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/EndpointsAndTemplatesPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/GroupsPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/GroupsPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/HooksPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/HooksPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/LdapPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/LdapPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/LogsPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/LogsPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/PermissionsPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/PermissionsPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/PromotionsPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/PromotionsPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/SCPPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/SCPPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/UsersPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/UsersPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/VaultPage.vue" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/VaultPage.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/types/audit.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/types/audit.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/types/group.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/types/group.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/types/hook.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/types/hook.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/types/promotion.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/types/promotion.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/types/restConfiguration.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/types/restConfiguration.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/pages/settings/types/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/pages/settings/types/user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/router/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/router/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/router/routes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/router/routes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/stores/bases.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/stores/bases.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/stores/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/stores/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/src/stores/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ui/src/stores/user.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ui/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,27 +176,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;code.cleanup.on.save&quot;: &quot;true&quot;,
-    &quot;js.linters.configure.manually.selectedeslint&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/radzio/javascript/tower/ui/src/stores&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.standard&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;/home/radzio/javascript/tower/ui/node_modules/eslint&quot;,
-    &quot;node.js.selected.package.standard&quot;: &quot;&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs.mocha.mocha_node_package_dir&quot;: &quot;/home/radzio/javascript/tower/server/node_modules/mocha&quot;,
-    &quot;nodejs_interpreter_path&quot;: &quot;/home/radzio/.nvm/versions/node/v16.15.0/bin/node&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/home/radzio/javascript/tower/ui/node_modules/prettier&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.fonts.default&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/home/radzio/javascript/tower/ui/node_modules/typescript/lib&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "WebServerToolWindowFactoryState": "false",
+    "code.cleanup.on.save": "true",
+    "git-widget-placeholder": "3.0.0",
+    "js.linters.configure.manually.selectedeslint": "true",
+    "last_opened_file_path": "/home/radzio/javascript/tower",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.standard": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "/home/radzio/javascript/tower/backend/node_modules/eslint",
+    "node.js.selected.package.standard": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs.mocha.mocha_node_package_dir": "/home/radzio/javascript/tower/server/node_modules/mocha",
+    "nodejs_interpreter_path": "/home/radzio/.nvm/versions/node/v16.15.0/bin/node",
+    "nodejs_package_manager_path": "npm",
+    "prettierjs.PrettierConfiguration.Package": "/home/radzio/javascript/tower/ui/node_modules/prettier",
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default",
+    "ts.external.directory.path": "/home/radzio/javascript/tower/ui/node_modules/typescript/lib",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/ui/src/stores" />
@@ -327,6 +465,7 @@
       <workItem from="1678634000093" duration="259000" />
       <workItem from="1678634290359" duration="9771000" />
       <workItem from="1678778107690" duration="16485000" />
+      <workItem from="1683269632709" duration="82000" />
     </task>
     <servers />
   </component>

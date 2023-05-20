@@ -106,7 +106,7 @@
 										<template
 											v-for="(diff, index) of diffStrings(
 												valueAsString(localValue),
-												valueAsString(currentArchive.value)
+												valueAsString(currentArchive?.value)
 											)"
 											:key="`${diff.value}_${index}`"
 										>
@@ -154,11 +154,11 @@
 									deleted: deleted,
 								}"
 								:color="
-									currentArchive.forced !== localForced && showDiff
+									currentArchive?.forced !== localForced && showDiff
 										? 'dark'
 										: undefined
 								"
-								:name="currentArchive.forced ? 'sym_o_edit_off' : 'sym_o_edit'"
+								:name="currentArchive?.forced ? 'sym_o_edit_off' : 'sym_o_edit'"
 								class="tw-flex-none tw-p-2 tw-mx-0.5 tw-rounded"
 								size="sm"
 							/>

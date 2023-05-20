@@ -24,17 +24,19 @@
 					<div class="text-h6">Choose configuration date</div>
 				</q-card-section>
 
-				<q-card-section class="tw-bg-darkPage tw-grid tw-grid-cols-2">
+				<q-card-section class="tw-bg-darkPage tw-grid tw-grid-cols-2 tw-gap-3">
 					<q-date
 						v-model="dateToChoose"
-						class="tw-mr-2"
+						class="tw-border-2 tw-border-gray-700"
 						mask="YYYY-MM-DDTHH:mm:ss.SSSZ"
+						flat
 					/>
 					<q-time
 						v-model="dateToChoose"
-						class="tw-ml-2"
+						class="tw-border-2 tw-border-gray-700"
 						mask="YYYY-MM-DDTHH:mm:ss.SSSZ"
 						with-seconds
+						flat
 					/>
 				</q-card-section>
 
@@ -59,7 +61,7 @@
 				<q-btn
 					:disable="
 						allBases.length !== Object.keys(baseModelComputed).length ||
-							archiveConfigs.length > 3
+						archiveConfigs.length > 3
 					"
 					flat
 					icon="sym_o_add"
@@ -178,16 +180,16 @@ const addArchiveConfig = async (date?: Date, place?: number) => {
 	}
 
 	const filter: any = {
-		where: {}
+		where: {},
 	};
 
-	allBases.value.forEach(el => {
+	allBases.value.forEach((el) => {
 		filter.where[el.name] = { $eq: null };
 	});
 
 	let pathArray: Array<string> = [];
 
-	currentBaseModels.value.forEach(el => {
+	currentBaseModels.value.forEach((el) => {
 		if (el && el.name !== '__NONE__') {
 			filter.where[el.base] = el.name;
 			pathArray.push(el.name);
@@ -196,9 +198,9 @@ const addArchiveConfig = async (date?: Date, place?: number) => {
 
 	if (place === undefined) {
 		archiveConfigs.value.push({
-			id: Math.random(),
+			id: Math.random().toString(),
 			loading: true,
-			path: pathArray.join(' / ')
+			path: pathArray.join(' / '),
 		});
 	} else {
 		archiveConfigs.value[place].loading = true;
@@ -208,36 +210,54 @@ const addArchiveConfig = async (date?: Date, place?: number) => {
 
 	date = date ? date : new Date();
 
-	const response = await towerAxios.get(
-		`configurations/findByDate?filter=${JSON.stringify(
-			filter.where,
-			null,
-			''
-		)}&date=${date.toISOString()}`
-	);
+	try {
+		const response = await towerAxios.get(
+			`configurations/findByDate?filter=${JSON.stringify(
+				filter.where,
+				null,
+				''
+			)}&date=${date.toISOString()}`
+		);
 
-	if (response.status === 200 && response.data.effectiveDate) {
-		archiveConfigs.value[place].configuration = [response.data];
-		archiveConfigs.value[place].version = 0;
-		archiveConfigs.value[place].effectiveDate = date;
-	} else {
+		if (response.status === 200 && response.data?.effectiveDate) {
+			archiveConfigs.value[place].configuration = [response.data];
+			archiveConfigs.value[place].version = 0;
+			archiveConfigs.value[place].effectiveDate = date;
+
+			archiveConfigs.value[place].loading = false;
+		} else {
+			$q.notify({
+				color: 'negative',
+				position: 'top',
+				textColor: 'secondary',
+				icon: 'sym_o_error',
+				message: "Configuration didn't exist at that time",
+			});
+
+			if (!archiveConfigs.value[place]?.effectiveDate) {
+				archiveConfigs.value.splice(place, 1);
+			} else {
+				archiveConfigs.value[place].loading = false;
+			}
+		}
+	} catch (e) {
 		$q.notify({
 			color: 'negative',
 			position: 'top',
 			textColor: 'secondary',
 			icon: 'sym_o_error',
-			message: "Configuration didn't exist at that time"
+			message: 'Error collecting configuration data',
 		});
-	}
 
-	archiveConfigs.value[place].loading = false;
+		archiveConfigs.value.splice(place, 1);
+	}
 };
 
 /**
  * removeConfiguration
  */
 const removeConfiguration = (configId: number) => {
-	archiveConfigs.value = archiveConfigs.value.filter(el => {
+	archiveConfigs.value = archiveConfigs.value.filter((el) => {
 		return el.id !== configId;
 	});
 };
@@ -247,17 +267,17 @@ const removeConfiguration = (configId: number) => {
  * @param data
  */
 const switchPlaces = (data: SwitchPlacesEvent) => {
-	const sourceConfig = archiveConfigs.value.find(el => {
+	const sourceConfig = archiveConfigs.value.find((el) => {
 		return `${el.id}` === data.sourceId;
 	});
 
 	if (sourceConfig) {
-		const targetIndex = archiveConfigs.value.findIndex(el => {
+		const targetIndex = archiveConfigs.value.findIndex((el) => {
 			return `${el.id}` === data.targetId;
 		});
 
 		if (targetIndex >= 0) {
-			archiveConfigs.value = archiveConfigs.value.filter(el => {
+			archiveConfigs.value = archiveConfigs.value.filter((el) => {
 				return `${el.id}` !== data.sourceId;
 			});
 
@@ -282,7 +302,7 @@ const showDateDialog = (config: ArchiveConfig) => {
  * updateDate
  */
 const updateDate = () => {
-	const index = archiveConfigs.value.findIndex(el => {
+	const index = archiveConfigs.value.findIndex((el) => {
 		return el.id === configId.value;
 	});
 
@@ -304,7 +324,7 @@ const baseModelComputed = computed(() => {
 
 	const baseModel: any = {};
 
-	currentBaseModels.value.forEach(el => {
+	currentBaseModels.value.forEach((el) => {
 		if (el?.base) {
 			baseModel[el.base] = el.name;
 		}
@@ -322,15 +342,17 @@ const allBases = computed(() => baseSt.getBases);
  */
 const currentVariables = computed(() => {
 	const all = new Set();
-	archiveConfigs.value.forEach(el => {
+	archiveConfigs.value.forEach((el) => {
 		if (el.configuration && el.configuration[0].variables) {
-			el.configuration[0].variables.forEach(variable => {
+			el.configuration[0].variables.forEach((variable) => {
 				all.add(variable.name);
 			});
 		}
 	});
 
-	return Array.from(all);
+	return Array.from(all).sort((a, b) =>
+		(a as string).localeCompare(b as string, undefined, { sensitivity: 'base' })
+	);
 });
 </script>
 

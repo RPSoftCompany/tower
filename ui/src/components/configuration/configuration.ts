@@ -22,13 +22,12 @@ import { Member } from 'components/user/user';
 export interface Configuration {
 	effectiveDate: Date;
 	variables: Array<ConfigurationVariable>;
-	createdBy: string;
 	promoted: boolean;
 	description: string;
 	version: number;
 	draft: boolean;
 	id: string;
-	member?: Member;
+	createdBy?: Member | undefined;
 }
 
 export interface ConfigurationVariable {
@@ -43,4 +42,6 @@ export interface ConfigurationVariableToDisplay extends ConfigurationVariable {
 	forced?: boolean;
 	addIfAbsent?: boolean;
 	error?: string;
+	sourceBase?: string;
+	sourceModel?: string;
 }

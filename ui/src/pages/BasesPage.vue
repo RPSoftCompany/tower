@@ -32,7 +32,7 @@
 				</q-card-section>
 
 				<q-card-actions align="right">
-					<q-btn v-close-popup color="secondary" flat label="Cancel"/>
+					<q-btn v-close-popup color="secondary" flat label="Cancel" />
 					<q-btn
 						v-close-popup
 						color="negative"
@@ -54,7 +54,7 @@
 				</q-card-section>
 
 				<q-card-actions align="right">
-					<q-btn v-close-popup color="secondary" flat label="Cancel"/>
+					<q-btn v-close-popup color="secondary" flat label="Cancel" />
 					<q-btn
 						v-close-popup
 						color="negative"
@@ -76,7 +76,7 @@
 				</q-card-section>
 
 				<q-card-actions align="right">
-					<q-btn v-close-popup color="secondary" flat label="Cancel"/>
+					<q-btn v-close-popup color="secondary" flat label="Cancel" />
 					<q-btn
 						v-close-popup
 						color="negative"
@@ -95,13 +95,13 @@
 				:disable="false"
 				:label="`Choose or create new ${route.params.base}`"
 				:loading="loading"
-				:options="baseModels"
+				:options="baseModels as Array<[object]>"
 				class="tw-w-[33.3%]"
 				option-label="name"
 				@input-value="inputValueChange"
 			>
 				<template #prepend>
-					<q-icon :name="currentIcon"/>
+					<q-icon :name="currentIcon" />
 				</template>
 				<template v-if="userCanModify" #after>
 					<q-btn
@@ -111,7 +111,7 @@
 						padding="sm"
 						@click="addOrDeleteModel"
 					>
-						<q-icon :name="addOrDeleteIcon"/>
+						<q-icon :name="addOrDeleteIcon as string" />
 					</q-btn>
 				</template>
 			</tower-select>
@@ -146,7 +146,7 @@
 				keep-alive
 				narrow-indicator
 			>
-				<q-tab class="tw-rounded" label="Rules" name="rules"/>
+				<q-tab class="tw-rounded" label="Rules" name="rules" />
 				<q-tab
 					v-if="model?.base !== baseSt.getBases[0].name"
 					class="tw-rounded"
@@ -173,7 +173,7 @@
 						:class="{
 							'tower-min-panel-height': userCanModify,
 							'tower-min-panel-height-readOnly': !userCanModify,
-							'tw-justify-center': model.rules.length === 0 && !loading
+							'tw-justify-center': model.rules.length === 0 && !loading,
 						}"
 						class="tw-flex tw-flex-col"
 					>
@@ -200,7 +200,10 @@
 								class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400"
 							>
 								There aren't any rules in this model
-								<div class="tw-text-center tw-text-xs tw-text-gray-500" v-if="userCanModify">
+								<div
+									class="tw-text-center tw-text-xs tw-text-gray-500"
+									v-if="userCanModify"
+								>
 									You can create one using panel below
 								</div>
 							</div>
@@ -221,7 +224,7 @@
 								'tw-justify-center':
 									model.restrictions.length === 0 && !loading,
 								'tower-min-restriction-panel-height': userCanModify,
-								'tower-min-restriction-panel-height-readOnly': !userCanModify
+								'tower-min-restriction-panel-height-readOnly': !userCanModify,
 							}"
 							class="tw-flex tw-flex-col"
 						>
@@ -242,7 +245,10 @@
 									class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400"
 								>
 									There aren't any restrictions in this model
-									<div class="tw-text-center tw-text-xs tw-text-gray-500" v-if="userCanModify">
+									<div
+										class="tw-text-center tw-text-xs tw-text-gray-500"
+										v-if="userCanModify"
+									>
 										You can create one using panel below
 									</div>
 								</div>
@@ -275,7 +281,7 @@
 					v-model="newRestriction"
 					:base-models="previousBaseModels"
 					:is-new="true"
-					:read-only="!model.options.hasRestrictions"
+					:read-only="!model?.options.hasRestrictions"
 					@addNewRestriction="addNewRestriction"
 				/>
 				<save-panel
@@ -292,25 +298,25 @@
 </template>
 
 <script lang="ts" setup>
-import {useRoute} from 'vue-router';
+import { useRoute } from 'vue-router';
 import TowerSelect from 'components/basic/towerSelect.vue';
-import {computed, nextTick, onMounted, Ref, ref, watch} from 'vue';
-import {towerAxios} from 'boot/axios';
-import {basesStore} from 'stores/bases';
+import { computed, nextTick, onMounted, Ref, ref, watch } from 'vue';
+import { towerAxios } from 'boot/axios';
+import { basesStore } from 'stores/bases';
 import {
 	ConfigurationModel,
 	ConfigurationModelRule,
 	ConfigurationModelRuleConditionType,
-	ConfigurationModelRuleTargetType
+	ConfigurationModelRuleTargetType,
 } from 'components/configurationModel/configurationModel';
 import SearchToolbar from 'components/configuration/searchToolbar.vue';
 import SavePanel from 'components/basic/savePanel.vue';
 import RuleRow from 'components/configurationModel/ruleRow.vue';
-import cryptoRandomString from 'crypto-random-string';
-import {useQuasar} from 'quasar';
-import {userStore} from 'stores/user';
+import { v4 as uuidv4 } from 'uuid';
+import { useQuasar } from 'quasar';
+import { userStore } from 'stores/user';
 import RestrictionRow from 'components/configurationModel/restrictionRow.vue';
-import {navigationStore} from 'stores/navigation';
+import { navigationStore } from 'stores/navigation';
 
 //====================================================
 // Const
@@ -339,7 +345,7 @@ const newRule = ref({
 	conditionValue: '',
 	conditionType: ConfigurationModelRuleConditionType.TYPE,
 	conditionRegEx: false,
-	error: ''
+	error: '',
 });
 
 const loading = ref(false);
@@ -376,7 +382,7 @@ onMounted(async () => {
  * currentIcon
  */
 const currentIcon = computed(() => {
-	const found = baseSt.getBases.find(el => {
+	const found = baseSt.getBases.find((el) => {
 		return el.name === route.params.base;
 	});
 
@@ -398,7 +404,7 @@ const addOrDeleteIcon = computed(() => {
 		return null;
 	}
 
-	const found = baseModels.value.some(el => {
+	const found = baseModels.value.some((el) => {
 		return el.name === inputValue.value;
 	});
 
@@ -417,7 +423,7 @@ const isDifferent = computed(() => {
 		return false;
 	}
 
-	if (!model.value.id) {
+	if (!model.value._id) {
 		return true;
 	}
 
@@ -433,8 +439,8 @@ const isDifferent = computed(() => {
 		return true;
 	}
 
-	const diffRules = model.value.rules.some(el => {
-		return !rules.value.some(rule => {
+	const diffRules = model.value.rules.some((el) => {
+		return !rules.value.some((rule) => {
 			return (
 				rule._id === el._id &&
 				rule.targetRegEx === el.targetRegEx &&
@@ -452,8 +458,8 @@ const isDifferent = computed(() => {
 		return true;
 	}
 
-	return model.value?.restrictions.some(el => {
-		const found = restrictions.value.find(restriction => {
+	return model.value?.restrictions.some((el) => {
+		const found = restrictions.value.find((restriction) => {
 			return restriction.__id === el.__id;
 		});
 
@@ -488,8 +494,8 @@ const hasErrors = computed(() => {
 
 	if (model.value.options.hasRestrictions) {
 		if (model.value.restrictions.length > 0) {
-			return !model.value.restrictions.some(el => {
-				return Object.keys(el).some(key => {
+			return !model.value.restrictions.some((el) => {
+				return Object.keys(el).some((key) => {
 					return !!el[key];
 				});
 			});
@@ -537,7 +543,7 @@ const userCanModify = computed(() => {
  */
 const enableAddDeleteButton = computed(() => {
 	return (
-		!!(model.value && model.value.name && model.value.id) ||
+		!!(model.value && model.value.name && model.value._id) ||
 		(!model.value && modelFilter.value)
 	);
 });
@@ -554,8 +560,8 @@ const getBaseModels = async () => {
 	const filter = {
 		order: 'name ASC',
 		where: {
-			base: route.params.base
-		}
+			base: route.params.base,
+		},
 	};
 	const response = await towerAxios.get(
 		`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
@@ -583,8 +589,8 @@ const getPreviousBaseModels = async () => {
 		const filter = {
 			order: 'name ASC',
 			where: {
-				base: baseModel.name
-			}
+				base: baseModel.name,
+			},
 		};
 
 		const response = await towerAxios.get(
@@ -622,14 +628,14 @@ const addNewRule = () => {
 	}
 
 	model.value.rules.push({
-		_id: cryptoRandomString({length: 10}),
+		_id: uuidv4(),
 		error: newRule.value.error,
 		conditionRegEx: newRule.value.conditionRegEx,
 		conditionType: newRule.value.conditionType,
 		conditionValue: newRule.value.conditionValue,
 		targetType: newRule.value.targetType,
 		targetRegEx: newRule.value.targetRegEx,
-		targetValue: newRule.value.targetValue
+		targetValue: newRule.value.targetValue,
 	});
 
 	newRule.value = {
@@ -639,7 +645,7 @@ const addNewRule = () => {
 		conditionValue: '',
 		conditionType: ConfigurationModelRuleConditionType.TYPE,
 		conditionRegEx: false,
-		error: ''
+		error: '',
 	};
 
 	nextTick(() => {
@@ -659,7 +665,7 @@ const showDeleteDialog = (id: string) => {
  */
 const deleteRule = () => {
 	if (model.value && model.value.rules) {
-		model.value.rules = model.value.rules.filter(el => {
+		model.value.rules = model.value.rules.filter((el) => {
 			return el._id !== toDeleteRuleId.value;
 		});
 	}
@@ -674,8 +680,8 @@ const addNewRestriction = () => {
 			model.value.restrictions = [];
 		}
 
-		const copy = {...newRestriction.value};
-		copy.__id = cryptoRandomString({length: 10});
+		const copy = { ...newRestriction.value };
+		copy.__id = uuidv4();
 		model.value.restrictions.push(copy);
 
 		newRestriction.value = {};
@@ -692,7 +698,7 @@ const showDeleteRestrictionDialog = (id: string) => {
  */
 const deleteRestriction = () => {
 	if (model.value?.restrictions) {
-		model.value.restrictions = model.value.restrictions.filter(el => {
+		model.value.restrictions = model.value.restrictions.filter((el) => {
 			return el.__id !== toDeleteRestrictionId.value;
 		});
 	}
@@ -710,21 +716,23 @@ const saveModel = async () => {
 			name: model.value.name,
 			base: model.value?.base,
 			options: model.value?.options,
-			restrictions: model.value?.restrictions
+			restrictions: model.value?.restrictions,
+			_id: model.value?._id,
 		};
 
 		try {
 			const response = await towerAxios.put('/configurationModels', toSave);
 
-			if (response.status === 201) {
+			if (response.status === 200) {
 				await getBaseModels();
 				updateCurrentData(response.data);
+				model.value._id = response.data._id;
 
 				$q.notify({
 					color: 'positive',
 					position: 'top',
 					textColor: 'secondary',
-					message: `${model.value.name} ${model.value.base} saved successfully`
+					message: `${model.value.name} ${model.value.base} saved successfully`,
 				});
 
 				model.value = response.data;
@@ -735,7 +743,7 @@ const saveModel = async () => {
 				position: 'top',
 				textColor: 'secondary',
 				icon: 'sym_o_error',
-				message: `Error saving ${model?.value?.name} ${model?.value?.base}`
+				message: `Error saving ${model?.value?.name} ${model?.value?.base}`,
 			});
 		}
 
@@ -751,12 +759,12 @@ const updateCurrentData = (current: ConfigurationModel) => {
 	restrictions.value = [];
 	modelHasRestrictions.value = current.options.hasRestrictions;
 
-	current.rules.forEach(el => {
-		rules.value.push({...el});
+	current.rules.forEach((el) => {
+		rules.value.push({ ...el });
 	});
 
-	current.restrictions.forEach(el => {
-		restrictions.value.push({...el});
+	current.restrictions.forEach((el) => {
+		restrictions.value.push({ ...el });
 	});
 };
 
@@ -774,9 +782,9 @@ const addOrDeleteModel = () => {
 			base: route.params.base as string,
 			restrictions: [],
 			options: {
-				hasRestrictions: false
+				hasRestrictions: false,
 			},
-			rules: []
+			rules: [],
 		};
 	}
 };
@@ -787,7 +795,7 @@ const addOrDeleteModel = () => {
 const deleteModel = async () => {
 	try {
 		if (model.value) {
-			const idToDelete = model.value.id;
+			const idToDelete = model.value._id;
 
 			model.value = null;
 
@@ -799,7 +807,7 @@ const deleteModel = async () => {
 				color: 'positive',
 				position: 'top',
 				textColor: 'secondary',
-				message: 'Model removed successfully'
+				message: 'Model removed successfully',
 			});
 		}
 	} catch (e) {
@@ -808,7 +816,7 @@ const deleteModel = async () => {
 			position: 'top',
 			textColor: 'secondary',
 			icon: 'sym_o_error',
-			message: 'Error deleting model'
+			message: 'Error deleting model',
 		});
 	}
 };
@@ -827,7 +835,7 @@ watch(
 
 watch(
 	() => model.value,
-	current => {
+	(current) => {
 		if (current) {
 			updateCurrentData(current);
 		}

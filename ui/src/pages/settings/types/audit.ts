@@ -16,23 +16,22 @@
  * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
  */
 
-import {Member} from 'components/user/user';
+import { Member } from 'components/user/user';
 
 export interface Audit {
-	entity: string,
-	url: string,
-	method: string,
-	userId: string,
-	query: string,
-	status: AuditStatus,
-	statusCode: string,
-	errorDescription: string,
-	date: Date,
-	id: string,
-	member?: Member
+	entity: string;
+	url: string;
+	method: string;
+	userId: Member;
+	query: string;
+	status: AuditStatus;
+	statusCode: string;
+	errorDescription: string;
+	date: Date;
+	id: string;
 }
 
 export enum AuditStatus {
 	SUCCESS = 'SUCCESS',
-	ERROR = 'ERROR'
+	ERROR = 'ERROR',
 }

@@ -18,7 +18,7 @@
 
 export interface Base {
 	icon?: string;
-	id?: string;
+	_id?: string;
 	name: string;
 	sequenceNumber: number;
 }

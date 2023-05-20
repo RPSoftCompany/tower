@@ -22,17 +22,20 @@ import { Base } from 'components/bases/base';
 
 export const basesStore = defineStore('tower_bases', {
 	state: () => ({
-		bases: [] as Array<Base>
+		bases: [] as Array<Base>,
 	}),
 	getters: {
-		getBases: state => state.bases
+		getBases: (state) => state.bases,
 	},
 	actions: {
+		reset() {
+			this.$reset();
+		},
 		async requestBases(axios: TowerAxios) {
 			let response = null;
 			try {
 				const filter = {
-					order: 'sequenceNumber'
+					order: 'sequenceNumber',
 				};
 
 				response = await axios.get(
@@ -42,8 +45,8 @@ export const basesStore = defineStore('tower_bases', {
 					this.bases = response.data;
 				}
 			} catch (e) {
-				console.error(e);
+				throw e;
 			}
-		}
-	}
+		},
+	},
 });

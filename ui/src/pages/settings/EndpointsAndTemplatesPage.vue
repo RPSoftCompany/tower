@@ -52,11 +52,11 @@
 						bordered
 						flat
 						v-for="(endpoint, index) of allEndpointsClone"
-						:key="endpoint.id"
+						:key="endpoint._id"
 						draggable="true"
 						class="tw-bg-darkPage"
-						:class="{ 'tw-opacity-20': draggedId === endpoint.id }"
-						@dragstart="dragStart(endpoint.id)"
+						:class="{ 'tw-opacity-20': draggedId === endpoint._id }"
+						@dragstart="dragStart(endpoint._id)"
 						@dragenter="dragEnter(index)"
 						@dragend="dragEnd"
 					>
@@ -68,10 +68,7 @@
 									size="sm"
 								></q-icon>
 								<span
-									><b>{{ index + 1 }}.</b> /{{ endpoint.type }}/<b>{{
-										endpoint.url
-									}}</b
-									>{{ endpoint.type === 'v2' ? '/' + urlExample : '' }}</span
+									><b>{{ index + 1 }}.</b> /v1/<b>{{ endpoint.url }}</b></span
 								>
 							</div>
 							<div>
@@ -123,8 +120,9 @@
 					<q-item v-bind="scope.itemProps">
 						<q-item-section>
 							<q-item-label
-								><b>{{ scope.opt.sequenceNumber + 1 }}.</b>
-								{{ scope.opt.type }}/{{ scope.opt.url }}</q-item-label
+								><b>{{ scope.opt.sequenceNumber + 1 }}.</b> v1/{{
+									scope.opt.url
+								}}</q-item-label
 							>
 						</q-item-section>
 					</q-item>
@@ -167,17 +165,10 @@
 				label="URL"
 				v-model="currentEndpointClone.url"
 				:rules="urlRules"
-				:hint="
-					currentEndpointClone?.type === 'v2'
-						? 'e.g. myUrl'
-						: `e.g. ${urlExample}`
-				"
+				:hint="`e.g. ${urlExample}`"
 				dense
 				color="secondary"
-				:prefix="`/${currentEndpointClone.type}/`"
-				:suffix="
-					currentEndpointClone?.type === 'v2' ? `/${urlExample}` : undefined
-				"
+				:prefix="`/v1/`"
 			/>
 			<div class="tw-flex tw-mt-2">
 				<div class="tw-flex-grow">
@@ -215,22 +206,6 @@
 							class="tw-mx-3"
 						/>
 					</div>
-					<div
-						class="tw-mt-5 tw-flex tw-flex-col tw-py-3 tw-self-start tw-rounded tw-border tw-border-dark tw-bg-dark"
-					>
-						<div class="tw-text-xl tw-font-medium tw-mx-3">API version</div>
-						<div class="tw-text-gray-500 tw-mx-3">
-							Sets the REST API version
-						</div>
-						<q-separator spaced class="tw-bg-darkPage tw-mx-[-1px]" />
-						<q-select
-							v-model="currentEndpointClone.type"
-							label="API version"
-							color="secondary"
-							:options="['v1', 'v2']"
-							class="tw-mx-3"
-						/>
-					</div>
 				</div>
 			</div>
 		</div>
@@ -248,17 +223,14 @@
 <script lang="ts" setup>
 import TowerSelect from 'components/basic/towerSelect.vue';
 import { computed, nextTick, onMounted, Ref, ref, watch } from 'vue';
-import {
-	RestConfiguration,
-	RestConfigurationType,
-} from 'pages/settings/types/restConfiguration';
+import { RestConfiguration } from 'pages/settings/types/restConfiguration';
 import { towerAxios } from 'boot/axios';
 import { VAceEditor } from 'vue3-ace-editor';
 import modeLiquidUrl from 'ace-builds/src-noconflict/mode-liquid?url';
 import themeMonokaiUrl from 'ace-builds/src-noconflict/theme-monokai?url';
 import snippetsLiquidUrl from 'ace-builds/src-noconflict/snippets/html?url';
-import ace from 'ace-builds';
 import 'ace-builds/src-noconflict/ext-language_tools';
+import ace from 'ace-builds';
 import SavePanel from 'components/basic/savePanel.vue';
 import { QInput, useQuasar } from 'quasar';
 import { basesStore } from 'stores/bases';
@@ -304,6 +276,7 @@ onMounted(async () => {
 	urlRules.value.push(existingUrl);
 	urlRules.value.push(notEmpty);
 	urlRules.value.push(atLeastOneBase);
+	urlRules.value.push(baseModelsCantBeNextToEachOther);
 
 	await getAllEndpoints();
 });
@@ -334,14 +307,14 @@ const save = async () => {
 	if (currentEndpointClone.value) {
 		loading.value = true;
 		try {
-			if (!currentEndpointClone.value.id) {
+			if (!currentEndpointClone.value._id) {
 				await towerAxios.post(
 					'/restConfigurations',
 					currentEndpointClone.value
 				);
 			} else {
 				await towerAxios.patch(
-					`/restConfigurations/${currentEndpointClone.value.id}`,
+					`/restConfigurations/${currentEndpointClone.value._id}`,
 					currentEndpointClone.value
 				);
 			}
@@ -388,7 +361,6 @@ const newEndpoint = () => {
 	nextTick(() => {
 		currentEndpointClone.value = {
 			url: '',
-			type: RestConfigurationType.V1,
 			returnType: 'json',
 			sequenceNumber: allEndpoints.value.length,
 			template:
@@ -400,7 +372,7 @@ const newEndpoint = () => {
 				'\t{% when "number", "boolean" %}\n' +
 				'\t"{{ var.name }}":{{ var.value }}{%- if forloop.last != true -%},{%- endif -%}\n' +
 				'\t{% when "list" %}\n' +
-				'\t"{{ var.name }}":[{% for listVar in var -%}"{{ listVar }}"{%- if forloop.last != true -%},{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%}],{%- endif -%}\n' +
+				'\t"{{ var.name }}":[{% for listVar in var.value -%}"{{ listVar }}"{%- if forloop.last != true -%},{% else %}]{%- endif -%}{%- endfor -%}{%- if forloop.last != true -%},{%- endif -%}\n' +
 				'\t{% else %}\n' +
 				'\t"{{ var.name }}":"{{ var.value }}"{%- if forloop.last != true -%},{%- endif -%}\n' +
 				'\t{% endcase -%}\n' +
@@ -423,7 +395,7 @@ const existingUrl = () => {
 	const exists = allEndpoints.value.some((el) => {
 		if (currentEndpointClone.value) {
 			return (
-				el.id !== currentEndpointClone.value.id &&
+				el._id !== currentEndpointClone.value._id &&
 				el.url === currentEndpointClone.value.url
 			);
 		}
@@ -448,13 +420,20 @@ const notEmpty = (value: string) => {
 };
 
 /**
- * urlRules at least one base
+ * urlRules baseModelsCantBeNextToEachOther
  */
-const atLeastOneBase = (value: string) => {
-	if (currentEndpointClone.value?.type === RestConfigurationType.V2) {
+const baseModelsCantBeNextToEachOther = (value: string) => {
+	if (!value.includes('}{')) {
 		return true;
 	}
 
+	return "Base Models can't be next to each other";
+};
+
+/**
+ * urlRules at least one base
+ */
+const atLeastOneBase = (value: string) => {
 	let hasBase = false;
 
 	if (value) {
@@ -477,7 +456,7 @@ const deleteEndpoint = async () => {
 	if (currentEndpoint.value) {
 		try {
 			await towerAxios.delete(
-				`/restConfigurations/${currentEndpoint.value.id}`
+				`/restConfigurations/${currentEndpoint.value._id}`
 			);
 		} catch (e) {
 			$q.notify({
@@ -507,10 +486,12 @@ const deleteEndpoint = async () => {
 /**
  * dragStart
  */
-const dragStart = (id: string) => {
-	setTimeout(() => {
-		draggedId.value = id;
-	}, 10);
+const dragStart = (id: string | undefined) => {
+	if (id) {
+		setTimeout(() => {
+			draggedId.value = id;
+		}, 10);
+	}
 };
 
 /**
@@ -524,9 +505,9 @@ const dragEnd = () => {
  * dragEnter
  */
 const dragEnter = (index: number) => {
-	if (allEndpointsClone.value[index].id !== draggedId.value) {
+	if (allEndpointsClone.value[index]._id !== draggedId.value) {
 		const draggedIndex = allEndpointsClone.value.findIndex((el) => {
-			return el.id === draggedId.value;
+			return el._id === draggedId.value;
 		});
 
 		if (draggedIndex >= 0) {
@@ -576,7 +557,7 @@ const updateSequence = async () => {
 			try {
 				allEndpointsClone.value[i].sequenceNumber = i;
 				await towerAxios.patch(
-					`/restConfigurations/${allEndpointsClone.value[i].id}`,
+					`/restConfigurations/${allEndpointsClone.value[i]._id}`,
 					allEndpointsClone.value[i]
 				);
 			} catch (e) {
@@ -620,7 +601,6 @@ const isDifferent = computed(() => {
 				currentEndpoint.value?.returnType ||
 			currentEndpointClone.value?.template !==
 				currentEndpoint.value?.template ||
-			currentEndpointClone.value?.type !== currentEndpoint.value?.type ||
 			currentEndpointClone.value.url !== currentEndpoint.value?.url ||
 			currentEndpointClone.value?.sequenceNumber !==
 				currentEndpoint.value?.sequenceNumber
@@ -688,8 +668,7 @@ watch(
 	(current) => {
 		if (current) {
 			currentEndpointClone.value = {
-				type: current.type,
-				id: current.id,
+				_id: current._id,
 				returnType: current.returnType,
 				template: current.template,
 				sequenceNumber: current.sequenceNumber,

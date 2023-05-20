@@ -23,6 +23,38 @@
 			'tower-max-size-sm': !$q.screen.gt.lg,
 		}"
 	>
+		<q-dialog v-model="showBodyDialog">
+			<q-card>
+				<q-card-section>
+					<div class="text-h6">Request body</div>
+				</q-card-section>
+
+				<q-card-section
+					class="fullWordWrap tw-overflow-auto tw-max-w-[80vw] tw-max-h-[70vh]"
+				>
+					{{ bodyToShow }}
+				</q-card-section>
+
+				<q-card-actions align="right">
+					<q-btn flat label="Close" color="secondary" v-close-popup />
+				</q-card-actions>
+			</q-card>
+		</q-dialog>
+		<q-dialog v-model="showQueryDialog">
+			<q-card>
+				<q-card-section>
+					<div class="text-h6">Request query params</div>
+				</q-card-section>
+
+				<q-card-section>
+					{{ queryToShow }}
+				</q-card-section>
+
+				<q-card-actions align="right">
+					<q-btn flat label="Close" color="secondary" v-close-popup />
+				</q-card-actions>
+			</q-card>
+		</q-dialog>
 		<q-table
 			flat
 			:rows="currentAudit"
@@ -36,6 +68,42 @@
 			@request="onRequest"
 			:loading="loading"
 		>
+			<template v-slot:body-cell-query="props">
+				<q-td :props="props" v-if="!props.value">
+					<div class="text-grey-7">Empty</div>
+				</q-td>
+				<q-td :props="props" v-else>
+					<template v-if="props.value.length > 50">
+						<div
+							class="tw-font-bold tw-cursor-pointer tw-underline"
+							@click="showQuery(props.value)"
+						>
+							Show query params
+						</div>
+					</template>
+					<template v-else>
+						<div>{{ props.value }}</div>
+					</template>
+				</q-td>
+			</template>
+			<template v-slot:body-cell-body="props">
+				<q-td :props="props" v-if="!props.value">
+					<div class="text-grey-7">Empty</div>
+				</q-td>
+				<q-td :props="props" v-else>
+					<template v-if="props.value.length > 50">
+						<div
+							class="tw-font-bold tw-cursor-pointer tw-underline"
+							@click="showBody(props.value)"
+						>
+							Show body
+						</div>
+					</template>
+					<template v-else>
+						<div>{{ props.value }}</div>
+					</template>
+				</q-td>
+			</template>
 			<template v-slot:header="props">
 				<q-tr :props="props">
 					<th v-for="(col, index) in props.cols" :key="col.name" :props="props">
@@ -46,7 +114,7 @@
 								color="secondary"
 								class="tw-flex-grow tw-mr-1"
 								v-model="filter[index].value"
-								:debounce="300"
+								:debounce="100"
 								:label="col.label"
 							/>
 							<template v-if="pagination.sortBy === col.name">
@@ -102,6 +170,12 @@ interface Filter {
 //====================================================
 const currentAudit: Ref<Array<Audit>> = ref([]);
 
+const bodyToShow = ref('');
+const showBodyDialog = ref(false);
+
+const queryToShow = ref('');
+const showQueryDialog = ref(false);
+
 const loading = ref(false);
 
 const pagination = ref({
@@ -146,9 +220,17 @@ const columns = [
 		sortable: true,
 	},
 	{
-		name: 'status',
+		name: 'body',
 		align: 'left',
 		style: 'min-width: 10rem',
+		label: 'Body',
+		field: 'body',
+		sortable: true,
+	},
+	{
+		name: 'status',
+		align: 'left',
+		style: 'min-width: 5rem; max-width: 5rem',
 		label: 'Status',
 		field: 'status',
 		sortable: true,
@@ -156,7 +238,7 @@ const columns = [
 	{
 		name: 'statusCode',
 		align: 'left',
-		style: 'min-width: 10rem',
+		style: 'min-width: 5rem; max-width: 5rem',
 		label: 'Status code',
 		field: 'statusCode',
 		sortable: true,
@@ -174,7 +256,7 @@ const columns = [
 		align: 'left',
 		style: 'min-width: 10rem',
 		label: 'User',
-		field: (val: Audit) => val.member?.username,
+		field: (val: Audit) => val.userId?.username,
 		sortable: true,
 	},
 	{
@@ -218,9 +300,9 @@ const getCurrentPage = async (page: number) => {
 	filter.value.forEach((el) => {
 		if (el.value) {
 			if (el.name !== 'user') {
-				where[el.name] = el.value;
+				where[el.name] = { ilike: el.value };
 			} else {
-				where['member.username'] = el.value;
+				where['user'] = el.value;
 			}
 			filterExists = true;
 		}
@@ -230,7 +312,7 @@ const getCurrentPage = async (page: number) => {
 	if (pagination.value.sortBy) {
 		tempPagination = {};
 		if (pagination.value.sortBy === 'user') {
-			tempPagination['member.username'] = pagination.value.descending ? -1 : 1;
+			tempPagination['userId.username'] = pagination.value.descending ? -1 : 1;
 		} else {
 			tempPagination[pagination.value.sortBy] = pagination.value.descending
 				? -1
@@ -319,6 +401,22 @@ const updateSort = async () => {
 	}
 
 	await getCurrentPage(pagination.value.page - 1);
+};
+
+/**
+ * showBody
+ */
+const showBody = (body: string) => {
+	bodyToShow.value = body;
+	showBodyDialog.value = true;
+};
+
+/**
+ * showQuery
+ */
+const showQuery = (query: string) => {
+	queryToShow.value = query;
+	showQueryDialog.value = true;
 };
 
 //====================================================

@@ -14,6 +14,8 @@ module.exports = {
 
 				positive: '#21BA45',
 				negative: '#ba2222',
+
+				disabled: '#ffffffb3',
 			},
 		},
 	},

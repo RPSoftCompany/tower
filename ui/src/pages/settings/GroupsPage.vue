@@ -203,7 +203,7 @@ const addOrRemoveRole = (role: string) => {
 const saveChanges = async () => {
 	loading.value = true;
 
-	if (currentRoles.value && currentGroup.value && currentGroup.value.id) {
+	if (currentRoles.value && currentGroup.value && currentGroup.value._id) {
 		for (let role of currentRoles.value) {
 			const found = currentGroup.value?.roles.some((el) => {
 				return el === role;
@@ -211,7 +211,7 @@ const saveChanges = async () => {
 
 			if (!found) {
 				await towerAxios.post(
-					`/groups/${currentGroup.value.id}/role?role=${role}`
+					`/groups/${currentGroup.value._id}/role?role=${role}`
 				);
 			}
 		}
@@ -223,13 +223,13 @@ const saveChanges = async () => {
 
 			if (!found) {
 				await towerAxios.delete(
-					`/groups/${currentGroup.value.id}/role?role=${role}`
+					`/groups/${currentGroup.value._id}/role?role=${role}`
 				);
 			}
 		}
 
 		currentGroup.value.roles = [...currentRoles.value];
-	} else if (currentGroup.value && !currentGroup.value.id) {
+	} else if (currentGroup.value && !currentGroup.value._id) {
 		// New group
 		const response = await towerAxios.post('/groups', {
 			name: currentGroup.value.name,
@@ -255,7 +255,7 @@ const saveChanges = async () => {
  */
 const addGroup = () => {
 	allGroups.value = allGroups.value.filter((el) => {
-		return !!el.id;
+		return !!el._id;
 	});
 
 	let currGroup = {
@@ -277,7 +277,7 @@ const deleteGroup = async () => {
 	loading.value = true;
 
 	try {
-		await towerAxios.delete(`/groups/${currentGroup.value.id}`);
+		await towerAxios.delete(`/groups/${currentGroup.value._id}`);
 	} catch (e) {
 		$q.notify({
 			color: 'negative',
@@ -332,7 +332,7 @@ const isDifferent = computed(() => {
 		return false;
 	}
 
-	if (!currentGroup.value.id) {
+	if (!currentGroup.value._id) {
 		return true;
 	}
 
@@ -354,7 +354,7 @@ watch(
 	() => currentGroup.value,
 	(current) => {
 		allGroups.value = allGroups.value.filter((el) => {
-			return !!el.id;
+			return !!el._id;
 		});
 
 		if (current) {
