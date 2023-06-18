@@ -496,8 +496,6 @@ export class ConfigurationsService implements OnModuleInit {
       limit: 1,
     };
 
-    console.log(JSON.stringify(tempFilter));
-
     const config = await this.find(userRoles, newFilter, true);
 
     if (config.length > 0) {

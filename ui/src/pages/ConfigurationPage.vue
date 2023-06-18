@@ -128,18 +128,18 @@ const onBaseModelChange = (value: Array<ConfigurationModel>) => {
 };
 
 /**
- * importConfiguration
+ * exportConfiguration
  */
-const importConfiguration = () => {
+const exportConfiguration = () => {
 	let data = null;
 	let filename = '';
 
 	if (constVariablePanel.value) {
 		filename = 'constVariables';
-		data = constVariablePanel.value.importConfiguration();
+		data = constVariablePanel.value.exportConfiguration();
 	} else if (configurationPanel.value) {
 		filename = 'configuration';
-		data = configurationPanel.value.importConfiguration();
+		data = configurationPanel.value.exportConfiguration();
 	}
 
 	if (data) {
@@ -158,13 +158,13 @@ const importConfiguration = () => {
 };
 
 /**
- * exportConfiguration
+ * importConfiguration
  */
-const exportConfiguration = (exportDetails: Export) => {
+const importConfiguration = (importDetails: Export) => {
 	if (constVariablePanel.value) {
-		constVariablePanel.value.exportConfiguration(exportDetails);
+		constVariablePanel.value.importConfiguration(importDetails);
 	} else if (configurationPanel.value) {
-		configurationPanel.value.exportConfiguration(exportDetails);
+		configurationPanel.value.importConfiguration(importDetails);
 	}
 };
 
@@ -255,7 +255,7 @@ const currentBaseModel = computed(() => {
 /**
  * importEnabled
  */
-const importEnabled = computed(() => {
+const exportEnabled = computed(() => {
 	if (constVariablePanel.value) {
 		return constVariablePanel.value.importEnabled;
 	} else if (configurationPanel.value) {
@@ -268,7 +268,7 @@ const importEnabled = computed(() => {
 /**
  * exportEnabled
  */
-const exportEnabled = computed(() => {
+const importEnabled = computed(() => {
 	if (constVariablePanel.value) {
 		return constVariablePanel.value.userCanModify;
 	} else if (configurationPanel.value) {

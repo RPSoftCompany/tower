@@ -199,7 +199,7 @@ import {
 } from 'components/constantVariables/constantVariable';
 import SavePanel from 'components/basic/savePanel.vue';
 import NewConstantVariablePanel from 'components/constantVariables/newConstantVariablePanel.vue';
-import { Export, ImportDetails } from 'components/models';
+import { Import, ImportDetails } from 'components/models';
 import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
 
@@ -480,7 +480,6 @@ const addNewConstantVariable = (variable: ConstantVariableValueToDisplay) => {
 	} else {
 		constVariables.value = {
 			effectiveDate: new Date(),
-			createdBy: '',
 			id: '',
 			variables: [variable],
 		};
@@ -547,18 +546,24 @@ const saveConstantVariables = async () => {
 	loading.value = false;
 };
 
-const importConfiguration = () => {
+/**
+ * exportConfiguration
+ */
+const exportConfiguration = () => {
 	if (!constVariables.value?.variables) {
 		return;
 	}
 
-	let importDetails: ImportDetails | null | string = null;
+	let exportDetails: ImportDetails | null | string = null;
 
-	importDetails = importJSON();
-	return JSON.stringify(importDetails);
+	exportDetails = exportJSON();
+	return JSON.stringify(exportDetails);
 };
 
-const importJSON = () => {
+/**
+ * exportJSON
+ */
+const exportJSON = () => {
 	const obj: ImportDetails = {
 		constantVariables: [],
 	};
@@ -580,19 +585,19 @@ const importJSON = () => {
 
 /**
  * exportConfiguration
- * @param exportDetails
+ * @param importDetails
  */
-const exportConfiguration = (exportDetails: Export) => {
+const importConfiguration = (importDetails: Import) => {
 	let data = null;
 	try {
-		data = JSON.parse(exportDetails.fileData as string);
+		data = JSON.parse(importDetails.fileData as string);
 	} catch (e) {
 		$q.notify({
 			color: 'negative',
 			position: 'top',
 			textColor: 'secondary',
 			icon: 'sym_o_error',
-			message: 'Error exporting configuration - invalid file data',
+			message: 'Error importing configuration - invalid file data',
 		});
 
 		return;
@@ -606,14 +611,13 @@ const exportConfiguration = (exportDetails: Export) => {
 				textColor: 'secondary',
 				icon: 'sym_o_error',
 				message:
-					'Error exporting constant variables - constant variables data not present',
+					'Error importing constant variables - constant variables data not present',
 			});
 
 			return;
 		}
 		if (!constVariables.value) {
 			constVariables.value = {
-				createdBy: '',
 				effectiveDate: new Date(),
 				id: '',
 				variables: [],
@@ -638,7 +642,7 @@ const exportConfiguration = (exportDetails: Export) => {
 			color: 'positive',
 			position: 'top',
 			textColor: 'secondary',
-			message: 'Constant variables exported successfully',
+			message: 'Constant variables imported successfully',
 		});
 	}
 };

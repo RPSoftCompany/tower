@@ -19,7 +19,7 @@
 import { ConfigurationVariable } from 'components/configuration/configuration';
 import { ConstantVariableValue } from 'components/constantVariables/constantVariable';
 
-export interface Export {
+export interface Import {
 	inputFile: Blob | string | null;
 	fileData?: string;
 }
