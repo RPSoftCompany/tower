@@ -52,6 +52,38 @@ describe('Constant Variables (e2e)', () => {
       ConstantVariablesService,
     );
 
+    await baseConfigurationService.create({
+      name: 'Project',
+      sequenceNumber: 0,
+      icon: 'TEST',
+    });
+
+    await baseConfigurationService.create({
+      name: 'Environment',
+      sequenceNumber: 1,
+      icon: 'TEST',
+    });
+
+    await configurationModelsService.create({
+      name: 'Environment',
+      rules: [],
+      restrictions: [],
+      base: 'Environment',
+      options: {
+        hasRestrictions: false,
+      },
+    });
+
+    await configurationModelsService.create({
+      name: 'Project',
+      rules: [],
+      restrictions: [],
+      base: 'Project',
+      options: {
+        hasRestrictions: false,
+      },
+    });
+
     const tokenResponse = await axios.post(`${axiosHost}/members/login`, {
       username: 'localTest',
       password: 'localTest',
@@ -77,6 +109,11 @@ describe('Constant Variables (e2e)', () => {
     const allBases = await baseConfigurationService.findAll();
     for (const base of allBases) {
       await baseConfigurationService.remove(base._id.toString());
+    }
+
+    const allConstants = await constantVariablesService.find(['admin']);
+    for (const constant of allConstants) {
+      await constantVariablesService.remove((constant as any)._id);
     }
   });
 
@@ -174,38 +211,6 @@ describe('Constant Variables (e2e)', () => {
   });
 
   it('/constantVariables (POST)', async () => {
-    await baseConfigurationService.create({
-      name: 'Project',
-      sequenceNumber: 0,
-      icon: 'TEST',
-    });
-
-    await baseConfigurationService.create({
-      name: 'Environment',
-      sequenceNumber: 1,
-      icon: 'TEST',
-    });
-
-    await configurationModelsService.create({
-      name: 'Environment',
-      rules: [],
-      restrictions: [],
-      base: 'Environment',
-      options: {
-        hasRestrictions: false,
-      },
-    });
-
-    await configurationModelsService.create({
-      name: 'Project',
-      rules: [],
-      restrictions: [],
-      base: 'Project',
-      options: {
-        hasRestrictions: false,
-      },
-    });
-
     const response = await axios.post(
       `${axiosHost}/constantVariables`,
       {
@@ -278,7 +283,7 @@ describe('Constant Variables (e2e)', () => {
 
   it('/constantVariables/findLatest (GET)', async () => {
     const response = await axios.get(
-      `${axiosHost}/constantVariables/findBLatest?filter={"Project":"Project","Environment":"Environment"}`,
+      `${axiosHost}/constantVariables/findLatest?filter={"Project":"Project","Environment":"Environment"}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       },

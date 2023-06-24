@@ -18,15 +18,15 @@
 
 <template>
 	<div class="tw-bg-dark tw-text-secondary tw-px-4 tw-rounded">
-		<q-dialog v-model="showExportDialog" persistent>
+		<q-dialog v-model="showImportDialog" persistent>
 			<q-card class="tw-min-w-[30%]">
 				<q-card-section class="tw-bg-dark">
-					<div class="text-h6">Export {{ title.toLowerCase() }}</div>
+					<div class="text-h6">Import {{ title.toLowerCase() }}</div>
 				</q-card-section>
 
 				<q-card-section class="tw-bg-darkPage">
 					<q-file
-						v-model="exportDetails.inputFile"
+						v-model="importDetails.inputFile"
 						:loading="loadingFile"
 						accept=".json"
 						color="secondary"
@@ -46,15 +46,15 @@
 						color="secondary"
 						flat
 						label="Cancel"
-						@click="closeExportDialog(false)"
+						@click="closeImportDialog(false)"
 					/>
 					<q-btn
 						v-close-popup
-						:disable="!exportDetails.inputFile || loadingFile"
+						:disable="!importDetails.inputFile || loadingFile"
 						color="secondary"
 						flat
-						label="Export"
-						@click="closeExportDialog(true)"
+						label="Import"
+						@click="closeImportDialog(true)"
 					/>
 				</q-card-actions>
 			</q-card>
@@ -98,26 +98,26 @@
 				>
 					<slot name="beforeImport"></slot>
 					<q-btn
-						v-if="importEnabled"
+						v-if="exportEnabled"
 						color="transparent"
 						flat
 						icon="sym_o_cloud_download"
 						padding="sm"
 						text-color="secondary"
-						@click="emits('importClicked')"
+						@click="emits('exportClicked')"
 					>
-						<q-tooltip>Import {{ title.toLowerCase() }}</q-tooltip>
+						<q-tooltip>Export {{ title.toLowerCase() }}</q-tooltip>
 					</q-btn>
 					<q-btn
-						v-if="exportEnabled"
+						v-if="importEnabled"
 						color="transparent"
 						flat
 						icon="sym_o_cloud_upload"
 						padding="sm"
 						text-color="secondary"
-						@click="showExportDialog = true"
+						@click="showImportDialog = true"
 					>
-						<q-tooltip>Export {{ title.toLowerCase() }}</q-tooltip>
+						<q-tooltip>Import {{ title.toLowerCase() }}</q-tooltip>
 					</q-btn>
 				</div>
 			</div>
@@ -170,10 +170,10 @@ const emits = defineEmits([
 //====================================================
 // Data
 //====================================================
-const exportDetails: Ref<Export> = ref({
+const importDetails: Ref<Export> = ref({
 	inputFile: null,
 });
-const showExportDialog = ref(false);
+const showImportDialog = ref(false);
 const loadingFile = ref(false);
 
 //====================================================
@@ -205,17 +205,17 @@ const onRejected = () => {
  * closeExportDialog
  * @param emit
  */
-const closeExportDialog = (emit: boolean) => {
+const closeImportDialog = (emit: boolean) => {
 	if (emit) {
 		const details: Export = {
-			inputFile: exportDetails.value.inputFile,
-			fileData: exportDetails.value.fileData,
+			inputFile: importDetails.value.inputFile,
+			fileData: importDetails.value.fileData,
 		};
-		emits('exportClicked', details);
+		emits('importClicked', details);
 	}
 
-	exportDetails.value.inputFile = null;
-	exportDetails.value.fileData = undefined;
+	importDetails.value.inputFile = null;
+	importDetails.value.fileData = undefined;
 };
 
 /**
@@ -229,7 +229,7 @@ const uploadFileData = () => {
 	reader.addEventListener(
 		'load',
 		() => {
-			exportDetails.value.fileData = reader.result as string;
+			importDetails.value.fileData = reader.result as string;
 			loadingFile.value = false;
 		},
 		false
@@ -247,14 +247,14 @@ const uploadFileData = () => {
 		false
 	);
 
-	reader.readAsText(exportDetails.value.inputFile as Blob);
+	reader.readAsText(importDetails.value.inputFile as Blob);
 };
 
 //====================================================
 // Watch
 //====================================================
 watch(
-	() => exportDetails.value.inputFile,
+	() => importDetails.value.inputFile,
 	(current) => {
 		if (current) {
 			uploadFileData();

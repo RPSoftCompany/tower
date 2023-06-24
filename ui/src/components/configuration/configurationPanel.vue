@@ -357,7 +357,7 @@ import {
 import ConfigurationVariableRow from 'components/configuration/configurationVariableRow.vue';
 import NewConfigurationVariablePanel from 'components/configuration/newConfigurationVariablePanel.vue';
 import SavePanel from 'components/basic/savePanel.vue';
-import { Export, ImportDetails } from 'components/models';
+import { Import, ImportDetails } from 'components/models';
 import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
 import { v4 as uuidv4 } from 'uuid';
@@ -1002,23 +1002,23 @@ const saveConfiguration = async () => {
 };
 
 /**
- * importConfiguration
+ * exportConfiguration
  */
-const importConfiguration = () => {
+const exportConfiguration = () => {
 	if (!configurationVariables.value?.variables) {
 		return;
 	}
 
-	let importDetails: ImportDetails | null | string;
+	let exportDetails: ImportDetails | null | string;
 
-	importDetails = importJSON();
-	return JSON.stringify(importDetails);
+	exportDetails = exportJSON();
+	return JSON.stringify(exportDetails);
 };
 
 /**
  * importJSON
  */
-const importJSON = () => {
+const exportJSON = () => {
 	const obj: ImportDetails = {
 		configurationVariables: [],
 	};
@@ -1036,17 +1036,21 @@ const importJSON = () => {
 	return obj;
 };
 
-const exportConfiguration = (exportDetails: Export) => {
+/**
+ * importConfiguration
+ * @param importDetails
+ */
+const importConfiguration = (importDetails: Import) => {
 	let data = null;
 	try {
-		data = JSON.parse(exportDetails.fileData as string);
+		data = JSON.parse(importDetails.fileData as string);
 	} catch (e) {
 		$q.notify({
 			color: 'negative',
 			position: 'top',
 			textColor: 'secondary',
 			icon: 'sym_o_error',
-			message: 'Error exporting configuration - invalid file data',
+			message: 'Error importing configuration - invalid file data',
 		});
 
 		return;
@@ -1063,7 +1067,7 @@ const exportConfiguration = (exportDetails: Export) => {
 				textColor: 'secondary',
 				icon: 'sym_o_error',
 				message:
-					'Error exporting configuration - configuration data not present',
+					'Error importing configuration - configuration data not present',
 			});
 
 			return;
@@ -1097,7 +1101,7 @@ const exportConfiguration = (exportDetails: Export) => {
 			color: 'positive',
 			position: 'top',
 			textColor: 'secondary',
-			message: 'Configuration exported successfully',
+			message: 'Configuration imported successfully',
 		});
 	}
 };
@@ -1115,7 +1119,8 @@ const isDifferentThan = (versionToCheck?: number) => {
 
 	if (
 		configurationVariablesArchive.value.length === 0 &&
-		configurationVariables.value?.variables.length !== 0
+		configurationVariables.value?.variables.length !== 0 &&
+		!!configurationVariables.value
 	) {
 		return true;
 	}
