@@ -113,3 +113,4 @@ backend/client/*
 dist/tower-*
 
 .idea
+.github
