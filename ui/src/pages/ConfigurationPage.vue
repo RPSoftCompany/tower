@@ -97,7 +97,7 @@ import { basesStore } from 'stores/bases';
 import ConstantVariablePanel from 'components/constantVariables/constantVariablePanel.vue';
 import ConfigurationPanel from 'components/configuration/configurationPanel.vue';
 import fileDownload from 'js-file-download';
-import { Export } from 'components/models';
+import { Import } from 'components/models';
 import { Configuration } from 'components/configuration/configuration';
 
 //====================================================
@@ -160,7 +160,7 @@ const exportConfiguration = () => {
 /**
  * importConfiguration
  */
-const importConfiguration = (importDetails: Export) => {
+const importConfiguration = (importDetails: Import) => {
 	if (constVariablePanel.value) {
 		constVariablePanel.value.importConfiguration(importDetails);
 	} else if (configurationPanel.value) {

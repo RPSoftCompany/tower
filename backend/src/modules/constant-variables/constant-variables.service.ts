@@ -173,7 +173,7 @@ export class ConstantVariablesService {
     }
 
     if (numberOfModelsUsed === 0) {
-      throw new BadRequestException(`At least one base model has to be used`);
+      throw new BadRequestException('At least one base model has to be used');
     }
 
     createConstantVariableDto.createdBy = userId;

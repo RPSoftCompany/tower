@@ -218,6 +218,10 @@ export class TowerAuthGuard implements CanActivate {
       or.push({ name: role });
     }
 
+    if (or.length === 0) {
+      return false;
+    }
+
     const groups = await this.groupsService.findWithMongoFilter({
       where: {
         $or: or,
