@@ -495,7 +495,7 @@ export class ConfigurationsService implements OnModuleInit {
       order: 'version DESC',
       limit: 1,
     };
-
+      
     const config = await this.find(userRoles, newFilter, true);
 
     if (config.length > 0) {
