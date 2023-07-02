@@ -263,7 +263,7 @@ const savePermissions = async () => {
 
 		if (!exists) {
 			try {
-				await towerAxios.delete(`/Roles/${role.id}`);
+				await towerAxios.delete(`/Roles/${role._id}`);
 			} catch (e) {
 				$q.notify({
 					color: 'negative',

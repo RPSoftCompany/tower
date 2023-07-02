@@ -69,7 +69,7 @@
 									Version {{ promotionCandidate.configuration.version }},
 									{{
 										new Date(
-											promotionCandidate.configuration.effectiveDate
+											promotionCandidate.configuration?.effectiveDate
 										).toLocaleString()
 									}}
 								</q-item-section>
@@ -116,7 +116,7 @@
 			<q-card-section class="tw-max-w-[90vw] tw-max-h-[70vh] tw-overflow-auto">
 				<div class="tw-grid tw-grid-cols-2 tw-gap-3">
 					<template
-						v-for="variable of promotionCandidatePreviewConfig.variables"
+						v-for="variable of promotionCandidatePreviewConfig?.variables"
 						:key="variable.name"
 					>
 						<div class="fullWordWrap">{{ variable.name }}</div>

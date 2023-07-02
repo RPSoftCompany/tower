@@ -48,7 +48,7 @@
 			v-for="(base, index) of allBases"
 			:key="base.name"
 			v-model="bases.values[index]"
-			:disable="isSelectDisabled(index) || loading"
+			:disable="isSelectDisabled(index as Number) || loading"
 			:label="base.name"
 			:loading="bases.loading[index]"
 			:options="bases.items[index]"
@@ -187,7 +187,7 @@ const setBases = async (sequenceNumber: number) => {
 		where: {
 			base: allBases.value[sequenceNumber].name,
 		},
-		order: 'name',
+		order: 'name ASC',
 	};
 
 	const response = await towerAxios.get(

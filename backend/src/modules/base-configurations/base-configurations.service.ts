@@ -70,7 +70,7 @@ export class BaseConfigurationsService {
     const existingMember = await this.baseConfigurationModel.findById(id);
     if (existingMember) {
       for (const key in updatePartialBaseConfigurationDto) {
-        if (key !== '_id' && updatePartialBaseConfigurationDto[key]) {
+        if (key !== '_id') {
           existingMember[key] = updatePartialBaseConfigurationDto[key];
         }
       }

@@ -127,7 +127,7 @@
 
 <script lang="ts" setup>
 import { computed, Ref, ref, watch } from 'vue';
-import { Export } from 'components/models';
+import { Import } from 'components/models';
 import { useQuasar } from 'quasar';
 import TowerToggleIcon from 'components/basic/towerToggleIcon.vue';
 
@@ -170,7 +170,7 @@ const emits = defineEmits([
 //====================================================
 // Data
 //====================================================
-const importDetails: Ref<Export> = ref({
+const importDetails: Ref<Import> = ref({
 	inputFile: null,
 });
 const showImportDialog = ref(false);
@@ -207,7 +207,7 @@ const onRejected = () => {
  */
 const closeImportDialog = (emit: boolean) => {
 	if (emit) {
-		const details: Export = {
+		const details: Import = {
 			inputFile: importDetails.value.inputFile,
 			fileData: importDetails.value.fileData,
 		};

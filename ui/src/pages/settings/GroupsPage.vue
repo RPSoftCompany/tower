@@ -57,11 +57,10 @@
 						v-if="inputValue || currentGroup"
 						flat
 						padding="sm"
+						:disable="!!currentGroup && !currentGroup._id"
 						@click="addOrDeleteGroup"
 					>
-						<q-icon
-							:name="currentGroup && !inputValue ? 'sym_o_delete' : 'sym_o_add'"
-						/>
+						<q-icon :name="currentGroup?._id ? 'sym_o_delete' : 'sym_o_add'" />
 					</q-btn>
 				</template>
 			</tower-select>
@@ -235,9 +234,14 @@ const saveChanges = async () => {
 			name: currentGroup.value.name,
 			roles: currentRoles.value,
 		});
-		if (response.status === 200) {
+		if (response.status === 201) {
 			currentGroup.value = response.data;
+			if (!!currentGroup.value) {
+				currentGroup.value.roles = [...currentRoles.value];
+			}
 		}
+
+		await getAllGroups();
 	}
 
 	$q.notify({
