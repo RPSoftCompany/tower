@@ -59,7 +59,7 @@ import { QSelect } from 'quasar';
 
 interface towerSelectProps {
 	modelValue: object | string | null | undefined;
-	options: undefined | Array<[object]> | Array<string>;
+	options: undefined | Array<object> | Array<string>;
 	optionLabel?: string | undefined;
 	label: string;
 	loading?: boolean;
@@ -82,7 +82,7 @@ const props = withDefaults(defineProps<towerSelectProps>(), {
 	loading: false,
 	disable: false,
 	clearable: false,
-	filter: ''
+	filter: '',
 });
 
 /**
@@ -101,12 +101,12 @@ const select: Ref<QSelect | null> = ref(null);
  */
 const modelValue = computed({
 	get: () => props.modelValue,
-	set: value => emit('update:modelValue', value)
+	set: (value) => emit('update:modelValue', value),
 });
 
 const currentFilter = computed({
 	get: () => props.filter,
-	set: value => emit('update:filter', value)
+	set: (value) => emit('update:filter', value),
 });
 
 /**
@@ -147,7 +147,7 @@ const validate = () => {
 };
 
 defineExpose({
-	validate
+	validate,
 });
 </script>
 
