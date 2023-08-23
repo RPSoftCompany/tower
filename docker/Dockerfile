@@ -1,4 +1,4 @@
-FROM node:19.8.1
+FROM node:20.5.0-alpine3.18
 
 ARG VERSION=3.0.0
 LABEL TOWER_VERSION=${VERSION}
@@ -9,16 +9,13 @@ RUN mkdir -p /home/tower
 
 WORKDIR /home/tower
 
-RUN groupadd -g 2001 tower \
-    && useradd -r -u 2001 -g tower tower
-
-COPY . .
-
-RUN chown -R tower:tower .
+RUN addgroup -S tower && adduser -D -G tower tower
 
 USER tower
 
+COPY . .
+
 WORKDIR /home/tower/backend
 
-SHELL ["/bin/bash", "-c"]
-ENTRYPOINT ["/bin/bash", "-c", "npm run start:prod"]
+SHELL ["/bin/sh", "-c"]
+ENTRYPOINT ["/bin/sh", "-c", "npm run start:prod"]
