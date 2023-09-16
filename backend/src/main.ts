@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import * as process from 'process';
 import history from 'connect-history-api-fallback';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -10,6 +10,8 @@ import * as express from 'express';
 import * as fs from 'fs';
 
 async function bootstrap() {
+  const logger = new Logger('Tower');
+
   const logLevel = process.env.LOG_LEVEL
     ? JSON.parse(process.env.LOG_LEVEL)
     : ['log', 'error'];
@@ -18,7 +20,7 @@ async function bootstrap() {
   const sslCert = process.env.SSL_CERT_PATH ? process.env.SSL_CERT_PATH : null;
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    cors: process.env.NODE_ENV === 'development',
+    cors: process.env.NODE_ENV === 'development' || process.env.CORS === 'true',
     logger: logLevel,
     httpsOptions:
       sslKey && sslCert
@@ -60,7 +62,8 @@ async function bootstrap() {
     app.use('/', express.static(join(__dirname, '..', 'client')));
   }
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' || process.env.CORS === 'true') {
+    logger.debug('CORS enabled');
     app.enableCors({ origin: true, credentials: true });
   }
 
@@ -68,6 +71,6 @@ async function bootstrap() {
     process.env.PORT ? process.env.PORT : 3000,
     process.env.HOST ? process.env.HOST : '::1',
   );
-  console.log(`Tower is running on: ${await app.getUrl()}`);
+  logger.log(`Tower is running on: ${await app.getUrl()}`);
 }
 bootstrap().then();
