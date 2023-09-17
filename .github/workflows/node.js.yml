@@ -48,3 +48,11 @@ jobs:
           context: .
           push: true
           tags: rpsofttower/tower:${{ secrets.DOCKER_VERSION }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4.0.0
+        with:
+          file: ./docker/Dockerfile
+          build-args: TOWER_VERSION=${{ secrets.DOCKER_VERSION }}
+          context: .
+          push: true
+          tags: rpsofttower/tower:latest
