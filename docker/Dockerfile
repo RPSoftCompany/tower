@@ -1,9 +1,7 @@
 FROM node:20.5.0-alpine3.18
 
-ARG VERSION=3.0.0
+ARG VERSION=3.0.2
 LABEL TOWER_VERSION=${VERSION}
-
-ENV NODE_ENV production
 
 RUN mkdir -p /home/tower
 
@@ -11,11 +9,21 @@ WORKDIR /home/tower
 
 RUN addgroup -S tower && adduser -D -G tower tower
 
+COPY . .
+RUN chown -R tower .
+
 USER tower
 
-COPY . .
+RUN cd ui && npm --production=false ci
+RUN cd backend && npm --production=false ci
 
-WORKDIR /home/tower/backend
+ENV NODE_ENV production
+
+RUN npm run build:ui
+RUN npm run build:backend
+RUN mv backend/.env_template backend/.env
+RUN mkdir -p backend/client
+RUN cp -R ui/dist/spa/* backend/client/
 
 SHELL ["/bin/sh", "-c"]
 ENTRYPOINT ["/bin/sh", "-c", "npm run start:prod"]
