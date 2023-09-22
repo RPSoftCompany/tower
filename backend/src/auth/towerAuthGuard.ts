@@ -19,6 +19,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Audit } from '../modules/audits/audits.schema';
 import { Model } from 'mongoose';
 import { AuditsModule } from '../modules/audits/audits.module';
+import { stringify } from 'ts-jest';
 
 interface TowerJWTToken {
   data: {
@@ -145,6 +146,8 @@ export class TowerAuthGuard implements CanActivate {
       let user = null;
 
       if (req.headers) {
+        this.logger.debug(`Request headers: ${stringify(req.headers)}`);
+
         let neededHeaders = JSON.parse(
           process.env.TOKEN_HEADERS,
         ) as Array<string>;
@@ -163,10 +166,13 @@ export class TowerAuthGuard implements CanActivate {
             }
           }
         }
+      } else {
+        this.logger.debug('No headers in the request');
       }
 
       return null;
     } catch (e) {
+      this.logger.error(`Error validating request headers: ${e}`);
       return null;
     }
   }
