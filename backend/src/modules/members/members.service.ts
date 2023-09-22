@@ -45,6 +45,8 @@ export class MembersService implements OnModuleInit {
   ) {
     this.ldapConnection = null;
     this.ldapInitialized = false;
+
+    this.initializeLdap();
   }
 
   /**
