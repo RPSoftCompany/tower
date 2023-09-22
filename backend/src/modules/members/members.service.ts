@@ -110,13 +110,29 @@ export class MembersService implements OnModuleInit {
     await this.initializeLdap();
 
     if (!this.ldapConnection) {
+      this.logger.debug('LDAP connection not initialized');
       return false;
     }
 
+    try {
+      return await authenticate({
+        ldapOpts: { url: this.ldapConnection.url },
+        adminDn: this.ldapConnection.bindDN,
+        adminPassword: this.ldapConnection.bindCredentials,
+        username: username,
+        userPassword: password,
+        userSearchBase: this.ldapConnection.searchBase,
+        usernameAttribute: this.ldapConnection.usernameAttribute,
+      });
+    } catch (e) {
+      // ignore
+    }
+
+    // Try with user data as adminDn
     return await authenticate({
       ldapOpts: { url: this.ldapConnection.url },
-      adminDn: this.ldapConnection.bindDN,
-      adminPassword: this.ldapConnection.bindCredentials,
+      adminDn: username,
+      adminPassword: password,
       username: username,
       userPassword: password,
       userSearchBase: this.ldapConnection.searchBase,
@@ -244,12 +260,17 @@ export class MembersService implements OnModuleInit {
           loginDto.username,
           loginDto.password,
         );
+
+        this.logger.debug(
+          `LDAP login output: ${JSON.stringify(validLdapAuth)}`,
+        );
       } catch (e) {
         this.logger.error(e);
       }
     }
 
     if (validLdapAuth && !member) {
+      this.logger.debug('Creating LDAP user');
       member = await this.memberModel.create({
         type: 'ldap',
         blocked: false,
