@@ -25,5 +25,7 @@ RUN mv backend/.env_template backend/.env
 RUN mkdir -p backend/client
 RUN cp -R ui/dist/spa/* backend/client/
 
+WORKDIR /home/tower/backend
+
 SHELL ["/bin/sh", "-c"]
 ENTRYPOINT ["/bin/sh", "-c", "npm run start:prod"]
