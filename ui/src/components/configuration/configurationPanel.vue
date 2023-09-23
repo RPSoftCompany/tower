@@ -266,7 +266,7 @@
 						<configuration-variable-row
 							v-model:type="row.type"
 							v-model:value="row.value"
-							:allow-delete="!row.addIfAbsent"
+							:allow-delete="!row.addIfAbsent && userCanModify"
 							:current-archive="configurationArchiveVersion(row.name)"
 							:deleted="row.deleted"
 							:error="row.error"
@@ -292,7 +292,7 @@
 							:key="row.name"
 							v-model:type="row.type"
 							v-model:value="row.value"
-							:allow-delete="!row.addIfAbsent"
+							:allow-delete="!row.addIfAbsent && userCanModify"
 							:current-archive="configurationArchiveVersion(row.name)"
 							:deleted="row.deleted"
 							:error="row.error"

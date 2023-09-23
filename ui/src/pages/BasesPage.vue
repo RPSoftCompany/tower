@@ -530,7 +530,7 @@ const userCanModify = computed(() => {
 		}
 
 		return (
-			userSt.getRoles.includes('constantVariable.modify') ||
+			userSt.getRoles.includes('configurationModel.modify') ||
 			userSt.getRoles.includes('admin')
 		);
 	}
