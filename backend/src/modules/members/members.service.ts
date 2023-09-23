@@ -281,10 +281,10 @@ export class MembersService implements OnModuleInit {
         type: 'ldap',
         blocked: false,
         display: Array.isArray(
-          validLdapAuth[this.ldapConnection.usernameAttribute],
+          validLdapAuth[this.ldapConnection.displayAttribute],
         )
-          ? validLdapAuth[this.ldapConnection.usernameAttribute][0]
-          : validLdapAuth[this.ldapConnection.usernameAttribute],
+          ? validLdapAuth[this.ldapConnection.displayAttribute][0]
+          : validLdapAuth[this.ldapConnection.displayAttribute],
         groups: this.ldapConnection.defaultGroups,
         username: loginDto.username,
         newUser: false,
