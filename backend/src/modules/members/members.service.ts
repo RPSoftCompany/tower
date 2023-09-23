@@ -86,9 +86,7 @@ export class MembersService implements OnModuleInit {
    */
   async initializeLdap() {
     const connections: LDAP[] = await this.connectionsModel.find({
-      where: {
-        system: 'LDAP',
-      },
+      system: 'LDAP',
     });
 
     if (connections && connections.length > 0) {
@@ -109,6 +107,8 @@ export class MembersService implements OnModuleInit {
    * @param password
    */
   async ldapLogin(username: string, password: string) {
+    this.logger.debug('LDAP');
+
     await this.initializeLdap();
 
     if (!this.ldapConnection) {
@@ -251,6 +251,10 @@ export class MembersService implements OnModuleInit {
       .exec();
 
     let validLdapAuth = false;
+
+    if (!member) {
+      await this.initializeLdap();
+    }
 
     if (
       this.ldapConnection &&

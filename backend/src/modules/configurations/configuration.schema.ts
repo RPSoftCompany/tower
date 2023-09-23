@@ -30,6 +30,8 @@ export class Configuration {
   @Prop({ required: true, type: [Object] })
   variables: ConfigurationVariable[];
 
+  variablesByName: any;
+
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Member' })
   createdBy: Member;
 

@@ -156,7 +156,7 @@ export class TowerAuthGuard implements CanActivate {
 
         for (const header of neededHeaders) {
           const index = req.rawHeaders.findIndex((el) => {
-            return el === header;
+            return el.toLowerCase() === header.toLowerCase();
           });
 
           if (index >= 0 && req.rawHeaders[index + 1]) {
