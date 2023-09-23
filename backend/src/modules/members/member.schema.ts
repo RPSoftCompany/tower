@@ -34,11 +34,13 @@ export class Member {
 const MemberSchema = SchemaFactory.createForClass(Member);
 
 MemberSchema.pre('save', async function () {
-  try {
-    // Validate if hash was set already
-    getRounds(this.password);
-  } catch (e) {
-    this.password = await hash(this.password, 10);
+  if (this.type !== 'ldap') {
+    try {
+      // Validate if hash was set already
+      getRounds(this.password);
+    } catch (e) {
+      this.password = await hash(this.password, 10);
+    }
   }
 
   // Prevent admin user from any modifications

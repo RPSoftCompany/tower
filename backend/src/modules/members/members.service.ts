@@ -86,9 +86,7 @@ export class MembersService implements OnModuleInit {
    */
   async initializeLdap() {
     const connections: LDAP[] = await this.connectionsModel.find({
-      where: {
-        system: 'LDAP',
-      },
+      system: 'LDAP',
     });
 
     if (connections && connections.length > 0) {
@@ -109,6 +107,8 @@ export class MembersService implements OnModuleInit {
    * @param password
    */
   async ldapLogin(username: string, password: string) {
+    this.logger.debug('LDAP');
+
     await this.initializeLdap();
 
     if (!this.ldapConnection) {
@@ -127,6 +127,7 @@ export class MembersService implements OnModuleInit {
         usernameAttribute: this.ldapConnection.usernameAttribute,
       });
     } catch (e) {
+      this.logger.error(e);
       // ignore
     }
 
@@ -252,6 +253,10 @@ export class MembersService implements OnModuleInit {
 
     let validLdapAuth = false;
 
+    if (!member) {
+      await this.initializeLdap();
+    }
+
     if (
       this.ldapConnection &&
       loginDto.username !== 'admin' &&
@@ -262,17 +267,12 @@ export class MembersService implements OnModuleInit {
           loginDto.username,
           loginDto.password,
         );
-
-        this.logger.debug(
-          `LDAP login output: ${JSON.stringify(validLdapAuth)}`,
-        );
       } catch (e) {
         this.logger.error(e);
       }
     }
 
     if (validLdapAuth && !member) {
-      this.logger.debug('Creating LDAP user');
       member = await this.memberModel.create({
         type: 'ldap',
         blocked: false,

@@ -123,6 +123,11 @@ export class V1Service {
 
     configuration.variables = [...variables];
 
+    configuration.variablesByName = {};
+    configuration.variables.forEach((variable) => {
+      configuration.variablesByName[variable.name] = variable.value;
+    });
+
     let contentType = 'application/json';
     if (template.returnType === 'plain text') {
       contentType = 'text/plain';
