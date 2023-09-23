@@ -127,7 +127,6 @@ export class MembersService implements OnModuleInit {
         usernameAttribute: this.ldapConnection.usernameAttribute,
       });
     } catch (e) {
-      this.logger.error(e);
       // ignore
     }
 
@@ -267,12 +266,17 @@ export class MembersService implements OnModuleInit {
           loginDto.username,
           loginDto.password,
         );
+
+        this.logger.debug(
+          `LDAP login output: ${JSON.stringify(validLdapAuth)}`,
+        );
       } catch (e) {
         this.logger.error(e);
       }
     }
 
     if (validLdapAuth && !member) {
+      this.logger.debug('Creating LDAP user');
       member = await this.memberModel.create({
         type: 'ldap',
         blocked: false,
