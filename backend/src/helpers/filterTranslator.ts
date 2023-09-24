@@ -41,7 +41,7 @@ export const filterTranslator = (filter: Statement) => {
         newFilter.where.$or = filter.where.or;
       } else if (key === 'and') {
         newFilter.where.$and = filter.where.and;
-      } else if (typeof filter.where[key] === 'object') {
+      } else if (filter.where[key] && typeof filter.where[key] === 'object') {
         if (filter.where[key].hasOwnProperty('like')) {
           newFilter.where[key] = new RegExp((filter.where[key] as any)['like']);
         } else if (filter.where[key].hasOwnProperty('ilike')) {

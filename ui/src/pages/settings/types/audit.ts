@@ -16,13 +16,11 @@
  * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
  */
 
-import { Member } from 'components/user/user';
-
 export interface Audit {
 	entity: string;
 	url: string;
 	method: string;
-	userId: Member;
+	user: string;
 	query: string;
 	status: AuditStatus;
 	statusCode: string;
