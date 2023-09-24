@@ -230,7 +230,7 @@ const columns = [
 	{
 		name: 'status',
 		align: 'left',
-		style: 'min-width: 5rem; max-width: 5rem',
+		style: 'min-width: 7rem; max-width: 7rem',
 		label: 'Status',
 		field: 'status',
 		sortable: true,
@@ -238,7 +238,7 @@ const columns = [
 	{
 		name: 'statusCode',
 		align: 'left',
-		style: 'min-width: 5rem; max-width: 5rem',
+		style: 'min-width: 7rem; max-width: 7rem',
 		label: 'Status code',
 		field: 'statusCode',
 		sortable: true,
@@ -256,7 +256,7 @@ const columns = [
 		align: 'left',
 		style: 'min-width: 10rem',
 		label: 'User',
-		field: (val: Audit) => val.userId?.username,
+		field: (val: Audit) => val.user,
 		sortable: true,
 	},
 	{
@@ -266,7 +266,7 @@ const columns = [
 		label: 'Date',
 		field: 'date',
 		sortable: true,
-		format: (val: Date) => `${new Date(val).toLocaleString()}`,
+		format: (val: Date) => `${new Date(val).toISOString()}`,
 	},
 ];
 
@@ -299,11 +299,11 @@ const getCurrentPage = async (page: number) => {
 	const where: any = {};
 	filter.value.forEach((el) => {
 		if (el.value) {
-			if (el.name !== 'user') {
-				where[el.name] = { ilike: el.value };
-			} else {
-				where['user'] = el.value;
-			}
+			// if (el.name !== 'user') {
+			where[el.name] = { ilike: el.value };
+			// } else {
+			// 	where['user'] = el.value;
+			// }
 			filterExists = true;
 		}
 	});

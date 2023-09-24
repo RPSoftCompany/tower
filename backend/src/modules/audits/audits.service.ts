@@ -48,6 +48,7 @@ export class AuditsService implements OnModuleInit {
           body: 1,
           status: 1,
           statusCode: 1,
+          errorDescription: 1,
           date: 1,
           userId: {
             $first: '$userId',
@@ -63,9 +64,14 @@ export class AuditsService implements OnModuleInit {
           query: 1,
           body: 1,
           status: 1,
-          statusCode: 1,
-          date: 1,
-          'userId.username': '$userId.username',
+          statusCode: {
+            $toString: '$statusCode',
+          },
+          errorDescription: 1,
+          date: {
+            $toString: '$date',
+          },
+          user: '$userId.username',
         },
       },
     ];

@@ -26,13 +26,14 @@ export class Audit {
   @Prop({ required: true })
   status: string;
 
-  @Prop({ required: true })
-  statusCode: number;
+  @Prop({ required: true, type: Object })
+  statusCode: number | string;
 
   @Prop({
     default: () => new Date(),
+    type: Object,
   })
-  date?: Date;
+  date?: Date | string;
 
   @Prop({ required: false })
   errorDescription?: string;

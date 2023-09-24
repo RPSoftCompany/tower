@@ -86,6 +86,7 @@ export class V1Service {
       userRoles,
       toUse,
       url,
+      allBases,
     );
 
     return await this.compileConfiguration(
@@ -157,9 +158,9 @@ export class V1Service {
     userRoles: string[],
     restConfigurations: RestConfiguration[],
     url: string,
-    type?: string,
+    allBases: BaseConfiguration[],
   ) {
-    type ??= 'v1';
+    const type = 'v1';
 
     for (const config of restConfigurations) {
       const restUrl = `/${type}/${config.url}`;
@@ -179,6 +180,7 @@ export class V1Service {
             split[i].indexOf('}'),
             split[i].length,
           );
+
           if (afterModel[1]) {
             afterModel = afterModel.substring(1, afterModel.length);
             const modelValue = tempUrl.substring(
@@ -194,6 +196,12 @@ export class V1Service {
           } else {
             models[baseModel] = tempUrl;
           }
+        }
+      }
+
+      for (const base of allBases) {
+        if (!models[base.name]) {
+          models[base.name] = null;
         }
       }
 
@@ -285,7 +293,7 @@ export class V1Service {
   ) {
     const bases: any = {};
     for (const base of allBases) {
-      if (configuration[base.name]) {
+      if (configuration[base.name] !== undefined) {
         bases[base.name] = configuration[base.name];
       }
     }

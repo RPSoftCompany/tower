@@ -18,6 +18,8 @@
 
 // app global css in SCSS form
 
+@import "reset.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
