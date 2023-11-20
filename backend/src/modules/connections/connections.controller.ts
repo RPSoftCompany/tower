@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 import { ConnectionsService } from './connections.service';
 import {
+  CreateAWSConnectionDto,
   CreateLDAPConnectionDto,
   CreateSCPConnectionDto,
   CreateVaultConnectionDto,
@@ -38,6 +39,7 @@ import { LDAP } from './ldapConnection.schema';
 import { Vault } from './VaultConnection.schema';
 import { SCP } from './ScpConnection.schema';
 import { AuditInterceptor } from '../../audit-interceptor/audit-interceptor.interceptor';
+import { AWSConnection } from './AWSConnection.schema';
 
 @ApiTags('Connections')
 @UseGuards(TowerAuthGuard)
@@ -70,6 +72,9 @@ export class ConnectionsController {
         {
           $ref: getSchemaPath(CreateVaultConnectionDto),
         },
+        {
+          $ref: getSchemaPath(CreateAWSConnectionDto),
+        },
       ],
     },
   })
@@ -78,7 +83,8 @@ export class ConnectionsController {
     createConnectionDto:
       | CreateLDAPConnectionDto
       | CreateSCPConnectionDto
-      | CreateVaultConnectionDto,
+      | CreateVaultConnectionDto
+      | CreateAWSConnectionDto,
   ) {
     return CRUDExceptionWrapper(async () => {
       return this.connectionsService.upsert(createConnectionDto);
@@ -140,7 +146,7 @@ export class ConnectionsController {
   @ApiQuery({ name: 'type', required: false })
   testConnection(
     @Body()
-    connection: LDAP | Vault | SCP,
+    connection: LDAP | Vault | SCP | AWSConnection,
     @Query('type') type: string,
   ) {
     return this.connectionsService.testConnection(type, connection);

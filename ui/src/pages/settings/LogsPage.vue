@@ -299,11 +299,7 @@ const getCurrentPage = async (page: number) => {
 	const where: any = {};
 	filter.value.forEach((el) => {
 		if (el.value) {
-			// if (el.name !== 'user') {
 			where[el.name] = { ilike: el.value };
-			// } else {
-			// 	where['user'] = el.value;
-			// }
 			filterExists = true;
 		}
 	});
@@ -338,21 +334,31 @@ const getCurrentPage = async (page: number) => {
 		where: filterExists ? where : undefined,
 	};
 
-	let response = await towerAxios.get(
-		`/audits?filter=${JSON.stringify(queryFilter, undefined, '')}`
-	);
+	try {
+		let response = await towerAxios.get(
+			`/audits?filter=${JSON.stringify(queryFilter, undefined, '')}`
+		);
 
-	if (response.status === 200) {
-		currentAudit.value = response.data;
-	}
+		if (response.status === 200) {
+			currentAudit.value = response.data;
+		}
 
-	response = await towerAxios.get(
-		`/audits/count?filter=${JSON.stringify(countFilter, undefined, '')}`
-	);
-	if (response.status === 200) {
-		pagination.value.rowsNumber = response.data?.count
-			? response.data?.count
-			: 0;
+		response = await towerAxios.get(
+			`/audits/count?filter=${JSON.stringify(countFilter, undefined, '')}`
+		);
+		if (response.status === 200) {
+			pagination.value.rowsNumber = response.data?.count
+				? response.data?.count
+				: 0;
+		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting Audit data',
+		});
 	}
 
 	loading.value = false;

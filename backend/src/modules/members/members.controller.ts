@@ -85,6 +85,7 @@ export class MembersController {
    */
   @Get()
   @UseGuards(TowerAuthGuard)
+  @Roles(['admin'])
   @ApiBearerAuth()
   @ApiBasicAuth()
   @ApiQuery({ name: 'filter', required: false })

@@ -17,9 +17,21 @@ export class ConstantVariableObject {
   @Prop({
     required: true,
     type: String,
-    enum: ['string', 'number', 'list', 'text', 'boolean', 'password', 'Vault'],
+    enum: [
+      'string',
+      'number',
+      'list',
+      'text',
+      'boolean',
+      'password',
+      'Vault',
+      'AWS SM',
+    ],
   })
   type: string;
+
+  @Prop({ required: false })
+  valueKey?: string;
 
   @Prop({ required: true })
   forced: boolean;
@@ -91,6 +103,7 @@ ConstantVariableSchema.pre('validate', async function () {
     'boolean',
     'password',
     'Vault',
+    'AWS SM',
   ];
 
   this.variables = this.variables.map((variable: ConstantVariableObject) => {

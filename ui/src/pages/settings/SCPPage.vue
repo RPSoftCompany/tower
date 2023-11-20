@@ -470,33 +470,43 @@ const getAllConnections = async () => {
 
 	loading.value = true;
 
-	const response = await towerAxios.get(
-		`/connections?filter=${JSON.stringify(filter, undefined, '')}`
-	);
-	if (response.status === 200) {
-		allConnections.value = [];
-		response.data.forEach((el: any) => {
-			const items: Array<ConnectionItem> = [];
-			el.items.forEach((el: ConnectionItem) => {
-				let item = el;
-				item['__name__'] = extractItemName(el);
+	try {
+		const response = await towerAxios.get(
+			`/connections?filter=${JSON.stringify(filter, undefined, '')}`
+		);
+		if (response.status === 200) {
+			allConnections.value = [];
+			response.data.forEach((el: any) => {
+				const items: Array<ConnectionItem> = [];
+				el.items.forEach((el: ConnectionItem) => {
+					let item = el;
+					item['__name__'] = extractItemName(el);
 
-				items.push(item);
-			});
+					items.push(item);
+				});
 
-			allConnections.value.push({
-				_id: el._id,
-				enabled: true,
-				authType: el.authType,
-				host: el.host,
-				items: items,
-				key: el.key,
-				port: el.port,
-				password: el.password,
-				system: el.system,
-				username: el.username,
-				connectionName: `${el.username}@${el.host}`,
+				allConnections.value.push({
+					_id: el._id,
+					enabled: true,
+					authType: el.authType,
+					host: el.host,
+					items: items,
+					key: el.key,
+					port: el.port,
+					password: el.password,
+					system: el.system,
+					username: el.username,
+					connectionName: `${el.username}@${el.host}`,
+				});
 			});
+		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting SCP details',
 		});
 	}
 
@@ -509,9 +519,19 @@ const getAllConnections = async () => {
 const getAllTemplates = async () => {
 	loading.value = true;
 
-	const response = await towerAxios.get('/restConfigurations');
-	if (response.status === 200) {
-		allTemplates.value = response.data;
+	try {
+		const response = await towerAxios.get('/restConfigurations');
+		if (response.status === 200) {
+			allTemplates.value = response.data;
+		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting SCP details',
+		});
 	}
 
 	loading.value = false;
@@ -524,16 +544,26 @@ const getAllModels = async () => {
 		order: 'name ASC',
 	};
 
-	const response = await towerAxios.get(
-		`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
-	);
-	if (response.status === 200) {
-		response.data.forEach((el: ConfigurationModel) => {
-			if (allModels.value.has(el.base)) {
-				allModels.value.get(el.base)?.push(el.name);
-			} else {
-				allModels.value.set(el.base, [el.name]);
-			}
+	try {
+		const response = await towerAxios.get(
+			`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
+		);
+		if (response.status === 200) {
+			response.data.forEach((el: ConfigurationModel) => {
+				if (allModels.value.has(el.base)) {
+					allModels.value.get(el.base)?.push(el.name);
+				} else {
+					allModels.value.set(el.base, [el.name]);
+				}
+			});
+		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting SCP details',
 		});
 	}
 

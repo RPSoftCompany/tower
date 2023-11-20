@@ -34,6 +34,7 @@ export interface ConfigurationVariable {
 	name: string;
 	type: ConfigurationVariableType;
 	value: string | number | Array<string> | boolean | null | undefined;
+	valueKey?: string;
 }
 
 export interface ConfigurationVariableToDisplay extends ConfigurationVariable {

@@ -3,6 +3,7 @@ import { HydratedDocument } from 'mongoose';
 import { LDAP } from './ldapConnection.schema';
 import { Vault } from './VaultConnection.schema';
 import { SCP } from './ScpConnection.schema';
+import { AWSConnection } from './AWSConnection.schema';
 import {
   decryptPassword,
   encryptPassword,
@@ -14,7 +15,7 @@ export class Connection {
   @Prop({
     required: true,
     type: String,
-    enum: [LDAP.name, Vault.name, SCP.name],
+    enum: [LDAP.name, Vault.name, SCP.name, AWSConnection.name],
   })
   system: string;
 }

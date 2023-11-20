@@ -118,8 +118,16 @@
 										<template v-if="showDiff">
 											<template
 												v-for="(diff, index) of diffStrings(
-													valueAsString(localValue),
-													valueAsString(currentArchive?.value)
+													valueAsString(
+														localType?.value === 'AWS SM'
+															? `${localValue} : ${localKey}`
+															: localValue
+													),
+													valueAsString(
+														currentArchive?.type === 'AWS SM'
+															? `${currentArchive.value} : ${currentArchive.valueKey}`
+															: currentArchive?.value
+													)
 												)"
 												:key="`${diff.value}_${index}`"
 											>
@@ -138,7 +146,13 @@
 											</template>
 										</template>
 										<template v-else
-											>{{ valueAsString(currentArchive.value) }}
+											>{{
+												valueAsString(
+													currentArchive?.type === 'AWS SE'
+														? `${currentArchive.value}:${currentArchive.valueKey}`
+														: currentArchive?.value
+												)
+											}}
 										</template>
 									</template>
 								</div>
@@ -348,6 +362,38 @@
 							input-debounce="300"
 						/>
 					</template>
+					<!-- AWS -->
+					<template v-if="localType?.value === ConfigurationVariableType.AWS">
+						<div class="tw-flex tw-gap-1">
+							<q-input
+								v-model="localValue"
+								class="tw-flex-grow"
+								:disable="forced"
+								:error="!!error"
+								label="Secret name"
+								:hint="
+									!!sourceBase && !!sourceModel && forced
+										? `Variable value forced by ${sourceBase}`
+										: undefined
+								"
+								:error-message="error"
+								:hide-bottom-space="true"
+								color="secondary"
+								dense
+								input-debounce="300"
+							/>
+							<q-input
+								v-model="localKey"
+								class="tw-flex-grow"
+								:disable="forced"
+								label="Key"
+								:hide-bottom-space="true"
+								color="secondary"
+								dense
+								input-debounce="300"
+							/>
+						</div>
+					</template>
 				</div>
 				<!-- delete variable -->
 				<q-separator inset vertical />
@@ -381,6 +427,8 @@ import {
 } from 'components/constantVariables/constantVariable';
 import TypeSelect from 'components/basic/typeSelect.vue';
 import { diffChars } from 'diff';
+import { isNil } from 'lodash';
+import { ConfigurationVariable } from 'components/configuration/configuration';
 
 //====================================================
 // Props
@@ -391,6 +439,7 @@ const props = defineProps<{
 	name: string;
 	type: ConfigurationVariableType;
 	value?: string | number | Array<string> | boolean | null | undefined;
+	valueKey?: string;
 	deleted?: boolean;
 	isConstantVariable?: boolean;
 	forced?: boolean;
@@ -400,10 +449,7 @@ const props = defineProps<{
 	showDiff?: boolean;
 	sourceBase?: string;
 	sourceModel?: string;
-	currentArchive?: {
-		type: ConfigurationVariableType;
-		value: string | number | Array<string> | boolean | null | undefined;
-	};
+	currentArchive?: ConfigurationVariable;
 }>();
 
 //====================================================
@@ -437,12 +483,17 @@ const removeVariable = () => {
  */
 const revert = () => {
 	if (props.deleted) {
-		emit('addVariable', {
+		const variable: any = {
 			name: localName.value,
 			type: props.currentArchive?.type,
 			value: props.currentArchive?.value,
-		});
+		};
 
+		if (props.currentArchive?.type === 'AWS SM') {
+			variable.valueKey = props.currentArchive?.valueKey;
+		}
+
+		emit('addVariable', variable);
 		return;
 	}
 
@@ -463,6 +514,10 @@ const revert = () => {
 		localValue.value !== props.currentArchive?.value
 	) {
 		localValue.value = props.currentArchive?.value;
+	}
+
+	if (!isNil(props.currentArchive?.valueKey)) {
+		localKey.value = props.currentArchive?.valueKey;
 	}
 };
 
@@ -490,6 +545,7 @@ if (typeof props.type === 'string') {
 	localType.value = {
 		label: '',
 		value: props.type,
+		valueKey: '',
 		icon: getTypeIcon(props.type),
 	};
 } else {
@@ -497,6 +553,7 @@ if (typeof props.type === 'string') {
 }
 localChanges = true;
 const localValue = ref(props.value);
+const localKey = ref(props.valueKey);
 
 const deleteDialog = ref(false);
 
@@ -534,6 +591,12 @@ const revertEnabled = computed(() => {
 			typeof localType.value === 'string'
 				? localType.value
 				: localType.value.value;
+
+		if (localTypeValue === 'AWS SM') {
+			if (localKey.value !== props.currentArchive.valueKey) {
+				return true;
+			}
+		}
 
 		const archive = props.currentArchive;
 		return (
@@ -583,6 +646,7 @@ const emit = defineEmits([
 	'removeVariable',
 	'update:value',
 	'update:type',
+	'update:valueKey',
 	'addVariable',
 ]);
 
@@ -635,6 +699,10 @@ watch(localValue, () => {
 	}
 
 	localChanges = false;
+});
+
+watch(localKey, () => {
+	emit('update:valueKey', localKey.value);
 });
 
 watch(

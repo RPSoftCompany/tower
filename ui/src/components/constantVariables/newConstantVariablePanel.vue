@@ -27,9 +27,9 @@
 				ref="nameRef"
 				v-model="name"
 				:rules="[
-					val =>
+					(val) =>
 						!existingVariableNames.includes(val) ||
-						'Variable with this name exists already'
+						'Variable with this name exists already',
 				]"
 				color="secondary"
 				dense
@@ -88,7 +88,7 @@
 							v-model="value"
 							:options="[
 								{ label: 'True', value: true },
-								{ label: 'False', value: false }
+								{ label: 'False', value: false },
 							]"
 							class="tw-mt-1.5"
 							dense
@@ -129,6 +129,25 @@
 							dense
 							label="New constant variable value"
 						/>
+					</template>
+					<!-- AWS -->
+					<template v-if="type.value === ConfigurationVariableType.AWS">
+						<div class="flex tw-gap-1">
+							<q-input
+								v-model="value"
+								color="secondary"
+								class="tw-flex-grow"
+								dense
+								label="New constant variable secret name"
+							/>
+							<q-input
+								v-model="valueKey"
+								class="tw-flex-grow"
+								color="secondary"
+								dense
+								label="New constant variable key"
+							/>
+						</div>
 					</template>
 				</div>
 				<!-- Forced -->
@@ -171,7 +190,7 @@
 import {
 	ConfigurationVariableType,
 	typeOptions,
-	valueConverter
+	valueConverter,
 } from 'components/constantVariables/constantVariable';
 //====================================================
 // Data
@@ -187,7 +206,7 @@ withDefaults(
 		existingVariableNames?: Array<string>;
 	}>(),
 	{
-		existingVariableNames: () => []
+		existingVariableNames: () => [],
 	}
 );
 
@@ -196,6 +215,7 @@ const type = ref(typeOptions[0]);
 const value: Ref<
 	string | number | boolean | string[] | null | undefined | unknown
 > = ref('');
+const valueKey = ref('');
 const forced = ref(true);
 const addIfAbsent = ref(true);
 
@@ -220,14 +240,16 @@ const addNewVariable = () => {
 		name: name.value,
 		type: type.value.value,
 		value: value.value,
+		valueKey: valueKey.value,
 		forced: forced.value,
 		addIfAbsent: addIfAbsent.value,
-		isNew: true
+		isNew: true,
 	});
 
 	name.value = null;
 	type.value = typeOptions[0];
 	value.value = '';
+	valueKey.value = '';
 	forced.value = true;
 	addIfAbsent.value = true;
 };

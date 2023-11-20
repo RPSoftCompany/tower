@@ -113,6 +113,11 @@ const routes: RouteRecordRaw[] = [
 						component: () => import('pages/settings/SCPPage.vue'),
 					},
 					{
+						name: 'AWS',
+						path: 'connections/aws',
+						component: () => import('pages/settings/AWSPage.vue'),
+					},
+					{
 						name: 'BaseModels',
 						path: 'models',
 						component: () => import('pages/settings/BaseModelsPage.vue'),

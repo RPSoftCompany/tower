@@ -84,10 +84,12 @@ export default route(function (/* { store, ssrContext } */) {
 
 		const store = userStore();
 		if (to.meta.requiresAuth && !store.getTokenId) {
+			navigationSt.setDestination(to.path);
 			return { name: 'Login' };
 		}
 
 		if (to.meta.adminPrivileges && !store.hasAdminRights) {
+			navigationSt.setDestination('');
 			return { name: 'Login' };
 		}
 

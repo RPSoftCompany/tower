@@ -291,12 +291,22 @@ const getAllEndpoints = async () => {
 		order: 'sequenceNumber ASC',
 	};
 
-	const response = await towerAxios.get(
-		`/restConfigurations?filter=${JSON.stringify(filter, undefined, '')}`
-	);
-	if (response.status === 200) {
-		allEndpoints.value = [...response.data];
-		allEndpointsClone.value = [...response.data];
+	try {
+		const response = await towerAxios.get(
+			`/restConfigurations?filter=${JSON.stringify(filter, undefined, '')}`
+		);
+		if (response.status === 200) {
+			allEndpoints.value = [...response.data];
+			allEndpointsClone.value = [...response.data];
+		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting endpoints data',
+		});
 	}
 };
 
