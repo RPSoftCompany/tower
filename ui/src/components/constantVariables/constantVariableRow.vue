@@ -302,6 +302,31 @@
 							dense
 						/>
 					</template>
+					<!-- AWS -->
+					<template v-if="localType.value === ConfigurationVariableType.AWS">
+						<div class="tw-flex tw-gap-1">
+							<q-input
+								v-model="localValue"
+								class="tw-flex-grow"
+								:disable="disable"
+								label="Secret name"
+								:hide-bottom-space="true"
+								color="secondary"
+								dense
+								input-debounce="300"
+							/>
+							<q-input
+								v-model="localKey"
+								class="tw-flex-grow"
+								:disable="disable"
+								label="Key"
+								:hide-bottom-space="true"
+								color="secondary"
+								dense
+								input-debounce="300"
+							/>
+						</div>
+					</template>
 				</div>
 				<!-- Forced -->
 				<q-checkbox
@@ -365,6 +390,7 @@ const props = defineProps<{
 	name: string;
 	type: ConfigurationVariableType;
 	value: string | number | Array<string> | boolean | null | undefined;
+	valueKey?: string;
 	forced: boolean;
 	addIfAbsent: boolean;
 	deleted?: boolean;
@@ -375,6 +401,7 @@ const props = defineProps<{
 		type: ConfigurationVariableType;
 		value: string | number | Array<string> | boolean | null | undefined;
 		forced: boolean;
+		valueKey?: string;
 		addIfAbsent: boolean;
 	};
 	currentVersion?: {
@@ -420,6 +447,7 @@ const revert = () => {
 			name: localName.value,
 			type: props.currentArchive?.type,
 			value: props.currentArchive?.value,
+			valueKey: props.currentArchive?.valueKey,
 			forced: props.currentArchive?.forced,
 			addIfAbsent: props.currentArchive?.addIfAbsent,
 		});
@@ -459,6 +487,13 @@ const revert = () => {
 	) {
 		localValue.value = props.currentArchive?.value;
 	}
+
+	if (
+		props.currentArchive?.valueKey !== undefined &&
+		localKey.value !== props.currentArchive?.valueKey
+	) {
+		localKey.value = props.currentArchive?.valueKey;
+	}
 };
 
 /**
@@ -482,6 +517,7 @@ const localType: Ref<typeInterface> = ref({
 	icon: getTypeIcon(props.type),
 });
 const localValue = ref(props.value);
+const localKey = ref(props.valueKey);
 const localForced = ref(props.forced);
 const localAddIfAbsent = ref(props.addIfAbsent);
 
@@ -519,7 +555,8 @@ const revertEnabled = computed(() => {
 			archive.type !== localType.value.value ||
 			valueAsString(archive.value) !== valueAsString(localValue.value) ||
 			archive.addIfAbsent !== localAddIfAbsent.value ||
-			archive.forced !== localForced.value
+			archive.forced !== localForced.value ||
+			archive.valueKey !== localKey.value
 		);
 	}
 });
@@ -551,6 +588,7 @@ const wasModified = computed(() => {
 const emit = defineEmits([
 	'removeVariable',
 	'update:value',
+	'update:valueKey',
 	'update:type',
 	'update:forced',
 	'update:addIfAbsent',
@@ -584,6 +622,10 @@ watch(localAddIfAbsent, () => {
 	emit('update:addIfAbsent', localAddIfAbsent.value);
 });
 
+watch(localKey, () => {
+	emit('update:valueKey', localKey.value);
+});
+
 watch(
 	() => props.value,
 	() => {
@@ -615,6 +657,13 @@ watch(
 	() => props.forced,
 	(current) => {
 		localForced.value = current;
+	}
+);
+
+watch(
+	() => props.valueKey,
+	(current) => {
+		localKey.value = current;
 	}
 );
 </script>

@@ -368,6 +368,8 @@ const saveBases = async () => {
 					? ((e as AxiosError).response?.data as any)?.error?.message
 					: (e as AxiosError).message,
 			});
+
+			return;
 		}
 	}
 

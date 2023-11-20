@@ -28,6 +28,7 @@ export interface ConstantVariable {
 export interface ConstantVariableValue {
 	name: string;
 	value: string | number | Array<string> | boolean | null | undefined;
+	valueKey?: string;
 	type: ConfigurationVariableType;
 	forced: boolean;
 	addIfAbsent: boolean;
@@ -54,12 +55,14 @@ export enum ConfigurationVariableType {
 	BOOLEAN = 'boolean',
 	PASSWORD = 'password',
 	VAULT = 'Vault',
+	AWS = 'AWS SM',
 }
 
 export interface typeInterface {
 	label: string;
 	value: ConfigurationVariableType;
 	icon: string;
+	valueKey?: string;
 }
 
 export const typeOptions: Array<typeInterface> = [
@@ -98,6 +101,11 @@ export const typeOptions: Array<typeInterface> = [
 		value: ConfigurationVariableType.VAULT,
 		icon: 'sym_o_text_fields',
 	},
+	{
+		label: 'AWS',
+		value: ConfigurationVariableType.AWS,
+		icon: 'sym_o_enhanced_encryption',
+	},
 ];
 
 export const valueConverter = (
@@ -108,7 +116,8 @@ export const valueConverter = (
 		type === ConfigurationVariableType.STRING ||
 		type === ConfigurationVariableType.PASSWORD ||
 		type === ConfigurationVariableType.TEXT ||
-		type === ConfigurationVariableType.VAULT
+		type === ConfigurationVariableType.VAULT ||
+		type === ConfigurationVariableType.AWS
 	) {
 		if (!valueExists(value)) {
 			return '';

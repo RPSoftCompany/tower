@@ -58,6 +58,21 @@ class SCPConnectionItemDto {
   [x: string]: unknown;
 }
 
+export class CreateAWSConnectionDto {
+  _id?: string;
+  system: string;
+  enabled: boolean;
+  connections: AWSConnectionItemDto[];
+}
+
+class AWSConnectionItemDto {
+  region: string;
+  secretAccessKey: string;
+  accessKeyId: string;
+
+  [x: string]: unknown;
+}
+
 export class CreateVaultConnectionDto {
   _id: string;
   system: string;

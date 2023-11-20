@@ -286,6 +286,11 @@ const connections: Array<Tab> = [
 		url: 'connections/scp',
 		icon: 'sym_o_lan',
 	},
+	{
+		label: 'Secrets Manager',
+		url: 'connections/aws',
+		icon: 'mdi-aws',
+	},
 ];
 
 //====================================================

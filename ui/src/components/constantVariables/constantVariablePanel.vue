@@ -124,6 +124,7 @@
 						v-model:forced="constVar.forced"
 						v-model:type="constVar.type"
 						v-model:value="constVar.value"
+						v-model:value-key="constVar.valueKey"
 						:current-archive="constVariableArchiveVersion(constVar.name)"
 						:current-version="
 							constVariableArchiveVersion(
@@ -331,6 +332,7 @@ const constVariablesWithCurrentArchive = computed(() => {
 						forced: archiveEl.forced,
 						type: archiveEl.type,
 						value: archiveEl.value,
+						valueKey: archiveEl.valueKey,
 						deleted: true,
 					});
 				}
@@ -508,6 +510,7 @@ const saveConstantVariables = async () => {
 				name: el.name,
 				type: el.type,
 				value: el.value,
+				valueKey: el.valueKey,
 				addIfAbsent: el.addIfAbsent,
 				forced: el.forced,
 			});
@@ -704,6 +707,11 @@ const isDifferentThan = (version?: number) => {
 			if (!local) {
 				return true;
 			} else {
+				if (local.type === 'AWS SM') {
+					if (local.valueKey !== el.valueKey) {
+						return true;
+					}
+				}
 				return (
 					local.type !== el.type ||
 					local.forced !== el.forced ||

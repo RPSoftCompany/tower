@@ -266,6 +266,7 @@
 						<configuration-variable-row
 							v-model:type="row.type"
 							v-model:value="row.value"
+							v-model:value-key="row.valueKey"
 							:allow-delete="!row.addIfAbsent && userCanModify"
 							:current-archive="configurationArchiveVersion(row.name)"
 							:deleted="row.deleted"
@@ -292,6 +293,7 @@
 							:key="row.name"
 							v-model:type="row.type"
 							v-model:value="row.value"
+							v-model:value-key="row.valueKey"
 							:allow-delete="!row.addIfAbsent && userCanModify"
 							:current-archive="configurationArchiveVersion(row.name)"
 							:deleted="row.deleted"
@@ -552,6 +554,7 @@ const configurationWithCurrentArchive = computed(() => {
 					array[currentIndex].constantVariable = true;
 					array[currentIndex].forced = true;
 					array[currentIndex].value = el.value;
+					array[currentIndex].valueKey = el.valueKey;
 					array[currentIndex].type = el.type;
 					array[currentIndex].sourceModel = el.sourceModel;
 					array[currentIndex].sourceBase = el.sourceBase;
@@ -562,6 +565,7 @@ const configurationWithCurrentArchive = computed(() => {
 						name: el.name,
 						type: el.type,
 						value: el.value,
+						valueKey: el.valueKey,
 						forced: el.forced,
 						addIfAbsent: el.addIfAbsent,
 						constantVariable: true,
@@ -585,6 +589,7 @@ const configurationWithCurrentArchive = computed(() => {
 						name: archiveEl.name,
 						type: archiveEl.type,
 						value: archiveEl.value,
+						valueKey: archiveEl.valueKey,
 						deleted: true,
 					});
 				}
@@ -1152,7 +1157,13 @@ const isDifferentThan = (versionToCheck?: number) => {
 					return false;
 				}
 
-				if (local.type === ConfigurationVariableType.LIST) {
+				if (local.type === ConfigurationVariableType.AWS) {
+					return (
+						local.type !== el.type ||
+						local.valueKey !== el.valueKey ||
+						local.value !== el.value
+					);
+				} else if (local.type === ConfigurationVariableType.LIST) {
 					const localArray = valueConverter(
 						local.value,
 						ConfigurationVariableType.STRING

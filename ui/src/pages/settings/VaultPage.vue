@@ -272,23 +272,33 @@ const getConfigurationData = async () => {
 		},
 	};
 
-	const response = await towerAxios.get(
-		`/connections?filter=${JSON.stringify(filter, undefined, '')}`
-	);
+	try {
+		const response = await towerAxios.get(
+			`/connections?filter=${JSON.stringify(filter, undefined, '')}`
+		);
 
-	if (response.status === 200) {
-		currentConfiguration.value = response.data[0];
-		if (currentConfiguration.value) {
-			currentConfigurationClone.value = {
-				url: currentConfiguration.value?.url,
-				enabled: currentConfiguration.value?.enabled,
-				globalToken: currentConfiguration.value?.globalToken,
-				system: currentConfiguration.value?.system,
-				tokens: [...currentConfiguration.value?.tokens],
-				_id: currentConfiguration.value?._id,
-				useGlobalToken: currentConfiguration.value?.useGlobalToken,
-			};
+		if (response.status === 200) {
+			currentConfiguration.value = response.data[0];
+			if (currentConfiguration.value) {
+				currentConfigurationClone.value = {
+					url: currentConfiguration.value?.url,
+					enabled: currentConfiguration.value?.enabled,
+					globalToken: currentConfiguration.value?.globalToken,
+					system: currentConfiguration.value?.system,
+					tokens: [...currentConfiguration.value?.tokens],
+					_id: currentConfiguration.value?._id,
+					useGlobalToken: currentConfiguration.value?.useGlobalToken,
+				};
+			}
 		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting Vault details',
+		});
 	}
 };
 

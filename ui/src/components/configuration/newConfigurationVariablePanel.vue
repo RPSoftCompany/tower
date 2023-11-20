@@ -27,9 +27,9 @@
 				ref="nameRef"
 				v-model="name"
 				:rules="[
-					val =>
+					(val) =>
 						!existingVariableNames.includes(val) ||
-						'Variable with this name already exists in the configuration'
+						'Variable with this name already exists in the configuration',
 				]"
 				color="secondary"
 				dense
@@ -88,7 +88,7 @@
 							v-model="value"
 							:options="[
 								{ label: 'True', value: true },
-								{ label: 'False', value: false }
+								{ label: 'False', value: false },
 							]"
 							class="tw-mt-1.5"
 							dense
@@ -130,6 +130,25 @@
 							label="New variable value"
 						/>
 					</template>
+					<!-- AWS -->
+					<template v-if="type.value === ConfigurationVariableType.AWS">
+						<div class="flex tw-gap-1">
+							<q-input
+								v-model="value"
+								color="secondary"
+								class="tw-flex-grow"
+								dense
+								label="New variable secret name"
+							/>
+							<q-input
+								v-model="valueKey"
+								class="tw-flex-grow"
+								color="secondary"
+								dense
+								label="New variable key"
+							/>
+						</div>
+					</template>
 				</div>
 				<!-- delete variable -->
 				<q-separator inset vertical />
@@ -152,7 +171,7 @@
 <script lang="ts" setup>
 import {
 	ConfigurationVariableType,
-	typeOptions
+	typeOptions,
 } from 'components/constantVariables/constantVariable';
 import { Ref, ref } from 'vue';
 import TypeSelect from 'components/basic/typeSelect.vue';
@@ -165,13 +184,14 @@ withDefaults(
 		existingVariableNames?: Array<string>;
 	}>(),
 	{
-		existingVariableNames: () => []
+		existingVariableNames: () => [],
 	}
 );
 
 const name: Ref<string | null> = ref(null);
 const type = ref(typeOptions[0]);
 const value = ref('');
+const valueKey = ref('');
 
 const passwordVisible = ref(false);
 
@@ -193,12 +213,14 @@ const addNewVariable = () => {
 	emit('addNewVariable', {
 		name: name.value,
 		type: type.value.value,
-		value: value.value
+		value: value.value,
+		valueKey: valueKey.value,
 	});
 
 	name.value = null;
 	type.value = typeOptions[0];
 	value.value = '';
+	valueKey.value = '';
 };
 </script>
 

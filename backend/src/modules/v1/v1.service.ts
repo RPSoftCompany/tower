@@ -23,6 +23,8 @@ import {
 import { Liquid } from 'liquidjs';
 import { ConstantVariablesService } from '../constant-variables/constant-variables.service';
 import { ConnectionsService } from '../connections/connections.service';
+import { Vault } from '../connections/VaultConnection.schema';
+import { AWSConnection } from '../connections/AWSConnection.schema';
 
 @Injectable()
 export class V1Service {
@@ -121,6 +123,8 @@ export class V1Service {
       allBases,
       configuration,
     );
+
+    await this.incorporateAWSSecretManagerVariables(allBases, configuration);
 
     configuration.variables = [...variables];
 
@@ -254,7 +258,7 @@ export class V1Service {
           configuration[key].map((el) => {
             if (
               (el.type === 'string' || el.type === 'password') &&
-              el.value.includes('"')
+              `${el.value}`.includes('"')
             ) {
               el.value = JSON.stringify(el.value).slice(1, -1);
             } else if (el.type === 'list') {
@@ -314,6 +318,7 @@ export class V1Service {
           if (constVariable.forced) {
             configuration.variables[index].type = constVariable.type;
             configuration.variables[index].value = constVariable.value;
+            configuration.variables[index].valueKey = constVariable.valueKey;
           }
         } else {
           if (constVariable.addIfAbsent) {
@@ -321,6 +326,7 @@ export class V1Service {
               name: constVariable.name,
               type: constVariable.type,
               value: constVariable.value,
+              valueKey: constVariable.valueKey,
             });
           }
         }
@@ -391,9 +397,52 @@ export class V1Service {
   }
 
   /**
+   * incorporateAWSSecretManagerVariables
+   *
+   * @param allBases
+   * @param configuration
+   * @private
+   */
+  private async incorporateAWSSecretManagerVariables(
+    allBases: BaseConfiguration[],
+    configuration: Configuration,
+  ) {
+    const configurationBases: any = {};
+
+    for (const base of allBases) {
+      if (configuration[base.name]) {
+        configurationBases[base.name] = configuration[base.name];
+      }
+    }
+
+    const connections: AWSConnection[] = [];
+
+    for (const variable of configuration.variables) {
+      if (variable.type === 'AWS SM') {
+        if (connections.length === 0) {
+          const connectionsQuery =
+            await this.connectionsService.getAWSConnections();
+          for (const conn of connectionsQuery) {
+            connections.push(conn as any as AWSConnection);
+          }
+        }
+
+        variable.value = await this.connectionsService.getAWSSMVariable(
+          connections,
+          configurationBases,
+          variable.value.toString(),
+          variable.valueKey,
+        );
+      }
+    }
+
+    return configuration.variables;
+  }
+
+  /**
    * towerToString
    *
-   * @param {any} str any value
+   * @param {string} str any value
    * @return {string} value as string
    */
   private towerToBase64(str: string): string {

@@ -16,9 +16,21 @@ export class ConfigurationVariable {
 
   @Prop({
     required: true,
-    enum: ['string', 'number', 'list', 'text', 'boolean', 'password', 'Vault'],
+    enum: [
+      'string',
+      'number',
+      'list',
+      'text',
+      'boolean',
+      'password',
+      'Vault',
+      'AWS SM',
+    ],
   })
   type: string;
+
+  @Prop({ required: false })
+  valueKey?: string;
 }
 
 export type ConfigurationDocument = HydratedDocument<Configuration>;
@@ -93,6 +105,7 @@ ConfigurationSchema.pre('validate', async function () {
     'boolean',
     'password',
     'Vault',
+    'AWS SM',
   ];
 
   this.variables = this.variables.map((variable: ConfigurationVariable) => {

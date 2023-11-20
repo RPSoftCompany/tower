@@ -44,6 +44,7 @@ module.exports = configure(function (/* ctx */) {
 
 			'roboto-font', // optional, you are not bound to it
 			'material-symbols-outlined',
+			'mdi-v7',
 			// 'material-icons', // optional, you are not bound to it
 			// 'ionicons-v6'
 		],

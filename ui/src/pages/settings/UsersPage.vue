@@ -464,6 +464,7 @@ const getUsers = async () => {
 	const responseUsers = await towerAxios.get(
 		`/members?filter=${JSON.stringify(filterUsers, undefined, '')}`
 	);
+
 	if (responseUsers.status === 200) {
 		allUsers.value = [];
 		responseUsers.data.forEach((user: User) => {

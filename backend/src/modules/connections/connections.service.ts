@@ -8,6 +8,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import {
+  CreateAWSConnectionDto,
   CreateLDAPConnectionDto,
   CreateSCPConnectionDto,
   CreateVaultConnectionDto,
@@ -35,6 +36,12 @@ import {
   BaseConfiguration,
   BaseConfigurationDocument,
 } from '../base-configurations/base-configurations.schema';
+import { AWSConnection } from './AWSConnection.schema';
+import {
+  GetSecretValueCommand,
+  SecretsManagerClient,
+} from '@aws-sdk/client-secrets-manager';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @Injectable()
 export class ConnectionsService implements OnModuleInit {
@@ -59,12 +66,12 @@ export class ConnectionsService implements OnModuleInit {
 
   async checkIfLDAPExists() {
     const connection = await this.connectionModel.findOne({
-      system: 'LDAP',
+      system: LDAP.name,
     });
 
     if (!connection) {
       const newLDAP: LDAP = {
-        system: 'LDAP',
+        system: LDAP.name,
         bindDN: '',
         bindCredentials: '',
         defaultGroups: [],
@@ -80,7 +87,7 @@ export class ConnectionsService implements OnModuleInit {
 
   async checkIfVaultExists() {
     const connection = await this.connectionModel.findOne({
-      system: 'Vault',
+      system: Vault.name,
     });
 
     if (!connection) {
@@ -106,14 +113,15 @@ export class ConnectionsService implements OnModuleInit {
     createConnectionDto:
       | CreateLDAPConnectionDto
       | CreateSCPConnectionDto
-      | CreateVaultConnectionDto,
+      | CreateVaultConnectionDto
+      | CreateAWSConnectionDto,
   ) {
     if (!!createConnectionDto._id) {
       if (createConnectionDto.system === 'LDAP') {
         const ldapConnection = createConnectionDto as CreateLDAPConnectionDto;
 
         const existingConnection = await this.connectionModel.findOne({
-          system: 'LDAP',
+          system: LDAP.name,
         });
 
         for (const key in existingConnection) {
@@ -123,7 +131,7 @@ export class ConnectionsService implements OnModuleInit {
         }
 
         return await existingConnection.save();
-      } else if (createConnectionDto.system === 'Vault') {
+      } else if (createConnectionDto.system === Vault.name) {
         const VaultConnection = createConnectionDto as CreateVaultConnectionDto;
 
         const existingConnection = await this.connectionModel.findOne({
@@ -137,14 +145,14 @@ export class ConnectionsService implements OnModuleInit {
         }
 
         return await existingConnection.save();
-      } else if (createConnectionDto.system === 'SCP') {
+      } else if (createConnectionDto.system === SCP.name) {
         const SCPConnection = createConnectionDto as CreateSCPConnectionDto;
 
         const existingConnection = await this.connectionModel.findById(
           SCPConnection._id,
         );
 
-        if (existingConnection) {
+        if (existingConnection && existingConnection.system === SCP.name) {
           for (const key in existingConnection) {
             if (key !== 'id' && SCPConnection[key]) {
               existingConnection[key] = SCPConnection[key];
@@ -155,12 +163,36 @@ export class ConnectionsService implements OnModuleInit {
         } else {
           throw new BadRequestException('Invalid system id');
         }
+      } else if (createConnectionDto.system === AWSConnection.name) {
+        const AWSConn = createConnectionDto as CreateAWSConnectionDto;
+
+        const existingConnection = await this.connectionModel.findById(
+          AWSConn._id,
+        );
+
+        if (
+          existingConnection &&
+          existingConnection.system === AWSConnection.name
+        ) {
+          for (const key in existingConnection) {
+            if (key !== 'id' && AWSConn[key]) {
+              existingConnection[key] = AWSConn[key];
+            }
+          }
+
+          return await existingConnection.save();
+        } else {
+          throw new BadRequestException('Invalid system id');
+        }
       } else {
         throw new BadRequestException('Invalid system name');
       }
-    } else if (createConnectionDto.system === 'SCP') {
+    } else if (createConnectionDto.system === SCP.name) {
       const SCPConnection = createConnectionDto as CreateSCPConnectionDto;
       return await this.connectionModel.create(SCPConnection);
+    } else if (createConnectionDto.system === AWSConnection.name) {
+      const AWSConnection = createConnectionDto as CreateAWSConnectionDto;
+      return await this.connectionModel.create(AWSConnection);
     }
 
     throw new BadRequestException('Invalid connection details');
@@ -209,7 +241,9 @@ export class ConnectionsService implements OnModuleInit {
     });
 
     if (connection.length > 0) {
-      if ((connection[0] as any).system !== 'SCP') {
+      if (
+        ![SCP.name, AWSConnection.name].includes((connection[0] as any).system)
+      ) {
         throw new BadRequestException("Can't delete this connection");
       }
 
@@ -223,8 +257,11 @@ export class ConnectionsService implements OnModuleInit {
    * @param type
    * @param body
    */
-  async testConnection(type: string, body?: LDAP | Vault | SCP) {
-    if (type === 'SCP') {
+  async testConnection(
+    type: string,
+    body?: LDAP | Vault | SCP | AWSConnection,
+  ) {
+    if (type === SCP.name) {
       //====================================================
       // SCP
       //====================================================
@@ -258,7 +295,7 @@ export class ConnectionsService implements OnModuleInit {
       } catch (e) {
         throw new ServiceUnavailableException(e.message);
       }
-    } else if (type === 'Vault') {
+    } else if (type === Vault.name) {
       let vaultConnection;
       if (body) {
         vaultConnection = body as Vault;
@@ -274,7 +311,7 @@ export class ConnectionsService implements OnModuleInit {
       } catch (e) {
         throw new ServiceUnavailableException(e.message);
       }
-    } else if (type === 'LDAP') {
+    } else if (type === LDAP.name) {
       let ldapConnection;
       if (body) {
         ldapConnection = body as LDAP;
@@ -291,6 +328,35 @@ export class ConnectionsService implements OnModuleInit {
       } catch (e) {
         throw new ServiceUnavailableException(e.message);
       }
+    } else if (type === AWSConnection.name) {
+      let awsConnection;
+      if (body) {
+        awsConnection = body as AWSConnection;
+      } else {
+        throw new BadRequestException('Connection not provided');
+      }
+
+      const client = new SecretsManagerClient({
+        region: awsConnection.region,
+        credentials: {
+          secretAccessKey: awsConnection.secretAccessKey,
+          accessKeyId: awsConnection.accessKeyId,
+        },
+      });
+
+      try {
+        // Try random secret ID
+        const command = new GetSecretValueCommand({
+          SecretId: `${(Math.random() * 1e32).toString(36)}`,
+          VersionStage: 'AWSCURRENT',
+        });
+
+        await client.send(command);
+      } catch (e) {
+        if (e.message !== "Secrets Manager can't find the specified secret.") {
+          throw new ServiceUnavailableException(e.message);
+        }
+      }
     }
   }
 
@@ -302,7 +368,7 @@ export class ConnectionsService implements OnModuleInit {
    */
   async getVaultVariable(configurationBases: any, variableName: string) {
     const connection: Vault = await this.connectionModel.findOne({
-      system: 'Vault',
+      system: Vault.name,
     });
 
     const vaultVariableName = variableName.replace(/.*\//, '');
@@ -339,6 +405,66 @@ export class ConnectionsService implements OnModuleInit {
 
           if (value) {
             return value;
+          }
+        }
+      }
+    }
+
+    return '';
+  }
+
+  async getAWSConnections() {
+    return this.connectionModel.find({
+      system: AWSConnection.name,
+    });
+  }
+
+  /**
+   * getAWSSMVariable
+   *
+   * @param connections
+   * @param configurationBases
+   * @param variableName
+   */
+  async getAWSSMVariable(
+    connections: AWSConnection[],
+    configurationBases: any,
+    variableName: string,
+    valueKey: string,
+  ) {
+    for (const connection of connections) {
+      for (const item of connection.items) {
+        let valid = true;
+        for (const key in configurationBases) {
+          if (item[key] && item[key] !== configurationBases[key]) {
+            valid = false;
+          }
+        }
+
+        if (valid) {
+          const client = new SecretsManagerClient({
+            region: connection.region,
+            credentials: {
+              secretAccessKey: connection.secretAccessKey,
+              accessKeyId: connection.accessKeyId,
+            },
+          });
+
+          try {
+            const command = new GetSecretValueCommand({
+              SecretId: variableName,
+              VersionStage: 'AWSCURRENT',
+            });
+
+            const response = await client.send(command);
+
+            if (!isNil(response.SecretString)) {
+              const tempJson = JSON.parse(response.SecretString);
+              return tempJson[valueKey];
+              // return JSON.stringify(response.SecretString).slice(1, -1);
+            }
+          } catch (e) {
+            throw new BadRequestException(e.message);
           }
         }
       }
@@ -386,7 +512,7 @@ export class ConnectionsService implements OnModuleInit {
     const aggregation = [
       {
         $match: {
-          system: 'SCP',
+          system: SCP.name,
           items: { $elemMatch: configurationBases },
         },
       },

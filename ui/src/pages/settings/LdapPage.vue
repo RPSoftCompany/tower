@@ -322,61 +322,71 @@ const getCurrentLDAPConfiguration = async () => {
 		},
 	};
 
-	let response = await towerAxios.get(
-		`/connections?filter=${JSON.stringify(filter, undefined, '')}`
-	);
-	if (response.status === 200) {
-		savedConfiguration.value = {
-			defaultGroups: response.data[0].defaultGroups
-				? [...response.data[0].defaultGroups]
-				: [],
-			displayAttribute: response.data[0].displayAttribute
-				? response.data[0].displayAttribute
-				: null,
-			url: response.data[0].url ? response.data[0].url : null,
-			usernameAttribute: response.data[0].usernameAttribute
-				? response.data[0].usernameAttribute
-				: null,
-			bindDN: response.data[0].bindDN ? response.data[0].bindDN : null,
-			bindCredentials: response.data[0].bindCredentials
-				? response.data[0].bindCredentials
-				: null,
-			searchBase: response.data[0].searchBase
-				? response.data[0].searchBase
-				: null,
-			enabled: response.data[0].enabled,
-			system: 'LDAP',
-			_id: response.data[0]._id ? response.data[0]._id : null,
-		};
-		currentConfiguration.value = {
-			defaultGroups: response.data[0].defaultGroups
-				? [...response.data[0].defaultGroups]
-				: [],
-			displayAttribute: response.data[0].displayAttribute
-				? response.data[0].displayAttribute
-				: null,
-			url: response.data[0].url ? response.data[0].url : null,
-			usernameAttribute: response.data[0].usernameAttribute
-				? response.data[0].usernameAttribute
-				: null,
-			bindDN: response.data[0].bindDN ? response.data[0].bindDN : null,
-			bindCredentials: response.data[0].bindCredentials
-				? response.data[0].bindCredentials
-				: null,
-			searchBase: response.data[0].searchBase
-				? response.data[0].searchBase
-				: null,
-			enabled: response.data[0].enabled,
-			system: 'LDAP',
-			_id: response.data[0]._id ? response.data[0]._id : null,
-		};
-	}
+	try {
+		let response = await towerAxios.get(
+			`/connections?filter=${JSON.stringify(filter, undefined, '')}`
+		);
+		if (response.status === 200) {
+			savedConfiguration.value = {
+				defaultGroups: response.data[0].defaultGroups
+					? [...response.data[0].defaultGroups]
+					: [],
+				displayAttribute: response.data[0].displayAttribute
+					? response.data[0].displayAttribute
+					: null,
+				url: response.data[0].url ? response.data[0].url : null,
+				usernameAttribute: response.data[0].usernameAttribute
+					? response.data[0].usernameAttribute
+					: null,
+				bindDN: response.data[0].bindDN ? response.data[0].bindDN : null,
+				bindCredentials: response.data[0].bindCredentials
+					? response.data[0].bindCredentials
+					: null,
+				searchBase: response.data[0].searchBase
+					? response.data[0].searchBase
+					: null,
+				enabled: response.data[0].enabled,
+				system: 'LDAP',
+				_id: response.data[0]._id ? response.data[0]._id : null,
+			};
+			currentConfiguration.value = {
+				defaultGroups: response.data[0].defaultGroups
+					? [...response.data[0].defaultGroups]
+					: [],
+				displayAttribute: response.data[0].displayAttribute
+					? response.data[0].displayAttribute
+					: null,
+				url: response.data[0].url ? response.data[0].url : null,
+				usernameAttribute: response.data[0].usernameAttribute
+					? response.data[0].usernameAttribute
+					: null,
+				bindDN: response.data[0].bindDN ? response.data[0].bindDN : null,
+				bindCredentials: response.data[0].bindCredentials
+					? response.data[0].bindCredentials
+					: null,
+				searchBase: response.data[0].searchBase
+					? response.data[0].searchBase
+					: null,
+				enabled: response.data[0].enabled,
+				system: 'LDAP',
+				_id: response.data[0]._id ? response.data[0]._id : null,
+			};
+		}
 
-	response = await towerAxios.get('/groups');
-	if (response.status === 200) {
-		allGroups.value = [];
-		response.data.forEach((el: Group) => {
-			allGroups.value.push(el.name);
+		response = await towerAxios.get('/groups');
+		if (response.status === 200) {
+			allGroups.value = [];
+			response.data.forEach((el: Group) => {
+				allGroups.value.push(el.name);
+			});
+		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting LDAP data',
 		});
 	}
 };

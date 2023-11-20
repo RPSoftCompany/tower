@@ -16,6 +16,7 @@ import {
   BaseConfiguration,
   BaseConfigurationSchema,
 } from '../base-configurations/base-configurations.schema';
+import { AWSConnection, AWSConnectionSchema } from './AWSConnection.schema';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import {
           { name: LDAP.name, schema: LDAPConnectionSchema },
           { name: Vault.name, schema: VaultConnectionSchema },
           { name: SCP.name, schema: SCPConnectionSchema },
+          { name: AWSConnection.name, schema: AWSConnectionSchema },
         ],
       },
       { name: Audit.name, schema: AuditsSchema },

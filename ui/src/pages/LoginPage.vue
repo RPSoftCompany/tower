@@ -80,6 +80,7 @@ import { ionWarning } from '@quasar/extras/ionicons-v6';
 import { userStore } from 'stores/user';
 import { useRouter } from 'vue-router';
 import { AxiosError } from 'axios';
+import { navigationStore } from 'stores/navigation';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -91,6 +92,7 @@ const login: Ref<null | string> = ref(null);
 const password: Ref<null | string> = ref(null);
 const loading = ref(false);
 const userSt = userStore();
+const navigationSt = navigationStore();
 
 //====================================================
 // Mounted
@@ -126,6 +128,7 @@ const loginMethod = async () => {
 					[],
 					response.data.user.type === 'ldap'
 				);
+				navigationSt.allowNavigation();
 				await router.push({ name: 'ChangePassword' });
 				return;
 			}
@@ -169,7 +172,12 @@ const loginMethod = async () => {
 		return;
 	}
 
-	await router.push({ name: 'Configuration' });
+	navigationSt.allowNavigation();
+	if (!navigationSt.getDestination) {
+		await router.push({ name: 'Configuration' });
+	} else {
+		await router.push(navigationSt.getDestination);
+	}
 
 	loading.value = false;
 };
