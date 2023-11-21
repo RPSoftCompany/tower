@@ -1,4 +1,4 @@
-FROM node:20.5.0-alpine3.18
+FROM node:21.2.0-bookworm-slim
 
 ARG VERSION=3.0.2
 LABEL TOWER_VERSION=${VERSION}
