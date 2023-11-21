@@ -1,6 +1,6 @@
 FROM node:21.2.0-bookworm-slim
 
-ARG VERSION=3.0.2
+ARG VERSION=3.1.0
 LABEL TOWER_VERSION=${VERSION}
 
 RUN mkdir -p /home/tower
