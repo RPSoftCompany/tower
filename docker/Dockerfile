@@ -10,7 +10,7 @@ WORKDIR /home/tower
 RUN addgroup -S tower && adduser -D -G tower tower
 
 COPY . .
-RUN chown -R tower .
+RUN chown -R tower:tower .
 
 USER tower
 
