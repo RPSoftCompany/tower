@@ -1,15 +1,20 @@
 # Example
 
-The easiest way to walk you through how Tower works, is to show it on an example.  
-So, for now, lets assume, that your organization uses three different technologies A,B and C, and all of those technologies has three different environments, which can be categorized as Dev, Test and Prod. Of course, each of those technologies has different instances/applications.  
-So from the configuration perspective, you've got three different trees. The first one is for technology A, with three environments and applications for each environment. The same for technology B and C.
+\
+To illustrate how Tower operates, let's consider an example scenario:
 
-To create such structure in Tower, we'll need to start from creating [Base Configuration](../models/base-configuration.md).   
-Base Configurations represent your tree structure, in our case we'll have three Base Models: Technology, Environment and Application.
+Imagine your organization utilizes three distinct technologies: A, B, and C. Each technology encompasses three environments—Development (Dev), Testing (Test), and Production (Prod)—and within each environment, there are various instances or applications specific to that technology.
 
-So, we've got our structure defined. Now, we can fill it with content... We need to add three entries to our Technology: A, B and C. Another three entries \(Dev, Test, Prod\) should be added to Envrionment and in the end, all the applications should be added.  
+From a configuration standpoint, this setup yields three distinct hierarchical structures, one for each technology. Each structure consists of three levels: the technology itself, its associated environments, and the applications within those environments.
 
+To establish this structure within Tower, we begin by crafting the Base Configuration. This foundational framework delineates the hierarchical relationships, requiring the creation of three objects: Technology, Environment, and Application.
 
-And that is it. Tower is ready to use and you can start creating configuration for your applications.  
+<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption><p>Settings -> Configuration Settings -> Bse Models</p></figcaption></figure>
 
+Once the structure is defined, it's time to populate it with relevant content. This involves adding entries for each technology (A, B, and C), followed by the inclusion of the three environment entries (Dev, Test, Prod). Finally, all pertinent applications are incorporated into their respective environments.
 
+<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption><p>Bases -> Technology</p></figcaption></figure>
+
+With this setup complete, Tower stands prepared for use, empowering you to commence configuring applications seamlessly within the established hierarchical framework.
+
+<figure><img src="../.gitbook/assets/image (5).png" alt=""><figcaption><p>Configuration</p></figcaption></figure>
