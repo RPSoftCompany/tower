@@ -26,4 +26,15 @@ Configurations for your application may evolve over time due to various factors 
 
 To navigate through all the configuration versions, access your configuration instance on the configuration page. Click the left arrow button to move to the previous configuration or the right arrow button to proceed to the next one. If you need to revert to any variable from a specific version, simply click on the "undo" button next to the corresponding configuration variable (as demonstrated in the video below).
 
-<figure><img src="../.gitbook/assets/Peek 2024-03-29 14-09.gif" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/Peek 2024-03-29 14-09.gif" alt=""><figcaption><p>History reviewing and reverting variables</p></figcaption></figure>
+
+You can also go back to one of the previous configuration instances just by clicking the "undo" button next to the configuration version.
+
+<figure><img src="../.gitbook/assets/configuration_revert.gif" alt=""><figcaption><p>Full configuration revert</p></figcaption></figure>
+
+### Variable types
+
+Each configuration, just like each application is different. And at the same time, each application needs configuration data in different format. That's why Tower supports multiple variable types, from simple onse, like string complex lists or collecting data from AWS Secrets Manager.
+
+<figure><img src="../.gitbook/assets/configuration_types.gif" alt=""><figcaption><p>Variable types</p></figcaption></figure>
+
