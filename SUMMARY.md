@@ -16,9 +16,14 @@
 * [Configuration](user-interface/configuration.md)
 * [Archive](user-interface/version-archive.md)
   * [Archive](user-interface/version-archive/archive.md)
-* [Time Archive](user-interface/time-archive.md)
-* [Model](user-interface/model.md)
-* [Settings](user-interface/settings.md)
+  * [Time Archive](user-interface/version-archive/time-archive.md)
+  * [Find Variable](user-interface/version-archive/find-variable.md)
+* [Bases](user-interface/model.md)
+* [Settings](user-interface/settings/README.md)
+  * [Users and permissions](user-interface/settings/users-and-permissions/README.md)
+    * [Users](user-interface/settings/users-and-permissions/users.md)
+    * [Groups](user-interface/settings/users-and-permissions/groups.md)
+    * [Custom permissions](user-interface/settings/users-and-permissions/custom-permissions.md)
 
 ## REST Templates
 

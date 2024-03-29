@@ -56,3 +56,9 @@ Each configuration, just like each application is different. And at the same tim
 ### Constant variables
 
 A constant variable in Tower is a variable that isn't directly associated with any single configuration; rather, it can be inherited by multiple configuration instances. This means that instead of placing the variable directly within a configuration, it can be placed at any branch of the hierarchical tree. For example, placing a constant variable on the "A" technology level would result in all configurations under the "A" technology inheriting the variable. Similarly, placing a variable at the "Dev" environment level under the "A" technology would result in only configurations under both the "A" technology and "Dev" environment inheriting the variable.
+
+#### How to create a constant variable?
+
+Creating a constant variable is similar to creating the configuration, with one distinction: it's done at the branch level rather than the leaf level of our configuration hierarchical tree.
+
+<figure><img src="../.gitbook/assets/Constant_variable_create (1).gif" alt=""><figcaption><p>Creating new constant variable</p></figcaption></figure>
