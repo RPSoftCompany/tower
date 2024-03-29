@@ -20,3 +20,10 @@ Creating a configuration instance in Tower is straightforward. Simply navigate t
 
 ### Configuration versioning
 
+Configurations for your application may evolve over time due to various factors such as new releases, feature enhancements, or changes in API URLs. Tracking and recalling these modifications can be challenging. Fortunately, Tower offers a solution. On the configuration page, you can easily compare your current configuration instance with previous iterations. If issues arise with your current configuration—whether due to mistakes, testing, or incorrect values—you have the option to revert to a previous configuration instance or selectively restore specific variables.
+
+#### History reviewing and reverting variables
+
+To navigate through all the configuration versions, access your configuration instance on the configuration page. Click the left arrow button to move to the previous configuration or the right arrow button to proceed to the next one. If you need to revert to any variable from a specific version, simply click on the "undo" button next to the corresponding configuration variable (as demonstrated in the video below).
+
+<figure><img src="../.gitbook/assets/Peek 2024-03-29 14-09.gif" alt=""><figcaption></figcaption></figure>

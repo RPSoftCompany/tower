@@ -14,7 +14,7 @@
 ## User Interface
 
 * [Configuration](user-interface/configuration.md)
-* [Archive](user-interface/version-archive/README.md)
+* [Archive](user-interface/version-archive.md)
   * [Archive](user-interface/version-archive/archive.md)
 * [Time Archive](user-interface/time-archive.md)
 * [Model](user-interface/model.md)
