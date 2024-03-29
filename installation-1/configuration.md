@@ -1,77 +1,71 @@
 # Configuration
 
-Tower has two different configuration files, config.json and database-config.json.
+Irrespective of the Tower version you employ, configuration provision occurs through two primary avenues: configuration files or environment variables. Remarkably, both methods can be concurrently utilized.
 
-## Config.json
+However, a crucial point to bear in mind is that environment variables take precedence over configuration files. They effectively overwrite any settings specified in the file.
 
-Config.json file is responsible for all the runtime stuff related to Tower. So for example if you would like to change the port Tower is exposing its API, you will need to change it in this file.  
-At first, config.json looks like this:
+## Configuration variables overview
 
-```javascript
-{
-  "host": "0.0.0.0",
-  "port": 5000,
-  "logLevel": "error",
-  "explorer": true,
-  "nonSafe": false,
-  "tokenHeaders": [],
-  "#privateKey": "./certs/privatekey.pem",
-  "#certificate": "./certs/certificate.pem"
-}
-```
+Below, you'll discover a comprehensive table detailing all configuration variables employed by Tower. Should the need arise to revert your configuration to its default state, utilize the [configuration template file](https://github.com/RPSoftCompany/tower/blob/master/backend/.env\_template) provided as an exemplar.
 
-**host** \(default: 0.0.0.0\) - This field decides on what host Tower will expost its API. You can use both ip or host in this field.
-
-**port** \(default: 5000\) - Port, similarly to host, decides on which port the API will be exposed.
-
-**logLevel** \(default: error\) - This field is a log level for Tower application. Available log levels are as follows:
-
-```javascript
-  emerg
-  alert
-  crit
-  error
-  warning
-  notice
-  info 
-  debug
-```
-
-As Tower is using Winston library for logging purposes, you can read more about the logging levels [here](https://www.npmjs.com/package/winston#logging-levels).
-
-**explorer** \(default: true\) - If this field is set to true, Tower will expose its API explorer \(Swagger\) on /explorer url.
-
-**nonSafe** \(default: true\) - setting nonSafe flag to true allows you to create file called 'secret', where you can store your encryption key for Tower. As it is not safe to store such information in plain text file, please use this option only for testing purposes.
-
-**tokenHeaders** \(default: \[\]\) - an array of strings, representing what HTTP headers, where Tower will look for authentication token. Regardless of this setting, Tower will always look for token in 'Authorization' header as well as in this array.
-
-**privateKey** and **certificate** \(default: undefined\) - Are both to enable SSL in Tower.
-
-## Database-config.json
-
-Database-config.json in a file, where your database connection details are stored. There are two ways for providing the required information. First one is by providing full url, like that:
-
-```javascript
-{    
-    "mongoDB": {
-        "url": 'mongodb://<<username>>:<<password>>@<<host>>:<<port>>/<<database_name>>',
-    },
-}
-```
-
-Or by providing all the details in dedicated fields, like this:
-
-```javascript
-{    
-    "mongoDB": {
-        "host": "<<host>>",
-        "port": <<port>>,
-        "database": "<<database_name>>",
-        "username": "<<username>>",
-        "password": "<<password>>"
-    },
-}
-```
+| Environment Variable | Default value      | Required |
+| -------------------- | ------------------ | -------- |
+| HOST                 | 0.0.0.0            | no       |
+| PORT                 | 3000               | no       |
+| LOG\_LEVEL           | \["log","error"]   | no       |
+| DATABASE\_URL        | ""                 | yes      |
+| SECRET               | ""                 | no       |
+| TTL                  | 86400              | no       |
+| AUDIT\_TTL           | 1                  | no       |
+| TOKEN\_HEADERS       | \["Authorization"] | no       |
+| SSL\_KEY\_PATH       | ""                 | no       |
+| SSL\_CERT\_PATH      | ""                 | no       |
+| CORS                 | false              | no       |
 
 
 
+### Configuration variables in details
+
+**HOST**
+
+Host on which you Tower instance will be exposed
+
+**PORT**
+
+TCP port on which you Tower instance will be exposed
+
+**LOG\_LEVEL**
+
+The "Log\_Level" variable constitutes an array of strings dictating the log levels displayed during Tower's operation. Available options include "<mark style="color:yellow;">log</mark>," "<mark style="color:yellow;">error</mark>," "<mark style="color:yellow;">warn</mark>," "<mark style="color:yellow;">debug</mark>," and "<mark style="color:yellow;">verbose</mark>." For comprehensive insights into log levels within Tower, refer to the [Nest.js documentation](https://docs.nestjs.com/techniques/logger).
+
+**DATABASE\_URL**
+
+Database used by your Tower instance. This variable uses standard mongodb connection string format, e.g. <mark style="color:yellow;">mongodb://127.0.0.1:27017/Tower</mark>. You can find more details about this format in [mongodb documentation](https://www.mongodb.com/docs/manual/reference/connection-string).
+
+**SECRET**
+
+The "Secret" variable is essential for encrypting configurations stored within Tower. It must precisely consist of 32 characters. Should you opt to provide it, ensure utmost security by incorporating a mix of uppercase and lowercase letters, numbers, and special characters.
+
+**TTL**
+
+"TTL" is a variable specifying the duration (in seconds) for which access tokens generated within Tower remain valid.
+
+**AUDIT\_TTL**
+
+This variable indicates how many days the audit logs will be stored
+
+**TOKEN\_HEADERS**
+
+A list of header names that Tower scans for authentication headers during API calls.
+
+**SSL\_KEY\_PATH**
+
+Path to your SSL key
+
+**SSL\_CERT\_PATH**
+
+Path to your SSL certificate
+
+**CORS**
+
+Enables or disables Cross-origin resource sharing (CORS)
