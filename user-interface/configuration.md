@@ -36,5 +36,23 @@ You can also go back to one of the previous configuration instances just by clic
 
 Each configuration, just like each application is different. And at the same time, each application needs configuration data in different format. That's why Tower supports multiple variable types, from simple onse, like string complex lists or collecting data from AWS Secrets Manager.
 
+
+
+| Type     | Description                                                                                                                                                                       |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| String   | Regular text variable                                                                                                                                                             |
+| Password | Variable visibly hidden and encrypted on the database side                                                                                                                        |
+| Text     | Similar to String type, the only difference is the way it's displayed on the user interface                                                                                       |
+| Number   | Numeric value                                                                                                                                                                     |
+| Boolean  | Variable can be assigned to true or false only                                                                                                                                    |
+| List     | An array of text variables                                                                                                                                                        |
+| Vault    | HashiCorp Vault Key. This variable will not be visible on the Tower user interface, it will only be collected when application requests for its configuration                     |
+| AWS      | AWS Secrets Manager secret name and key. This variable will not be visible on the Tower user interface, it will only be collected when application requests for its configuration |
+
+
+
 <figure><img src="../.gitbook/assets/configuration_types.gif" alt=""><figcaption><p>Variable types</p></figcaption></figure>
 
+### Constant variables
+
+A constant variable in Tower is a variable that isn't directly associated with any single configuration; rather, it can be inherited by multiple configuration instances. This means that instead of placing the variable directly within a configuration, it can be placed at any branch of the hierarchical tree. For example, placing a constant variable on the "A" technology level would result in all configurations under the "A" technology inheriting the variable. Similarly, placing a variable at the "Dev" environment level under the "A" technology would result in only configurations under both the "A" technology and "Dev" environment inheriting the variable.
