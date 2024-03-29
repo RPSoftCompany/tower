@@ -2,7 +2,7 @@
 
 * [Tower Configuration Server](README.md)
 
-## Installation <a id="installation-1"></a>
+## Installation <a href="#installation-1" id="installation-1"></a>
 
 * [Installation](installation-1/installation.md)
 * [Configuration](installation-1/configuration.md)
@@ -13,9 +13,9 @@
 
 ## User Interface
 
-* [Overview](user-interface/overview.md)
 * [Configuration](user-interface/configuration.md)
-* [Version Archive](user-interface/version-archive.md)
+* [Archive](user-interface/version-archive/README.md)
+  * [Archive](user-interface/version-archive/archive.md)
 * [Time Archive](user-interface/time-archive.md)
 * [Model](user-interface/model.md)
 * [Settings](user-interface/settings.md)
@@ -25,7 +25,7 @@
 * [How To](rest-templates/how-to.md)
 * [Templates](rest-templates/templates.md)
 
-## Models \(API\) <a id="models"></a>
+## Models (API) <a href="#models" id="models"></a>
 
 * [Base Configuration](models/base-configuration.md)
 * [Configuration](models/configuration.md)
@@ -39,4 +39,3 @@
 * [Rest Configuration](models/rest-configuration.md)
 * [Role](models/role.md)
 * [v1](models/v1.md)
-

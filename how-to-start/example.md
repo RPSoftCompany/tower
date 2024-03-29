@@ -9,7 +9,7 @@ From a configuration standpoint, this setup yields three distinct hierarchical s
 
 To establish this structure within Tower, we begin by crafting the Base Configuration. This foundational framework delineates the hierarchical relationships, requiring the creation of three objects: Technology, Environment, and Application.
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption><p>Settings -> Configuration Settings -> Bse Models</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption><p>Settings -> Configuration Settings -> Base Models</p></figcaption></figure>
 
 Once the structure is defined, it's time to populate it with relevant content. This involves adding entries for each technology (A, B, and C), followed by the inclusion of the three environment entries (Dev, Test, Prod). Finally, all pertinent applications are incorporated into their respective environments.
 
