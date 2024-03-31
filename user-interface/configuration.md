@@ -62,3 +62,25 @@ A constant variable in Tower is a variable that isn't directly associated with a
 Creating a constant variable is similar to creating the configuration, with one distinction: it's done at the branch level rather than the leaf level of our configuration hierarchical tree.
 
 <figure><img src="../.gitbook/assets/Constant_variable_create (1).gif" alt=""><figcaption><p>Creating new constant variable</p></figcaption></figure>
+
+#### Constant variable properties
+
+Every constant variable in Tower comes with a set of properties that not only govern its behavior but also dictate how it impacts your configuration instances. Alongside the variable type, which behaves consistently across constant and configuration variables, there are two additional properties: "Editable" and "Add if not in configuration". These properties serve distinct purposes and have varying effects on configuration instances.
+
+#### Editable
+
+<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption><p>Editable variable</p></figcaption></figure>
+
+By default, constant variables are non-editable, meaning their values are enforced at the configuration instance level. However, this behavior can be modified using the editable toggle.
+
+#### Add if not in configuration
+
+<figure><img src="../.gitbook/assets/image (5).png" alt=""><figcaption><p>Add if not editable</p></figcaption></figure>
+
+By default, configuration instances inherit all constant variables from higher levels within the hierarchy. However, this behavior can be adjusted by toggling the "Add if not in configuration" switch. When activated, this switch allows constant variables to be included in configuration instances only if they are explicitly defined within that specific instance.
+
+#### Constant variables in configuration
+
+<figure><img src="../.gitbook/assets/image (7).png" alt=""><figcaption><p>Constant variable in configuration</p></figcaption></figure>
+
+In Tower, constant variables within configuration instances are easily recognizable by a distinct banner icon that precedes their names. These variables are either modifiable or not, depending solely on their individual configuration settings. Interestingly, should you introduce a new configuration variable with a name matching an existing constant variable, it could potentially supersede the value of the constant variable.
