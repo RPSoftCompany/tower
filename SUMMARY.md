@@ -1,6 +1,7 @@
 # Table of contents
 
 * [Tower Configuration Server](README.md)
+* [What is "configuration server"](what-is-configuration-server.md)
 
 ## Installation <a href="#installation-1" id="installation-1"></a>
 
