@@ -108,9 +108,9 @@ server/server/datasources.development*
 
 backend/src/certs
 backend/.env
-backend/client/*
+backend/client
 
 dist/tower-*
 
-.idea
+.idea/
 .github

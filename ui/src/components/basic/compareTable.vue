@@ -120,6 +120,7 @@
 				{{ variableName }}
 			</div>
 			<q-intersection
+				once
 				v-for="(config, index) of configs"
 				:key="config.id"
 				class="tw-col-span-2 tw-min-h-[2rem] tower-compareTableIntersection"
@@ -146,7 +147,7 @@
 							v-if="
 								getVariableFromConfiguration(
 									variableName,
-									config.configuration[config.version].variables
+									config.configuration[config.version].variables,
 								) === undefined
 							"
 						>
@@ -161,15 +162,15 @@
 										valueAsString(
 											getVariableFromConfiguration(
 												variableName,
-												config.configuration[config.version].variables
-											)
+												config.configuration[config.version].variables,
+											),
 										),
 										valueAsString(
 											getVariableFromConfiguration(
 												variableName,
-												configs[0].configuration[configs[0].version].variables
-											)
-										)
+												configs[0].configuration[configs[0].version].variables,
+											),
+										),
 									)"
 									:key="`${diff.value}_${index}`"
 								>
@@ -194,7 +195,7 @@
 									{{
 										getVariableFromConfiguration(
 											variableName,
-											config.configuration[config.version].variables
+											config.configuration[config.version].variables,
 										)
 									}}
 								</div>
@@ -207,7 +208,7 @@
 								{{
 									getVariableFromConfiguration(
 										variableName,
-										config.configuration[config.version].variables
+										config.configuration[config.version].variables,
 									)
 								}}
 							</div>
@@ -285,12 +286,12 @@ const filteredVariables = computed(() => {
 				) {
 					const variable = getVariableFromConfiguration(
 						el,
-						config.configuration[config.version as number].variables
+						config.configuration[config.version as number].variables,
 					);
 
 					const stringVariable = valueConverter(
 						variable,
-						ConfigurationVariableType.STRING
+						ConfigurationVariableType.STRING,
 					) as string;
 					if (stringVariable.toLowerCase().includes(lowerFilter)) {
 						exists = true;
@@ -326,7 +327,7 @@ const hasScroll = computed(() => {
  */
 const getVariableFromConfiguration = (
 	variableName: string,
-	variables: Array<ConfigurationVariable>
+	variables: Array<ConfigurationVariable>,
 ) => {
 	const variable = variables.find((el) => {
 		return el.name === variableName;

@@ -155,6 +155,8 @@
 					v-model="forced"
 					checked-icon="sym_o_edit_off"
 					size="lg"
+					color="secondary"
+					keep-color
 					unchecked-icon="sym_o_edit"
 				>
 					<q-tooltip>Editable in configuration</q-tooltip>
@@ -162,9 +164,11 @@
 				<!-- Add if absent -->
 				<q-checkbox
 					v-model="addIfAbsent"
-					checked-icon="sym_o_published_with_changes"
+					checked-icon="sym_o_share"
 					size="lg"
-					unchecked-icon="sym_o_sync_disabled"
+					color="secondary"
+					keep-color
+					unchecked-icon="sym_o_share_off"
 				>
 					<q-tooltip>Add variable if not in configuration</q-tooltip>
 				</q-checkbox>
@@ -207,7 +211,7 @@ withDefaults(
 	}>(),
 	{
 		existingVariableNames: () => [],
-	}
+	},
 );
 
 const name: Ref<string | null> = ref(null);
@@ -261,7 +265,7 @@ watch(
 	() => type.value.value,
 	() => {
 		value.value = valueConverter(value.value, type.value.value);
-	}
+	},
 );
 </script>
 

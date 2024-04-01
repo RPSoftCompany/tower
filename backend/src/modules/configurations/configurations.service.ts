@@ -512,6 +512,24 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
+   * promoteConfiguration
+   *
+   * @param id
+   * @param userRoles
+   */
+  async promoteConfiguration(id: string, userRoles: string[]) {
+    const configuration = await this.findById(userRoles, id);
+    if (configuration) {
+      await this.configurationModel.updateOne(
+        { _id: new Types.ObjectId(id) },
+        {
+          promoted: true,
+        },
+      );
+    }
+  }
+
+  /**
    * findPromotionCandidates
    *
    * @param filter
@@ -601,9 +619,14 @@ export class ConfigurationsService implements OnModuleInit {
       { where: whereFilter },
     );
 
-    const all: Configuration[] = await this.configurationModel.aggregate(
-      aggregation,
-    );
+    aggregation.push({
+      $sort: {
+        version: 1,
+      },
+    });
+
+    const all: Configuration[] =
+      await this.configurationModel.aggregate(aggregation);
 
     return all;
   }

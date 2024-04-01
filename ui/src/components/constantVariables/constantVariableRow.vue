@@ -106,7 +106,7 @@
 										<template
 											v-for="(diff, index) of diffStrings(
 												valueAsString(localValue),
-												valueAsString(currentArchive?.value)
+												valueAsString(currentArchive?.value),
 											)"
 											:key="`${diff.value}_${index}`"
 										>
@@ -177,9 +177,7 @@
 										: undefined
 								"
 								:name="
-									currentArchive.addIfAbsent
-										? 'sym_o_published_with_changes'
-										: 'sym_o_sync_disabled'
+									currentArchive.addIfAbsent ? 'sym_o_share' : 'sym_o_share_off'
 								"
 								class="tw-flex-none tw-p-2 tw-mx-0.5 tw-rounded"
 								size="sm"
@@ -333,6 +331,8 @@
 					v-model="localForced"
 					:disable="disable"
 					checked-icon="sym_o_edit_off"
+					color="secondary"
+					keep-color
 					size="lg"
 					unchecked-icon="sym_o_edit"
 				>
@@ -342,9 +342,11 @@
 				<q-checkbox
 					v-model="localAddIfAbsent"
 					:disable="disable"
-					checked-icon="sym_o_published_with_changes"
+					checked-icon="sym_o_share"
+					color="secondary"
+					keep-color
 					size="lg"
-					unchecked-icon="sym_o_sync_disabled"
+					unchecked-icon="sym_o_share_off"
 				>
 					<q-tooltip>Add variable if not in configuration</q-tooltip>
 				</q-checkbox>
@@ -353,10 +355,14 @@
 				<q-btn
 					:disable="disable"
 					flat
-					icon="sym_o_delete"
 					padding="sm"
+					:color="deleteButtonColor"
+					@mouseenter="!disable ? (deleteButtonColor = 'negative') : null"
+					@mouseleave="!disable ? (deleteButtonColor = undefined) : null"
 					@click="deleteDialog = true"
-				/>
+				>
+					<q-icon name="sym_o_delete" :color="deleteButtonColor"></q-icon>
+				</q-btn>
 			</div>
 			<div
 				v-else
@@ -522,6 +528,7 @@ const localForced = ref(props.forced);
 const localAddIfAbsent = ref(props.addIfAbsent);
 
 const deleteDialog = ref(false);
+const deleteButtonColor: Ref<string | undefined> = ref(undefined);
 
 const passwordVisible = ref(false);
 
@@ -607,7 +614,7 @@ watch(
 	},
 	{
 		immediate: true,
-	}
+	},
 );
 
 watch(localValue, () => {
@@ -630,7 +637,7 @@ watch(
 	() => props.value,
 	() => {
 		localValue.value = props.value;
-	}
+	},
 );
 
 watch(
@@ -643,28 +650,28 @@ watch(
 				icon: getTypeIcon(current),
 			};
 		}
-	}
+	},
 );
 
 watch(
 	() => props.addIfAbsent,
 	(current) => {
 		localAddIfAbsent.value = current;
-	}
+	},
 );
 
 watch(
 	() => props.forced,
 	(current) => {
 		localForced.value = current;
-	}
+	},
 );
 
 watch(
 	() => props.valueKey,
 	(current) => {
 		localKey.value = current;
-	}
+	},
 );
 </script>
 

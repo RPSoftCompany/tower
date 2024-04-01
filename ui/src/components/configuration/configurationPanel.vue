@@ -43,7 +43,7 @@
 								clickable
 								:active="activePromotionCandidate === promotionCandidate.id"
 								v-for="promotionCandidate of promotionCandidatesCategories.get(
-									promoteCandidateKey
+									promoteCandidateKey,
 								)"
 								:key="promotionCandidate.id"
 								active-class="tw-text-secondary tw-font-bold"
@@ -69,7 +69,7 @@
 									Version {{ promotionCandidate.configuration.version }},
 									{{
 										new Date(
-											promotionCandidate.configuration?.effectiveDate
+											promotionCandidate.configuration?.effectiveDate,
 										).toLocaleString()
 									}}
 								</q-item-section>
@@ -79,7 +79,7 @@
 										(event) =>
 											showPromotionCandidatePreviewDialog(
 												event,
-												promotionCandidate.configuration
+												promotionCandidate.configuration,
 											)
 									"
 								>
@@ -258,6 +258,7 @@
 			>
 				<template v-if="configurationWithCurrentArchive.length >= 100">
 					<q-intersection
+						once
 						v-for="row of configurationWithCurrentArchive"
 						:key="row.name"
 						class="tower-configuration-row"
@@ -468,7 +469,7 @@ const promotionCandidatesCategories = computed(() => {
 const currentVersionDate = computed(() => {
 	if (version.value >= 0) {
 		const date = new Date(
-			configurationVariablesArchive.value[version.value].effectiveDate
+			configurationVariablesArchive.value[version.value].effectiveDate,
 		);
 		return date.toLocaleString();
 	}
@@ -593,7 +594,7 @@ const configurationWithCurrentArchive = computed(() => {
 						deleted: true,
 					});
 				}
-			}
+			},
 		);
 	}
 
@@ -747,19 +748,19 @@ const getConfiguration = async () => {
 
 	try {
 		const request = towerAxios.get(
-			`configurations?filter=${JSON.stringify(filter, null, '')}`
+			`configurations?filter=${JSON.stringify(filter, null, '')}`,
 		);
 
 		const constVariablesRequest = towerAxios.get(
 			`constantVariables/findLatest?filter=${JSON.stringify(
 				filter.where,
 				null,
-				''
-			)}`
+				'',
+			)}`,
 		);
 
 		const configurationModelRequest = towerAxios.get(
-			`configurationModels?filter=${JSON.stringify(rulesFilter, undefined, '')}`
+			`configurationModels?filter=${JSON.stringify(rulesFilter, undefined, '')}`,
 		);
 
 		let response, constVariablesResponse, configurationModelResponse;
@@ -1166,11 +1167,11 @@ const isDifferentThan = (versionToCheck?: number) => {
 				} else if (local.type === ConfigurationVariableType.LIST) {
 					const localArray = valueConverter(
 						local.value,
-						ConfigurationVariableType.STRING
+						ConfigurationVariableType.STRING,
 					);
 					const elArray = valueConverter(
 						el.value,
-						ConfigurationVariableType.STRING
+						ConfigurationVariableType.STRING,
 					);
 					return local.type !== el.type || elArray !== localArray;
 				} else {
@@ -1214,8 +1215,8 @@ const promoteConfiguration = async () => {
 		try {
 			await towerAxios.post(
 				`/configurations/${
-					configurationVariablesArchive.value[version.value].id
-				}/promote`
+					configurationVariablesArchive.value[version.value]._id
+				}/promote`,
 			);
 		} catch (e) {
 			configurationVariablesArchive.value[version.value].promoted = false;
@@ -1284,7 +1285,7 @@ const getPromotionCandidates = async () => {
 
 	const response = await towerAxios.post(
 		'/configurations/promotionCandidates',
-		model
+		model,
 	);
 
 	if (response.status === 200) {
@@ -1315,7 +1316,7 @@ const setActivePromotionCandidate = (id: string) => {
  */
 const showPromotionCandidatePreviewDialog = (
 	event: MouseEvent,
-	config: Configuration
+	config: Configuration,
 ) => {
 	event.stopPropagation();
 
@@ -1340,7 +1341,7 @@ watch(
 			navigationSt.allowNavigation();
 		}
 	},
-	{ immediate: true }
+	{ immediate: true },
 );
 
 watch(localPromotionCandidates, (current) => {
@@ -1371,6 +1372,6 @@ defineExpose({
 }
 
 .tower-min-height {
-	min-height: calc(100vh - 19rem);
+	min-height: calc(100vh - 18rem);
 }
 </style>

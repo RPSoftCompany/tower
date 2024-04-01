@@ -564,7 +564,7 @@ const getBaseModels = async () => {
 		},
 	};
 	const response = await towerAxios.get(
-		`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
+		`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`,
 	);
 
 	if (response.status === 200) {
@@ -594,7 +594,7 @@ const getPreviousBaseModels = async () => {
 		};
 
 		const response = await towerAxios.get(
-			`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
+			`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`,
 		);
 
 		if (response.status === 200) {
@@ -830,7 +830,7 @@ watch(
 		model.value = null;
 		tab.value = 'rules';
 		await getBaseModels();
-	}
+	},
 );
 
 watch(
@@ -839,7 +839,7 @@ watch(
 		if (current) {
 			updateCurrentData(current);
 		}
-	}
+	},
 );
 
 watch(isDifferent, (current: boolean) => {
@@ -852,14 +852,6 @@ watch(isDifferent, (current: boolean) => {
 </script>
 
 <style scoped>
-.tower-min-height {
-	min-height: calc(100vh - 20rem);
-}
-
-.tower-min-height-readOnly {
-	min-height: calc(100vh - 14rem);
-}
-
 .tower-min-panel-height {
 	min-height: max(calc(100vh - 22rem), 6rem);
 	max-height: calc(100vh - 22rem);
@@ -873,8 +865,8 @@ watch(isDifferent, (current: boolean) => {
 }
 
 .tower-min-restriction-panel-height {
-	min-height: max(calc(100vh - 24rem), 6rem);
-	max-height: calc(100vh - 24rem);
+	min-height: max(calc(100vh - 25rem), 6rem);
+	max-height: calc(100vh - 25rem);
 	overflow: auto;
 }
 
