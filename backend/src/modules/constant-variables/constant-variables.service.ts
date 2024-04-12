@@ -217,7 +217,9 @@ export class ConstantVariablesService {
    * @param id
    */
   async remove(id: string) {
-    await this.constantVariableModel.findByIdAndRemove(id);
+    await this.constantVariableModel.findOneAndDelete({
+      _id: new Types.ObjectId(id),
+    });
   }
 
   /**
@@ -445,6 +447,7 @@ export class ConstantVariablesService {
             const old = allContVariables[index];
             if (!old.forced) {
               allContVariables[index] = variable;
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               for (const key in currentSequence) {
                 allContVariables[index].sourceBase = base.name;
                 allContVariables[index].sourceModel =

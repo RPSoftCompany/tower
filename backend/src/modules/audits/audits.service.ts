@@ -86,6 +86,6 @@ export class AuditsService implements OnModuleInit {
   async count(filter?: Statement) {
     const newFilter = filterTranslator(filter);
 
-    return this.auditModel.count(newFilter.where);
+    return this.auditModel.countDocuments(newFilter.where);
   }
 }

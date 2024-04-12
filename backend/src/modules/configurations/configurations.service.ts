@@ -331,6 +331,7 @@ export class ConfigurationsService implements OnModuleInit {
     }
 
     newConfigurationObject.createdBy = userId;
+    newConfigurationObject.comment = createConfigurationDto.comment;
 
     const retValue: Configuration = await this.configurationModel.create(
       newConfigurationObject,
@@ -470,7 +471,10 @@ export class ConfigurationsService implements OnModuleInit {
    * @param id
    */
   async remove(id: string) {
-    return this.configurationModel.findByIdAndRemove(id);
+    return this.configurationModel.findOneAndDelete({
+      _id: new Types.ObjectId(id),
+    });
+    // return this.configurationModel.findByIdAndRemove(id);
   }
 
   /**

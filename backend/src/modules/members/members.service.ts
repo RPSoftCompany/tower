@@ -10,7 +10,7 @@ import { CreateMemberDto, memberType } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { Member, MemberDocument } from './member.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { LoginDto } from './dto/login.dto';
 import { compareSync } from 'bcrypt';
 import { AccessTokenService } from '../access-token/access-token.service';
@@ -362,7 +362,9 @@ export class MembersService implements OnModuleInit {
    *
    * @param userId
    */
-  async deleteUser(userId) {
-    await this.memberModel.findByIdAndRemove(userId);
+  async deleteUser(userId: string) {
+    await this.memberModel.findOneAndDelete({
+      _id: new Types.ObjectId(userId),
+    });
   }
 }

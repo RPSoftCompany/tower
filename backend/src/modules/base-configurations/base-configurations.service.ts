@@ -1,6 +1,6 @@
 import { CreateBaseConfigurationDto } from './dto/create-base-configuration.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   BaseConfiguration,
   BaseConfigurationDocument,
@@ -52,7 +52,7 @@ export class BaseConfigurationsService {
   count(filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
 
-    return this.baseConfigurationModel.count(newFilter.where);
+    return this.baseConfigurationModel.countDocuments(newFilter.where);
   }
 
   findAll() {
@@ -94,7 +94,9 @@ export class BaseConfigurationsService {
     const baseConfiguration: BaseConfiguration =
       await this.baseConfigurationModel.findById(id);
 
-    await this.baseConfigurationModel.findByIdAndRemove(id);
+    await this.baseConfigurationModel.findOneAndDelete({
+      _id: new Types.ObjectId(id),
+    });
 
     setTimeout(async () => {
       await this.configurationsService.removeIndex(baseConfiguration.name);

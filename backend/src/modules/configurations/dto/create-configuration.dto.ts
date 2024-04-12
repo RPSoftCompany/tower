@@ -16,5 +16,7 @@ export class CreateConfigurationDto {
 
   draft?: boolean;
 
+  comment?: string;
+
   [x: string]: unknown;
 }

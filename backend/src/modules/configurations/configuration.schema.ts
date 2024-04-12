@@ -55,6 +55,9 @@ export class Configuration {
 
   @Prop({ required: false })
   draft: boolean;
+
+  @Prop({ required: false })
+  comment: string;
 }
 
 const ConfigurationSchema = SchemaFactory.createForClass(Configuration);
@@ -62,7 +65,7 @@ const ConfigurationSchema = SchemaFactory.createForClass(Configuration);
 ConfigurationSchema.index({ 'variables.name': 1 });
 ConfigurationSchema.index({ 'variables.value': 1 });
 
-ConfigurationSchema.post('find', (docs) => {
+ConfigurationSchema.post('find', (docs: Configuration[]) => {
   docs = docs.map((doc: Configuration) => {
     if (doc.variables) {
       doc.variables = doc.variables.map((variable: ConfigurationVariable) => {
