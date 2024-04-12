@@ -17,6 +17,33 @@
   -->
 
 <template>
+	<q-dialog v-model="commentsDialog" persistent>
+		<q-card class="tw-min-w-[30%]">
+			<q-card-section class="tw-bg-darkPage">
+				<div class="text-h6">Comment your changes</div>
+			</q-card-section>
+			<q-card-section class="tw-max-h-[70vh] tw-overflow-auto">
+				<q-input
+					type="textarea"
+					color="secondary"
+					v-model="comment"
+					autogrow
+					label="Comment"
+				/>
+			</q-card-section>
+			<q-card-actions align="right">
+				<q-btn v-close-popup color="secondary" flat label="Cancel" />
+				<q-btn
+					v-close-popup
+					color="positive"
+					flat
+					label="Save"
+					@click="saveConfiguration"
+					:disable="!comment"
+				/>
+			</q-card-actions>
+		</q-card>
+	</q-dialog>
 	<q-dialog v-model="promotionCandidatesDialog" persistent>
 		<q-card class="tw-min-w-[30%]">
 			<q-card-section class="tw-bg-darkPage">
@@ -76,7 +103,7 @@
 								<q-item-section
 									side
 									@click="
-										(event) =>
+										(event: MouseEvent) =>
 											showPromotionCandidatePreviewDialog(
 												event,
 												promotionCandidate.configuration,
@@ -319,7 +346,7 @@
 		>
 			<new-configuration-variable-panel
 				v-if="!loading"
-				:existing-variable-names="configurationVariableNames"
+				:existing-variable-names="configurationVariableNames as string[]"
 				@addNewVariable="addNewVariable"
 			/>
 		</transition>
@@ -331,7 +358,9 @@
 				v-if="configurationVariables?.variables"
 				:has-errors="hasErrors"
 				:save-enabled="isDifferent && !loading"
-				@saveClicked="saveConfiguration"
+				@saveClicked="
+					commentNeeded ? showCommentsDialog() : saveConfiguration()
+				"
 			/>
 		</transition>
 	</div>
@@ -409,6 +438,9 @@ const activePromotionCandidate = ref('');
 const promotionCandidatesPreviewDialog = ref(false);
 const promotionCandidatePreviewConfig: Ref<Configuration | null> = ref(null);
 
+const commentsDialog = ref(false);
+const comment = ref('');
+
 //====================================================
 // beforeMounted
 //====================================================
@@ -461,6 +493,12 @@ const promotionCandidatesCategories = computed(() => {
 	}
 
 	return null;
+});
+
+const commentNeeded = computed(() => {
+	return props.configModel.some((el) => {
+		return el.options.forceComment === true;
+	});
 });
 
 /**
@@ -953,6 +991,11 @@ const checkForErrors = (array: Array<ConfigurationVariableToDisplay>) => {
 	return array;
 };
 
+const showCommentsDialog = () => {
+	comment.value = '';
+	commentsDialog.value = true;
+};
+
 /**
  * saveConfiguration
  */
@@ -967,6 +1010,7 @@ const saveConfiguration = async () => {
 				promoted: false,
 				description: '',
 				draft: false,
+				comment: comment.value,
 			};
 			props.configModel.forEach((el) => {
 				if (el && el.name !== '__NONE__') {

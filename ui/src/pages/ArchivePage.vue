@@ -53,12 +53,12 @@
 			enter-active-class="animated fadeIn"
 			leave-active-class="animated fadeOut"
 		>
-			<div v-if="archiveConfigs.length > 0" class="tw-mt-3">
+			<div v-if="archiveConfigs.length > 0" class="tw-mt-3 tower-max-height">
 				<compare-table
 					:configs="archiveConfigs"
 					:filter="filter"
 					:showDiff="showDiff"
-					:variables="currentVariables"
+					:variables="currentVariables as string[]"
 					@removeConfiguration="removeConfiguration"
 					@switchPlaces="switchPlaces"
 					@versionChanged="versionChanged"
@@ -148,13 +148,15 @@ const addArchiveConfig = async () => {
 
 	try {
 		const response = await towerAxios.get(
-			`configurations?filter=${JSON.stringify(filter, null, '')}`
+			`configurations?filter=${JSON.stringify(filter, null, '')}`,
 		);
 
 		if (response.status === 200 && response.data.length > 0) {
 			archiveConfigs.value[place].configuration = response.data.reverse();
 			archiveConfigs.value[place].version = response.data.length - 1;
 			archiveConfigs.value[place].loading = false;
+			archiveConfigs.value[place].comment =
+				response.data[response.data.length - 1].comment;
 		} else {
 			$q.notify({
 				color: 'negative',
@@ -199,6 +201,7 @@ const versionChanged = (data: VersionChangeEvent) => {
 
 	if (configIndex >= 0) {
 		archiveConfigs.value[configIndex].version = data.version;
+		archiveConfigs.value[configIndex].comment = data.comment;
 	}
 };
 
@@ -270,9 +273,16 @@ const currentVariables = computed(() => {
 	});
 
 	return Array.from(all).sort((a, b) =>
-		(a as string).localeCompare(b as string, undefined, { sensitivity: 'base' })
+		(a as string).localeCompare(b as string, undefined, {
+			sensitivity: 'base',
+		}),
 	);
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.tower-max-height {
+	overflow: auto;
+	max-height: calc(100vh - 11rem);
+}
+</style>

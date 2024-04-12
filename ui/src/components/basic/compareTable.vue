@@ -18,10 +18,10 @@
 
 <template>
 	<div
-		:class="`tw-grid-cols-${configs?.length * 2 + 1} ${
+		:class="`tw-grid-cols-${configs ? configs?.length * 2 + 1 : 1} ${
 			hasScroll ? 'tw-mr-[0.65rem]' : ''
 		}`"
-		class="tw-grid"
+		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 bg-primary"
 	>
 		<div class="tw-text-sm tw-font-semibold tw-self-center tw-text-center">
 			Variable names
@@ -30,8 +30,8 @@
 			v-for="config of configs"
 			:id="config.id"
 			:key="config.id"
-			:draggable="configs.length > 1"
-			class="tw-bg-darkPage tw-text-secondary tw-self-center tw-text-center tw-text-sm tw-font-semibold tw-min-h-[3.5rem] tw-col-span-2"
+			:draggable="configs ? configs.length > 1 : false"
+			class="tw-bg-darkPage tw-cursor-grab tw-content-center tw-h-full tw-text-secondary tw-text-center tw-text-sm tw-font-semibold tw-min-h-[3.5rem] tw-col-span-2"
 			flat
 			square
 			@dragend="dragStarted = false"
@@ -48,16 +48,21 @@
 				<q-spinner-clock color="secondary" size="2rem" />
 			</q-inner-loading>
 			<template v-if="!config.loading">
-				<div class="tw-flex tw-justify-center tw-self-center">
+				<div class="tw-flex tw-flex-1 tw-justify-center tw-self-center">
 					<slot name="header" v-bind="config">
 						<div class="tw-self-center">
 							<q-btn
-								:disable="config.version <= 0"
+								:disable="config.version ? config.version <= 0 : false"
 								class="tw-flex-none"
 								flat
 								icon="sym_o_chevron_left"
 								padding="sm"
-								@click="versionChanged(config.id, config.version - 1)"
+								@click="
+									versionChanged(
+										config.id,
+										config.version ? config.version - 1 : 0,
+									)
+								"
 							/>
 						</div>
 						<div class="tw-flex-grow tw-flex tw-justify-center">
@@ -66,8 +71,33 @@
 									{{ config.path }}
 								</div>
 								<div>
-									Version #{{ config.version + 1 }}, created
-									{{ config.configuration[config.version].effectiveDate }}
+									Version #{{ config.version ? config.version + 1 : 0 }},
+									created
+									{{
+										config.configuration
+											? config.configuration[
+													config.version ? config.version : 0
+												].effectiveDate
+											: now()
+									}}
+									<template
+										v-if="
+											config.configuration
+												? config.configuration[config.version as number]
+														?.comment
+												: false
+										"
+									>
+										<div class="tw-mt-1 tw-text-xs tw-font-medium">
+											Comment:
+										</div>
+										<pre class="tw-mt-1 tw-text-xs tw-font-extralight">{{
+											config.configuration
+												? config.configuration[config.version as number]
+														?.comment
+												: ''
+										}}</pre>
+									</template>
 								</div>
 								<div
 									class="tw-text-center tw-text-gray-600 tw-font-light tw-text-xs"
@@ -76,10 +106,16 @@
 									<span
 										class="tw-font-medium"
 										v-if="
-											config.configuration[config.version]?.createdBy?.username
+											config.configuration
+												? config.configuration[config.version as number]
+														.createdBy?.username
+												: false
 										"
 										>{{
-											config.configuration[config.version]?.createdBy?.username
+											config.configuration
+												? config.configuration[config.version as number]
+														.createdBy?.username
+												: ''
 										}}</span
 									>
 								</div>
@@ -97,12 +133,21 @@
 						</div>
 						<div class="tw-self-center">
 							<q-btn
-								:disable="config.version >= config.configuration.length - 1"
+								:disable="
+									config.version && config.configuration
+										? config.version >= config.configuration.length - 1
+										: true
+								"
 								class="tw-flex-none"
 								flat
 								icon="sym_o_chevron_right"
 								padding="sm"
-								@click="versionChanged(config.id, config.version + 1)"
+								@click="
+									versionChanged(
+										config.id,
+										config.version ? config.version + 1 : 0,
+									)
+								"
 							/>
 						</div>
 					</slot>
@@ -112,8 +157,8 @@
 	</div>
 	<div
 		ref="contentRef"
-		:class="`tw-grid-cols-${configs.length * 2 + 1}`"
-		class="tw-grid tower-max-height"
+		:class="`tw-grid-cols-${configs ? configs.length * 2 + 1 : 1}`"
+		class="tw-grid tower-max-height tw-px-1"
 	>
 		<template v-for="variableName of filteredVariables" :key="variableName">
 			<div class="tw-text-center tw-self-center fullWordWrap">
@@ -147,7 +192,9 @@
 							v-if="
 								getVariableFromConfiguration(
 									variableName,
-									config.configuration[config.version].variables,
+									config.configuration
+										? config.configuration[config.version as number].variables
+										: [],
 								) === undefined
 							"
 						>
@@ -158,17 +205,24 @@
 						<template v-else-if="index > 0">
 							<template v-if="showDiff">
 								<template
-									v-for="(diff, index) of diffStrings(
+									v-for="diff of diffStrings(
 										valueAsString(
 											getVariableFromConfiguration(
 												variableName,
-												config.configuration[config.version].variables,
+												config.configuration
+													? config.configuration[config.version as number]
+															.variables
+													: [],
 											),
 										),
 										valueAsString(
 											getVariableFromConfiguration(
 												variableName,
-												configs[0].configuration[configs[0].version].variables,
+												configs && configs[0].configuration
+													? configs[0].configuration[
+															configs[0].version as number
+														].variables
+													: [],
 											),
 										),
 									)"
@@ -195,7 +249,10 @@
 									{{
 										getVariableFromConfiguration(
 											variableName,
-											config.configuration[config.version].variables,
+											config.configuration
+												? config.configuration[config.version as number]
+														.variables
+												: [],
 										)
 									}}
 								</div>
@@ -208,7 +265,9 @@
 								{{
 									getVariableFromConfiguration(
 										variableName,
-										config.configuration[config.version].variables,
+										config.configuration
+											? config.configuration[config.version as number].variables
+											: [],
 									)
 								}}
 							</div>
@@ -230,6 +289,7 @@ import {
 } from 'components/constantVariables/constantVariable';
 import { diffChars } from 'diff';
 import { computed, ref } from 'vue';
+import { now } from '@vue/devtools-api';
 
 //====================================================
 // Interface
@@ -343,7 +403,7 @@ const getVariableFromConfiguration = (
 /**
  * removeConfiguration
  */
-const removeConfiguration = (configId: number) => {
+const removeConfiguration = (configId: string) => {
 	emit('removeConfiguration', configId);
 };
 
@@ -361,7 +421,7 @@ const diffStrings = (current: string, archive: string) => {
  * @param configId
  * @param version
  */
-const versionChanged = (configId: number, version: number) => {
+const versionChanged = (configId: string, version: number) => {
 	emit('versionChanged', {
 		configId,
 		version,
@@ -403,11 +463,6 @@ const allowDrop = (data: DragEvent) => {
 </script>
 
 <style scoped>
-.tower-max-height {
-	overflow: auto;
-	max-height: calc(100vh - 14rem);
-}
-
 .dropCover {
 	left: 0;
 	right: 0;
