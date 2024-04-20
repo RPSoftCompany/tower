@@ -35,6 +35,9 @@ The final section is where you define the error message that will be displayed w
 The first section (highlighted in red) can be subdivided into three distinct inputs: target type, target value, and input validation method. \
 The target type input specifies what will be validated as the target value—whether it's a configuration variable name or type.\
 The next input, "target value," is a text field where you can input the expression (either as full text or a regular expression) to specify which configuration variable will be the target of this rule's validation.\
-The input validation method is the final text field in this section, indicating whether the rule uses a specific text value or a regular expression to identify the configuration variable that will undergo the validation.
+The input validation method is the final field in this section, indicating whether the rule uses a specific text value or a regular expression to identify the configuration variable that will undergo the validation.
 
-The second section (highlighted in blue), just like the previous section, can be divided into three sections: condition type, condition value, and condition method.&#x20;
+The second section (highlighted in blue), like the previous one, can be divided into three sections: condition type, condition value, and condition method. This section resembles the previous one but specifies the condition that the configuration variable's value or type must met.
+
+The final section (highlighted in yellow) comprises a text field and a button. In the text field, you can input the error message that will appear when the rule is not met during the configuration creation process. Clicking the "+" button adds the rule to the current base.
+
