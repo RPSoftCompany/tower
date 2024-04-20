@@ -21,7 +21,7 @@ Bases serve a dual purpose beyond merely providing hierarchy; they can also inco
 
 Rules are a powerful functionality within Tower, offering the capability to validate configuration variables. By implementing rules, Tower can prevent the input of invalid or restricted values, ensuring the integrity and accuracy of your configurations. This feature not only enhances the reliability of your configuration data but also contributes to the overall robustness and security of your system.
 
-#### Overview
+#### How to create a new rule
 
 Creating rules, much like the functionality itself, may initially seem complex. To ease into the process, let's break down the role of each input and its impact on the rule's functionality.\
 Let's begin by dividing the input into three distinct sections. \
@@ -41,3 +41,14 @@ The second section (highlighted in blue), like the previous one, can be divided 
 
 The final section (highlighted in yellow) comprises a text field and a button. In the text field, you can input the error message that will appear when the rule is not met during the configuration creation process. Clicking the "+" button adds the rule to the current base.
 
+<figure><img src="../.gitbook/assets/Base_rule_create.gif" alt=""><figcaption><p>Rule creation</p></figcaption></figure>
+
+### Restrictions
+
+Restrictions are another valuable feature within Tower. They enable you to restrict a specific base to one or multiple parent bases, ensuring a more controlled and structured configuration hierarchy. This functionality is particularly useful for enforcing dependencies or relationships between different bases. By implementing restrictions, you can establish clear boundaries and ensure that configurations adhere to predefined guidelines or constraints.
+
+#### How to create a restriction
+
+Creating a restriction is straightforward. Navigate to the "Restrictions" tab and select the bases you wish to restrict your base to using the inputs at the bottom of the screen. If you want to limit your base to only certain categories, such as "Technology" but not "Environment," you can leave the "Environment" field empty (marked as "Any").
+
+<figure><img src="../.gitbook/assets/Base_restriction_create.gif" alt=""><figcaption></figcaption></figure>
