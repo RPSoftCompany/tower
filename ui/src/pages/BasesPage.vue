@@ -17,7 +17,7 @@
   -->
 
 <template>
-	<div class="flex tw-flex-col tw-flex-grow">
+	<div class="flex tw-flex-col tw-h-full tw-max-h-full">
 		<q-dialog v-model="deleteDialog">
 			<q-card class="tw-min-w-[30%]">
 				<q-card-section class="tw-bg-negative">
@@ -93,7 +93,7 @@
 				v-model:filter="modelFilter"
 				:clearable="false"
 				:disable="false"
-				:label="`Choose or create new ${route.params.base}`"
+				:label="`Choose or create ${route.params.base}`"
 				:loading="loading"
 				:options="baseModels as Array<object>"
 				class="tw-w-[33.3%]"
@@ -163,21 +163,20 @@
 			<q-tab-panels
 				v-if="model"
 				v-model="tab"
-				:class="
-					userCanModify ? 'tower-min-height' : 'tower-min-height-readOnly'
-				"
 				animated
-				class="tw-bg-darkPage flex tw-flex-1"
+				class="tw-bg-darkPage tw-flex tw-flex-col tw-flex-1 tw-items-center"
 			>
-				<q-tab-panel name="rules">
-					<div
-						:class="{
-							'tower-min-panel-height': userCanModify,
-							'tower-min-panel-height-readOnly': !userCanModify,
-							'tw-justify-center': model.rules.length === 0 && !loading,
-						}"
-						class="tw-flex tw-flex-col"
-					>
+				<q-tab-panel
+					name="rules"
+					class="tw-flex tw-flex-1 tw-flex-col overflow-auto"
+					:class="{
+						'items-center': model.rules.length === 0 && !loading,
+						'tw-justify-center': model.rules.length === 0 && !loading,
+						'tw-min-h-20': model.rules.length === 0 && !loading,
+						'tw-min-h-40': model.rules.length > 0 && !loading,
+					}"
+				>
+					<div class="tw-flex tw-items-center tw-flex-col">
 						<rule-row
 							v-for="rule of model.rules"
 							:id="rule._id"
@@ -195,7 +194,7 @@
 						/>
 						<div
 							v-if="model.rules.length === 0 && !loading"
-							class="tw-w-full tw-flex tw-justify-center tw-justify-self-center tw-self-center tw-items-center"
+							class="tw-w-full tw-flex tw-justify-center tw-items-center"
 						>
 							<div
 								class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400"
@@ -211,21 +210,25 @@
 						</div>
 					</div>
 				</q-tab-panel>
-				<q-tab-panel name="restrictions">
-					<div>
-						<q-checkbox
-							v-if="tab === 'restrictions'"
-							v-model="model.options.hasRestrictions"
-							:disable="!userCanModify"
-							label="Enable restrictions"
-						/>
+				<q-tab-panel name="restrictions" class="tw-flex tw-flex-1 tw-flex-col">
+					<q-checkbox
+						v-if="tab === 'restrictions'"
+						v-model="model.options.hasRestrictions"
+						:disable="!userCanModify"
+						label="Enable restrictions"
+					/>
+					<div
+						class="tw-flex tw-flex-1 tw-flex-col overflow-auto tw-min-h-40"
+						:class="{
+							'items-center': model.restrictions.length === 0 && !loading,
+							'tw-justify-center': model.restrictions.length === 0 && !loading,
+						}"
+					>
 						<div
 							v-if="tab === 'restrictions'"
 							:class="{
 								'tw-justify-center':
 									model.restrictions.length === 0 && !loading,
-								'tower-min-restriction-panel-height': userCanModify,
-								'tower-min-restriction-panel-height-readOnly': !userCanModify,
 							}"
 							class="tw-flex tw-flex-col"
 						>
@@ -295,7 +298,6 @@
 					:has-errors="hasErrors"
 					:loading="loading"
 					:save-enabled="isDifferent"
-					class="tw-mt-1"
 					@saveClicked="saveModel"
 				></save-panel>
 			</div>
@@ -876,25 +878,4 @@ watch(isDifferent, (current: boolean) => {
 });
 </script>
 
-<style scoped>
-.tower-min-panel-height {
-	min-height: 7rem;
-	max-height: calc(100vh - 22rem);
-	overflow: auto;
-}
-
-.tower-min-panel-height-readOnly {
-	max-height: calc(100vh - 15rem);
-	overflow: auto;
-}
-
-.tower-min-restriction-panel-height {
-	max-height: calc(100vh - 24.5rem);
-	overflow: auto;
-}
-
-.tower-min-restriction-panel-height-readOnly {
-	max-height: calc(100vh - 20rem);
-	overflow: auto;
-}
-</style>
+<style scoped></style>

@@ -188,7 +188,20 @@
 										<div class="tw-text-gray-500 tw-text-base tw-mt-2">
 											Technical access token
 										</div>
-										<div class="tw-pl-3">{{ accessToken }}</div>
+										<div
+											class="tw-inline-block tw-pl-3 tw-text-wrap tw-break-all"
+										>
+											{{ accessToken }}
+											<q-btn
+												flat
+												size="xs"
+												class="q-px-xs"
+												@click="copyTokenToClipboard"
+											>
+												<q-tooltip>Copy token to clipboard</q-tooltip>
+												<q-icon name="sym_o_content_copy" size="xs" />
+											</q-btn>
+										</div>
 									</div>
 								</template>
 							</div>
@@ -257,7 +270,7 @@
 							</tower-select>
 						</div>
 					</div>
-					<div class="tw-w-[20rem]">
+					<div class="tw-w-[20rem] tw-min-w-[17rem]">
 						<div
 							v-if="currentUserClone?.type !== UserType.LDAP && currentUser"
 							class="tw-mt-5 tw-flex tw-flex-col tw-py-3 tw-self-start tw-rounded tw-border tw-border-dark tw-bg-dark"
@@ -378,7 +391,7 @@ import { User, UserType } from 'pages/settings/types/user';
 import { towerAxios } from 'boot/axios';
 import { Group } from 'pages/settings/types/group';
 import SavePanel from 'components/basic/savePanel.vue';
-import { useQuasar } from 'quasar';
+import { copyToClipboard, useQuasar } from 'quasar';
 import { navigationStore } from 'stores/navigation';
 
 //====================================================
@@ -462,7 +475,7 @@ const getUsers = async () => {
 	};
 
 	const responseUsers = await towerAxios.get(
-		`/members?filter=${JSON.stringify(filterUsers, undefined, '')}`
+		`/members?filter=${JSON.stringify(filterUsers, undefined, '')}`,
 	);
 
 	if (responseUsers.status === 200) {
@@ -488,7 +501,7 @@ const getUsers = async () => {
 	};
 
 	const responseGroups = await towerAxios.get(
-		`/groups?$filter=${JSON.stringify(filterGroups, undefined, '')}`
+		`/groups?$filter=${JSON.stringify(filterGroups, undefined, '')}`,
 	);
 	if (responseGroups.status === 200) {
 		allGroups.value = [];
@@ -507,6 +520,15 @@ const setAsTechnical = () => {
 	if (currentUserClone.value) {
 		currentUserClone.value.technicalUser =
 			!currentUserClone.value.technicalUser;
+	}
+};
+
+/**
+ * copyTokenToClipboard
+ */
+const copyTokenToClipboard = () => {
+	if (accessToken.value) {
+		copyToClipboard(accessToken.value);
 	}
 };
 
@@ -596,7 +618,7 @@ const saveUser = async () => {
 				currentUser.value?.technicalUser
 			) {
 				await towerAxios.post(
-					`/members/setAsTechnicalUser?isTechUser=${currentUserClone.value.technicalUser}&userId=${user._id}`
+					`/members/setAsTechnicalUser?isTechUser=${currentUserClone.value.technicalUser}&userId=${user._id}`,
 				);
 			}
 
@@ -639,7 +661,7 @@ watch(
 			if (current.technicalUser) {
 				try {
 					const response = await towerAxios.get(
-						`/members/getTechnicalUserToken?userId=${current._id}`
+						`/members/getTechnicalUserToken?userId=${current._id}`,
 					);
 					if (response.status === 200) {
 						accessToken.value = response.data;
@@ -666,7 +688,7 @@ watch(
 				currentUserClone.value = null;
 			}
 		}
-	}
+	},
 );
 
 watch(
@@ -677,7 +699,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 
