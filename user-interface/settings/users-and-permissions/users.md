@@ -38,3 +38,14 @@ Additionally, enabling the Technical user property introduces two significant ch
 
 <figure><img src="../../../.gitbook/assets/settings_users_technical_user.gif" alt=""><figcaption><p>Switching account to technical</p></figcaption></figure>
 
+### Force password reset
+
+If the user account is managed by Tower, you have the option to reset the user's password, prompting them to change it during their next login. This functionality simply sets the user password to "_changeme_," ensuring a temporary placeholder until the user updates it to a more secure password of their choice.
+
+<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption><p>Reset password</p></figcaption></figure>
+
+### User groups
+
+Permissions in Tower are managed through the assignment of user groups to user accounts. Each user account can be assigned to multiple groups, each with its own set of permissions. As a result, the user's overall permissions are determined by a combination of the permissions granted across all assigned groups. This flexible approach allows administrators to tailor access levels precisely to each user's role and responsibilities within the organization. Additionally, it enables efficient management of permissions by grouping users with similar access needs together and applying permissions uniformly across those groups.
+
+<figure><img src="../../../.gitbook/assets/settings_users_changeGroup.gif" alt=""><figcaption><p>User groups</p></figcaption></figure>
