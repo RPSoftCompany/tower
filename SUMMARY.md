@@ -25,6 +25,8 @@
     * [Users](user-interface/settings/users-and-permissions/users.md)
     * [Groups](user-interface/settings/users-and-permissions/groups.md)
     * [Custom permissions](user-interface/settings/users-and-permissions/custom-permissions.md)
+  * [Configuration Settings](user-interface/settings/configuration-settings/README.md)
+    * [Base Models](user-interface/settings/configuration-settings/base-models.md)
 
 ## REST Templates
 
