@@ -394,6 +394,7 @@ import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosError } from 'axios';
+import { cloneDeep } from 'lodash';
 //====================================================
 // Const
 //====================================================
@@ -1244,8 +1245,9 @@ const isDifferentThan = (versionToCheck?: number) => {
  */
 const fullRevert = () => {
 	if (configurationVariables.value) {
-		configurationVariables.value.variables =
-			configurationVariablesArchive.value[version.value].variables;
+		configurationVariables.value.variables = cloneDeep(
+			configurationVariablesArchive.value[version.value].variables,
+		);
 	}
 };
 
