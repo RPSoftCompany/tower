@@ -1645,7 +1645,6 @@ export default [
 	'phone_enabled',
 	'phone_forwarded',
 	'phone_in_talk',
-	'phone_in_talk_watchface_indicator',
 	'phone_iphone',
 	'phonelink_erase',
 	'phonelink_lock',
@@ -2462,5 +2461,5 @@ export default [
 	'zoom_in',
 	'zoom_in_map',
 	'zoom_out',
-	'zoom_out_map'
-]
+	'zoom_out_map',
+];
