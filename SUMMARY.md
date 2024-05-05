@@ -27,10 +27,12 @@
     * [Custom permissions](user-interface/settings/users-and-permissions/custom-permissions.md)
   * [Configuration Settings](user-interface/settings/configuration-settings/README.md)
     * [Base Models](user-interface/settings/configuration-settings/base-models.md)
+    * [Promotions](user-interface/settings/configuration-settings/promotions.md)
+  * [API](user-interface/settings/api/README.md)
+    * [Endpoints and templates](user-interface/settings/api/endpoints-and-templates.md)
 
 ## REST Templates
 
-* [How To](rest-templates/how-to.md)
 * [Templates](rest-templates/templates.md)
 
 ## Models (API) <a href="#models" id="models"></a>
