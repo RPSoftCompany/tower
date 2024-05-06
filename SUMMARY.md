@@ -10,6 +10,7 @@
 
 ## How to start
 
+* [First steps](how-to-start/first-steps.md)
 * [Example](how-to-start/example.md)
 
 ## User Interface
