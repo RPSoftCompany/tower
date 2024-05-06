@@ -35,14 +35,3 @@
 ## REST Templates
 
 * [Templates](rest-templates/templates.md)
-
-## Models (API) <a href="#models" id="models"></a>
-
-* [Constant Variable](models/constant-variable.md)
-* [Group](models/group.md)
-* [Hook](models/hook.md)
-* [Member](models/member.md)
-* [Promotion](models/promotion.md)
-* [Rest Configuration](models/rest-configuration.md)
-* [Role](models/role.md)
-* [v1](models/v1.md)
