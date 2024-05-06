@@ -1,6 +1,6 @@
 # Find Variable
 
-The Find Variable page allows you to search for the usage of a given variable or locate a configuration variable with specific text, among other functions. Additionally, it enables you to search for [constant variables](../../models/constant-variable.md), enabling you to identify all configuration instances that contain them.
+The Find Variable page allows you to search for the usage of a given variable or locate a configuration variable with specific text, among other functions. Additionally, it enables you to search for [constant variables](../configuration.md#constant-variables), enabling you to identify all configuration instances that contain them.
 
 To search for a configuration variable by name, simply paste the variable's name into the input field at the top of the screen and click the "Search" button. This action will display all the configuration instances in a hierarchical tree view.
 

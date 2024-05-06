@@ -19,7 +19,7 @@ Out of the box, Tower offers a variety of permissions to cater to different user
 3. **configuration.view**: Allows users to view existing configuration instances.
 4. **configurationModel.modify**: Empowers users to create and modify configuration models, commonly known as [Bases](../../model.md).
 5. **configurationModel.view**: Grants users the ability to view existing configuration models ([Bases](../../model.md)).
-6. **constantVariable.modify**: Enables users to create and modify [constant variables](../../../models/constant-variable.md).
+6. **constantVariable.modify**: Enables users to create and modify [constant variables](../../configuration.md#constant-variables).
 
 ## Custom group permissions
 
