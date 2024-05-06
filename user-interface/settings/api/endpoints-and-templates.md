@@ -24,6 +24,7 @@ Tower employs the [liquid template](https://shopify.github.io/liquid/) engine to
   * **name:** The name of the variable.
   * **type:** The type of the variable.
   * **value:** The current value of the variable.
+* **version**: Represents the configuration instance version
 
 Additionally, templates within Tower automatically include all the Base names provided in the associated endpoint.
 
