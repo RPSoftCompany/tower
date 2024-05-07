@@ -26,46 +26,46 @@ Below, you'll discover a comprehensive table detailing all configuration variabl
 
 ### Configuration variables in details
 
-**HOST**
+#### **HOST**
 
 Host on which you Tower instance will be exposed
 
-**PORT**
+#### **PORT**
 
 TCP port on which you Tower instance will be exposed
 
-**LOG\_LEVEL**
+#### **LOG\_LEVEL**
 
 The "Log\_Level" variable constitutes an array of strings dictating the log levels displayed during Tower's operation. Available options include "<mark style="color:yellow;">log</mark>," "<mark style="color:yellow;">error</mark>," "<mark style="color:yellow;">warn</mark>," "<mark style="color:yellow;">debug</mark>," and "<mark style="color:yellow;">verbose</mark>." For comprehensive insights into log levels within Tower, refer to the [Nest.js documentation](https://docs.nestjs.com/techniques/logger).
 
-**DATABASE\_URL**
+#### **DATABASE\_URL**
 
 Database used by your Tower instance. This variable uses standard mongodb connection string format, e.g. <mark style="color:yellow;">mongodb://127.0.0.1:27017/Tower</mark>. You can find more details about this format in [mongodb documentation](https://www.mongodb.com/docs/manual/reference/connection-string).
 
-**SECRET**
+#### **SECRET**
 
 The "Secret" variable is essential for encrypting configurations stored within Tower. It must precisely consist of 32 characters. Should you opt to provide it, ensure utmost security by incorporating a mix of uppercase and lowercase letters, numbers, and special characters.
 
-**TTL**
+#### **TTL**
 
 "TTL" is a variable specifying the duration (in seconds) for which access tokens generated within Tower remain valid.
 
-**AUDIT\_TTL**
+#### **AUDIT\_TTL**
 
 This variable indicates how many days the audit logs will be stored
 
-**TOKEN\_HEADERS**
+#### **TOKEN\_HEADERS**
 
 A list of header names that Tower scans for authentication headers during API calls.
 
-**SSL\_KEY\_PATH**
+#### **SSL\_KEY\_PATH**
 
 Path to your SSL key
 
-**SSL\_CERT\_PATH**
+#### **SSL\_CERT\_PATH**
 
 Path to your SSL certificate
 
-**CORS**
+#### **CORS**
 
 Enables or disables Cross-origin resource sharing (CORS)

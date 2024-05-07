@@ -1,0 +1,9 @@
+# Connecting your application to Tower
+
+Before attempting to connect your application to Tower, configuring the [API Endpoint](../user-interface/settings/api/endpoints-and-templates.md#how-to-configure-a-new-endpoint) is essential. This step is critical because Tower needs a properly configured API Endpoint to expose the service that can serve configurations in a format understandable by applications. Without this configuration, Tower will not be able to provide the necessary services to interact with your applications effectively.
+
+After configuring the endpoint, the next step is to set up your application to retrieve configuration data from Tower. Since each application setup can vary, refer to the application's documentation for specific instructions on correctly configuring the connection to the configuration server. From Tower's perspective, you'll primarily need the REST API endpoint, which consists of Tower's URL followed by "/v1/" and the configured endpoint. For instance, your endpoint might resemble something like [https://myTowerHostName/v1/A/Dev/App1](https://mytowerhostname/v1/A/Dev/App1). Additionally, you'll require an API token to authenticate access. To create an API token, navigate to the "[Users](../user-interface/settings/users-and-permissions/users.md#technical-user-property)" page within Tower, where you can generate a technical user with a non-expiring token for this purpose. This token will authenticate your application's access to Tower's configuration services.&#x20;
+
+The API token you created earlier should be included either in the [authentication header](../installation-1/configuration.md#token\_headers) or as a URL parameter named "access\_token" when making requests to Tower's API. This token serves as the authentication mechanism to authorize access to Tower's configuration services.
+
+Once you have configured all these parameters, you should be able to successfully retrieve the configuration from Tower.

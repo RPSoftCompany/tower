@@ -11,6 +11,7 @@
 ## How to start
 
 * [First steps](how-to-start/first-steps.md)
+* [Connecting your application to Tower](how-to-start/connecting-your-application-to-tower.md)
 * [Example](how-to-start/example.md)
 
 ## User Interface
