@@ -156,7 +156,7 @@ export class V1Service {
    * @param userRoles
    * @param restConfigurations
    * @param url
-   * @param type
+   * @param allBases
    */
   async matchFirstConfiguration(
     userRoles: string[],

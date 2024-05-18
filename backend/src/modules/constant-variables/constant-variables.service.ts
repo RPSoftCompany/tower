@@ -312,9 +312,7 @@ export class ConstantVariablesService {
 
     for (let i = 0; i < allBases.length; i++) {
       if (!filterKeys.includes(allBases[i].name)) {
-        throw new BadRequestException(
-          `Invalid model filter, it lacks of ${allBases[i].name} model`,
-        );
+        filter[`${allBases[i].name}`] = undefined;
       }
     }
 
