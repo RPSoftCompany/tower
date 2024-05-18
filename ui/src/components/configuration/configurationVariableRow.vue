@@ -68,7 +68,7 @@
 				>
 					<q-tooltip :delay="300">Constant variable</q-tooltip>
 				</q-icon>
-				<div>
+				<div class="tw-my-auto">
 					{{ localName }}
 				</div>
 			</div>
@@ -121,13 +121,13 @@
 													valueAsString(
 														localType?.value === 'AWS SM'
 															? `${localValue} : ${localKey}`
-															: localValue
+															: localValue,
 													),
 													valueAsString(
 														currentArchive?.type === 'AWS SM'
 															? `${currentArchive.value} : ${currentArchive.valueKey}`
-															: currentArchive?.value
-													)
+															: currentArchive?.value,
+													),
 												)"
 												:key="`${diff.value}_${index}`"
 											>
@@ -150,7 +150,7 @@
 												valueAsString(
 													currentArchive?.type === 'AWS SE'
 														? `${currentArchive.value}:${currentArchive.valueKey}`
-														: currentArchive?.value
+														: currentArchive?.value,
 												)
 											}}
 										</template>
@@ -170,21 +170,21 @@
 									{{ localValue }}
 								</div>
 							</div>
-						</div>
-						<div v-if="!forced" class="tw-flex tw-self-center">
-							<!-- revert -->
-							<q-separator inset vertical />
-							<q-btn
-								:disable="!revertEnabled"
-								flat
-								icon="sym_o_undo"
-								padding="sm"
-								@click="revert"
-							>
-								<q-tooltip v-if="revertEnabled"
-									>{{ deleted ? 'Recreate variable' : 'Undo changes' }}
-								</q-tooltip>
-							</q-btn>
+							<div v-if="!forced" class="tw-flex tw-ml-3 tw-self-center">
+								<!-- revert -->
+								<q-separator inset vertical />
+								<q-btn
+									:disable="!revertEnabled"
+									flat
+									icon="sym_o_undo"
+									padding="sm"
+									@click="revert"
+								>
+									<q-tooltip v-if="revertEnabled"
+										>{{ deleted ? 'Recreate variable' : 'Undo changes' }}
+									</q-tooltip>
+								</q-btn>
+							</div>
 						</div>
 					</div>
 				</template>
@@ -207,7 +207,7 @@
 						v-if="localType?.value === ConfigurationVariableType.STRING"
 					>
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							:debounce="300"
 							:disable="forced"
 							:error="!!error"
@@ -227,13 +227,14 @@
 						v-if="localType?.value === ConfigurationVariableType.PASSWORD"
 					>
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							:debounce="300"
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
 							:hide-bottom-space="true"
 							:type="passwordVisible ? 'text' : 'password'"
+							autocomplete="off"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
 									? `Variable value forced by ${sourceBase}`
@@ -400,10 +401,14 @@
 				<q-btn
 					:disable="!allowDelete"
 					flat
-					icon="sym_o_delete"
 					padding="sm"
+					:color="deleteButtonColor"
+					@mouseenter="allowDelete ? (deleteButtonColor = 'negative') : null"
+					@mouseleave="allowDelete ? (deleteButtonColor = undefined) : null"
 					@click="deleteDialog = true"
-				/>
+				>
+					<q-icon name="sym_o_delete" :color="deleteButtonColor"></q-icon>
+				</q-btn>
 			</div>
 			<div
 				v-else
@@ -549,13 +554,14 @@ if (typeof props.type === 'string') {
 		icon: getTypeIcon(props.type),
 	};
 } else {
-	localType.value = ref(props.type);
+	localType.value = ref(props.type as typeInterface);
 }
 localChanges = true;
 const localValue = ref(props.value);
 const localKey = ref(props.valueKey);
 
 const deleteDialog = ref(false);
+const deleteButtonColor: Ref<string | undefined> = ref(undefined);
 
 const passwordVisible = ref(false);
 
@@ -663,7 +669,7 @@ watch(
 
 		localValue.value = valueConverter(
 			localValue.value,
-			localTypeValue as ConfigurationVariableType
+			localTypeValue as ConfigurationVariableType,
 		);
 		emit('update:type', localTypeValue);
 		emit('update:value', localValue.value);
@@ -680,7 +686,7 @@ watch(
 	},
 	{
 		immediate: true,
-	}
+	},
 );
 
 watch(localValue, () => {
@@ -712,7 +718,7 @@ watch(
 			localChanges = true;
 			localValue.value = current;
 		}
-	}
+	},
 );
 
 watch(
@@ -726,7 +732,7 @@ watch(
 				icon: getTypeIcon(current),
 			};
 		}
-	}
+	},
 );
 </script>
 

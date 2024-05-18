@@ -26,6 +26,7 @@ export interface Configuration {
 	description: string;
 	version: number;
 	draft: boolean;
+	comment?: string;
 	id: string;
 	createdBy?: Member | undefined;
 }

@@ -118,7 +118,7 @@ export class HooksService implements OnModuleInit {
   async count(filter?: Statement) {
     const newFilter = filterTranslator(filter);
 
-    return this.hookModel.count(newFilter.where);
+    return this.hookModel.countDocuments(newFilter.where);
   }
 
   /**

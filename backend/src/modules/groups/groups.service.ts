@@ -39,7 +39,7 @@ export class GroupsService {
   count(filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
 
-    return this.groupModel.count(newFilter.where);
+    return this.groupModel.countDocuments(newFilter.where);
   }
 
   /**

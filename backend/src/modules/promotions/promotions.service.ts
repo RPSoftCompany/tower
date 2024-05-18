@@ -38,7 +38,7 @@ export class PromotionsService {
   }
 
   count() {
-    return this.promotionModel.count();
+    return this.promotionModel.countDocuments();
   }
 
   async partialUpdate(

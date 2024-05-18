@@ -43,7 +43,7 @@ const parseJwt = (token: string) => {
 			.map(function (c) {
 				return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
 			})
-			.join('')
+			.join(''),
 	);
 
 	return JSON.parse(jsonPayload);
@@ -90,6 +90,7 @@ export default store((ssrContext) => {
 						cookies.set(key, JSON.stringify(value), {
 							expires: expires,
 							secure: document.location.protocol == 'https:',
+							sameSite: 'Strict',
 							path: '/',
 						});
 					}
@@ -100,7 +101,7 @@ export default store((ssrContext) => {
 					}
 				},
 			},
-		})
+		}),
 	);
 
 	return pinia;

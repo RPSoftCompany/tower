@@ -17,6 +17,33 @@
   -->
 
 <template>
+	<q-dialog v-model="commentsDialog" persistent>
+		<q-card class="tw-min-w-[30%]">
+			<q-card-section class="tw-bg-darkPage">
+				<div class="text-h6">Comment your changes</div>
+			</q-card-section>
+			<q-card-section class="tw-max-h-[70vh] tw-overflow-auto">
+				<q-input
+					type="textarea"
+					color="secondary"
+					v-model="comment"
+					autogrow
+					label="Comment"
+				/>
+			</q-card-section>
+			<q-card-actions align="right">
+				<q-btn v-close-popup color="secondary" flat label="Cancel" />
+				<q-btn
+					v-close-popup
+					color="positive"
+					flat
+					label="Save"
+					@click="saveConfiguration"
+					:disable="!comment"
+				/>
+			</q-card-actions>
+		</q-card>
+	</q-dialog>
 	<q-dialog v-model="promotionCandidatesDialog" persistent>
 		<q-card class="tw-min-w-[30%]">
 			<q-card-section class="tw-bg-darkPage">
@@ -43,7 +70,7 @@
 								clickable
 								:active="activePromotionCandidate === promotionCandidate.id"
 								v-for="promotionCandidate of promotionCandidatesCategories.get(
-									promoteCandidateKey
+									promoteCandidateKey,
 								)"
 								:key="promotionCandidate.id"
 								active-class="tw-text-secondary tw-font-bold"
@@ -69,17 +96,17 @@
 									Version {{ promotionCandidate.configuration.version }},
 									{{
 										new Date(
-											promotionCandidate.configuration?.effectiveDate
+											promotionCandidate.configuration?.effectiveDate,
 										).toLocaleString()
 									}}
 								</q-item-section>
 								<q-item-section
 									side
 									@click="
-										(event) =>
+										(event: MouseEvent) =>
 											showPromotionCandidatePreviewDialog(
 												event,
-												promotionCandidate.configuration
+												promotionCandidate.configuration,
 											)
 									"
 								>
@@ -258,6 +285,7 @@
 			>
 				<template v-if="configurationWithCurrentArchive.length >= 100">
 					<q-intersection
+						once
 						v-for="row of configurationWithCurrentArchive"
 						:key="row.name"
 						class="tower-configuration-row"
@@ -318,7 +346,7 @@
 		>
 			<new-configuration-variable-panel
 				v-if="!loading"
-				:existing-variable-names="configurationVariableNames"
+				:existing-variable-names="configurationVariableNames as string[]"
 				@addNewVariable="addNewVariable"
 			/>
 		</transition>
@@ -330,7 +358,9 @@
 				v-if="configurationVariables?.variables"
 				:has-errors="hasErrors"
 				:save-enabled="isDifferent && !loading"
-				@saveClicked="saveConfiguration"
+				@saveClicked="
+					commentNeeded ? showCommentsDialog() : saveConfiguration()
+				"
 			/>
 		</transition>
 	</div>
@@ -364,6 +394,7 @@ import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosError } from 'axios';
+import { cloneDeep } from 'lodash';
 //====================================================
 // Const
 //====================================================
@@ -407,6 +438,9 @@ const promotionCandidatesDialog = ref(false);
 const activePromotionCandidate = ref('');
 const promotionCandidatesPreviewDialog = ref(false);
 const promotionCandidatePreviewConfig: Ref<Configuration | null> = ref(null);
+
+const commentsDialog = ref(false);
+const comment = ref('');
 
 //====================================================
 // beforeMounted
@@ -462,13 +496,19 @@ const promotionCandidatesCategories = computed(() => {
 	return null;
 });
 
+const commentNeeded = computed(() => {
+	return props.configModel.some((el) => {
+		return el.options.forceComment === true;
+	});
+});
+
 /**
  * currentVersionDate
  */
 const currentVersionDate = computed(() => {
 	if (version.value >= 0) {
 		const date = new Date(
-			configurationVariablesArchive.value[version.value].effectiveDate
+			configurationVariablesArchive.value[version.value].effectiveDate,
 		);
 		return date.toLocaleString();
 	}
@@ -593,7 +633,7 @@ const configurationWithCurrentArchive = computed(() => {
 						deleted: true,
 					});
 				}
-			}
+			},
 		);
 	}
 
@@ -747,19 +787,19 @@ const getConfiguration = async () => {
 
 	try {
 		const request = towerAxios.get(
-			`configurations?filter=${JSON.stringify(filter, null, '')}`
+			`configurations?filter=${JSON.stringify(filter, null, '')}`,
 		);
 
 		const constVariablesRequest = towerAxios.get(
 			`constantVariables/findLatest?filter=${JSON.stringify(
 				filter.where,
 				null,
-				''
-			)}`
+				'',
+			)}`,
 		);
 
 		const configurationModelRequest = towerAxios.get(
-			`configurationModels?filter=${JSON.stringify(rulesFilter, undefined, '')}`
+			`configurationModels?filter=${JSON.stringify(rulesFilter, undefined, '')}`,
 		);
 
 		let response, constVariablesResponse, configurationModelResponse;
@@ -952,6 +992,11 @@ const checkForErrors = (array: Array<ConfigurationVariableToDisplay>) => {
 	return array;
 };
 
+const showCommentsDialog = () => {
+	comment.value = '';
+	commentsDialog.value = true;
+};
+
 /**
  * saveConfiguration
  */
@@ -966,6 +1011,7 @@ const saveConfiguration = async () => {
 				promoted: false,
 				description: '',
 				draft: false,
+				comment: comment.value,
 			};
 			props.configModel.forEach((el) => {
 				if (el && el.name !== '__NONE__') {
@@ -1166,11 +1212,11 @@ const isDifferentThan = (versionToCheck?: number) => {
 				} else if (local.type === ConfigurationVariableType.LIST) {
 					const localArray = valueConverter(
 						local.value,
-						ConfigurationVariableType.STRING
+						ConfigurationVariableType.STRING,
 					);
 					const elArray = valueConverter(
 						el.value,
-						ConfigurationVariableType.STRING
+						ConfigurationVariableType.STRING,
 					);
 					return local.type !== el.type || elArray !== localArray;
 				} else {
@@ -1199,8 +1245,9 @@ const isDifferentThan = (versionToCheck?: number) => {
  */
 const fullRevert = () => {
 	if (configurationVariables.value) {
-		configurationVariables.value.variables =
-			configurationVariablesArchive.value[version.value].variables;
+		configurationVariables.value.variables = cloneDeep(
+			configurationVariablesArchive.value[version.value].variables,
+		);
 	}
 };
 
@@ -1214,8 +1261,8 @@ const promoteConfiguration = async () => {
 		try {
 			await towerAxios.post(
 				`/configurations/${
-					configurationVariablesArchive.value[version.value].id
-				}/promote`
+					configurationVariablesArchive.value[version.value]._id
+				}/promote`,
 			);
 		} catch (e) {
 			configurationVariablesArchive.value[version.value].promoted = false;
@@ -1284,7 +1331,7 @@ const getPromotionCandidates = async () => {
 
 	const response = await towerAxios.post(
 		'/configurations/promotionCandidates',
-		model
+		model,
 	);
 
 	if (response.status === 200) {
@@ -1315,7 +1362,7 @@ const setActivePromotionCandidate = (id: string) => {
  */
 const showPromotionCandidatePreviewDialog = (
 	event: MouseEvent,
-	config: Configuration
+	config: Configuration,
 ) => {
 	event.stopPropagation();
 
@@ -1340,7 +1387,7 @@ watch(
 			navigationSt.allowNavigation();
 		}
 	},
-	{ immediate: true }
+	{ immediate: true },
 );
 
 watch(localPromotionCandidates, (current) => {
@@ -1371,6 +1418,6 @@ defineExpose({
 }
 
 .tower-min-height {
-	min-height: calc(100vh - 19rem);
+	min-height: calc(100vh - 18rem);
 }
 </style>

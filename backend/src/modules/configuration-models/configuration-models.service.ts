@@ -284,7 +284,9 @@ export class ConfigurationModelsService {
         }
       }
 
-      await this.configurationModel.findByIdAndRemove(id);
+      await this.configurationModel.findOneAndDelete({
+        _id: new Types.ObjectId(id),
+      });
     }
   }
 }

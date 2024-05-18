@@ -18,7 +18,7 @@
 
 <template>
 	<q-card
-		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tower-min-height tw-flex-1"
+		class="tw-bg-darkPage tw-text-secondary tw-flex tw-items-start tw-flex-col tw-pt-2 tw-rounded tower-min-height tw-overflow-hidden"
 		flat
 	>
 		<q-inner-loading :showing="loading">
@@ -40,81 +40,85 @@
 			</div>
 		</div>
 		<div
+			:class="{
+				'tw-grid-cols-5': constVariablesArchive.length > 0,
+				'tw-grid-cols-2': constVariablesArchive.length === 0,
+			}"
+			class="tw-grid tw-w-full tw-gap-3 tw-justify-items-stretch tw-text-sm tw-font-semibold"
+		>
+			<div class="tw-text-center tw-w-full">Name</div>
+			<div
+				v-if="constVariablesArchive.length > 0"
+				class="tw-flex tw-col-span-2"
+			>
+				<q-btn
+					:disable="version <= 0"
+					class="tw-flex-none"
+					flat
+					icon="sym_o_chevron_left"
+					padding="sm"
+					@click="version--"
+				/>
+				<div class="tw-grow tw-flex tw-justify-center">
+					<div class="tw-mr-3">
+						<div>
+							Version #{{ version + 1 }}, created
+							{{ currentVersionDate }}
+						</div>
+						<div
+							class="tw-text-center tw-text-gray-600 tw-font-light tw-text-xs"
+						>
+							created by
+							<span class="tw-font-medium">{{ currentVersionAuthor }}</span>
+						</div>
+					</div>
+					<div v-if="userCanModify" class="tw-flex tw-self-center">
+						<q-separator inset vertical />
+						<q-btn
+							:disable="!differentThanShownVersion"
+							flat
+							icon="sym_o_undo"
+							padding="sm"
+							@click="fullRevert"
+						>
+							<q-tooltip v-if="differentThanShownVersion"
+								>Revert to this version
+							</q-tooltip>
+						</q-btn>
+					</div>
+				</div>
+				<q-btn
+					:disable="version >= constVariablesArchive.length - 1"
+					class="tw-flex-none"
+					flat
+					icon="sym_o_chevron_right"
+					padding="sm"
+					@click="version++"
+				/>
+			</div>
+			<div
+				:class="{ 'tw-col-span-2': constVariablesArchive.length > 0 }"
+				class="tw-text-center tw-w-full"
+			>
+				Value
+			</div>
+		</div>
+		<div
 			v-if="!loading && constVariables?.variables"
 			:class="{
 				'tower-max-height': userCanModify,
 				'tower-max-height-readOnly': !userCanModify,
 			}"
-			class="tw-w-full"
+			class="tw-w-full tw-flex"
 		>
 			<div
-				:class="{
-					'tw-grid-cols-5': constVariablesArchive.length > 0,
-					'tw-grid-cols-2': constVariablesArchive.length === 0,
-				}"
-				class="tw-grid tw-w-full tw-gap-3 tw-justify-items-stretch tw-place-items-center tw-text-sm tw-font-semibold tw-min-h-[2.5rem]"
+				:class="{ 'tw-col-span-2': constVariablesArchive.length > 0 }"
+				class="tw-flex-1 tw-overflow-auto"
 			>
-				<div class="tw-text-center tw-w-full">Name</div>
-				<div
-					v-if="constVariablesArchive.length > 0"
-					class="tw-flex tw-col-span-2"
-				>
-					<q-btn
-						:disable="version <= 0"
-						class="tw-flex-none"
-						flat
-						icon="sym_o_chevron_left"
-						padding="sm"
-						@click="version--"
-					/>
-					<div class="tw-grow tw-self-center tw-flex tw-justify-center">
-						<div class="tw-mr-3 tw-self-center">
-							<div>
-								Version #{{ version + 1 }}, created
-								{{ currentVersionDate }}
-							</div>
-							<div
-								class="tw-text-center tw-text-gray-600 tw-font-light tw-text-xs"
-							>
-								created by
-								<span class="tw-font-medium">{{ currentVersionAuthor }}</span>
-							</div>
-						</div>
-						<div v-if="userCanModify" class="tw-flex tw-self-center">
-							<q-separator inset vertical />
-							<q-btn
-								:disable="!differentThanShownVersion"
-								flat
-								icon="sym_o_undo"
-								padding="sm"
-								@click="fullRevert"
-							>
-								<q-tooltip v-if="differentThanShownVersion"
-									>Revert to this version
-								</q-tooltip>
-							</q-btn>
-						</div>
-					</div>
-					<q-btn
-						:disable="version >= constVariablesArchive.length - 1"
-						class="tw-flex-none"
-						flat
-						icon="sym_o_chevron_right"
-						padding="sm"
-						@click="version++"
-					/>
-				</div>
-				<div
-					:class="{ 'tw-col-span-2': constVariablesArchive.length > 0 }"
-					class="tw-text-center tw-w-full"
-				>
-					Value
-				</div>
-			</div>
-			<div :class="{ 'tw-col-span-2': constVariablesArchive.length > 0 }">
 				<q-intersection
 					v-for="constVar of constVariablesWithCurrentArchive"
 					:key="constVar.name"
+					once
 					class="tower-configuration-row"
 					ssr-prerender
 					transition="fade"
@@ -129,7 +133,7 @@
 						:current-version="
 							constVariableArchiveVersion(
 								constVar.name,
-								constVariablesArchive.length - 1
+								constVariablesArchive.length - 1,
 							)
 						"
 						:deleted="constVar.deleted"
@@ -252,7 +256,7 @@ onBeforeMount(async () => {
 const currentVersionDate = computed(() => {
 	if (version.value >= 0) {
 		const date = new Date(
-			constVariablesArchive.value[version.value].effectiveDate
+			constVariablesArchive.value[version.value].effectiveDate,
 		);
 		return date.toLocaleString();
 	}
@@ -336,7 +340,7 @@ const constVariablesWithCurrentArchive = computed(() => {
 						deleted: true,
 					});
 				}
-			}
+			},
 		);
 	}
 
@@ -413,7 +417,7 @@ const getConstantVariables = async () => {
 
 	try {
 		const response = await towerAxios.get(
-			`constantVariables?filter=${JSON.stringify(filter, null, '')}`
+			`constantVariables?filter=${JSON.stringify(filter, null, '')}`,
 		);
 
 		if (response.status === 200) {
@@ -468,7 +472,7 @@ const removeConstantVariable = (variableName: string) => {
 		constVariables.value.variables = constVariables.value?.variables.filter(
 			(el) => {
 				return el.name !== variableName;
-			}
+			},
 		);
 	}
 };
@@ -755,15 +759,15 @@ defineExpose({
 <style scoped>
 .tower-max-height {
 	overflow: auto;
-	max-height: calc(100vh - 20rem);
+	max-height: calc(100vh - 21rem);
 }
 
 .tower-max-height-readOnly {
 	overflow: auto;
-	max-height: calc(100vh - 12rem);
+	max-height: calc(100vh - 13rem);
 }
 
 .tower-min-height {
-	min-height: calc(100vh - 19rem);
+	min-height: calc(100vh - 18rem);
 }
 </style>

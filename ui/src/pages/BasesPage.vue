@@ -17,7 +17,7 @@
   -->
 
 <template>
-	<div>
+	<div class="flex tw-flex-col tw-h-full tw-max-h-full">
 		<q-dialog v-model="deleteDialog">
 			<q-card class="tw-min-w-[30%]">
 				<q-card-section class="tw-bg-negative">
@@ -93,9 +93,9 @@
 				v-model:filter="modelFilter"
 				:clearable="false"
 				:disable="false"
-				:label="`Choose or create new ${route.params.base}`"
+				:label="`Choose or create ${route.params.base}`"
 				:loading="loading"
-				:options="baseModels as Array<[object]>"
+				:options="baseModels as Array<object>"
 				class="tw-w-[33.3%]"
 				option-label="name"
 				@input-value="inputValueChange"
@@ -153,6 +153,7 @@
 					label="Restrictions"
 					name="restrictions"
 				/>
+				<q-tab class="tw-rounded" label="Other settings" name="other"></q-tab>
 			</q-tabs>
 		</transition>
 		<transition
@@ -162,21 +163,20 @@
 			<q-tab-panels
 				v-if="model"
 				v-model="tab"
-				:class="
-					userCanModify ? 'tower-min-height' : 'tower-min-height-readOnly'
-				"
 				animated
-				class="tw-bg-darkPage"
+				class="tw-bg-darkPage tw-flex tw-flex-col tw-flex-1 tw-items-center"
 			>
-				<q-tab-panel name="rules">
-					<div
-						:class="{
-							'tower-min-panel-height': userCanModify,
-							'tower-min-panel-height-readOnly': !userCanModify,
-							'tw-justify-center': model.rules.length === 0 && !loading,
-						}"
-						class="tw-flex tw-flex-col"
-					>
+				<q-tab-panel
+					name="rules"
+					class="tw-flex tw-flex-1 tw-flex-col overflow-auto"
+					:class="{
+						'items-center': model.rules.length === 0 && !loading,
+						'tw-justify-center': model.rules.length === 0 && !loading,
+						'tw-min-h-20': model.rules.length === 0 && !loading,
+						'tw-min-h-40': model.rules.length > 0 && !loading,
+					}"
+				>
+					<div class="tw-flex tw-items-center tw-flex-col">
 						<rule-row
 							v-for="rule of model.rules"
 							:id="rule._id"
@@ -194,7 +194,7 @@
 						/>
 						<div
 							v-if="model.rules.length === 0 && !loading"
-							class="tw-w-full tw-flex tw-justify-center tw-justify-self-center tw-self-center tw-items-center"
+							class="tw-w-full tw-flex tw-justify-center tw-items-center"
 						>
 							<div
 								class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400"
@@ -210,21 +210,25 @@
 						</div>
 					</div>
 				</q-tab-panel>
-				<q-tab-panel name="restrictions">
-					<div>
-						<q-checkbox
-							v-if="tab === 'restrictions'"
-							v-model="model.options.hasRestrictions"
-							:disable="!userCanModify"
-							label="Enable restrictions"
-						/>
+				<q-tab-panel name="restrictions" class="tw-flex tw-flex-1 tw-flex-col">
+					<q-checkbox
+						v-if="tab === 'restrictions'"
+						v-model="model.options.hasRestrictions"
+						:disable="!userCanModify"
+						label="Enable restrictions"
+					/>
+					<div
+						class="tw-flex tw-flex-1 tw-flex-col overflow-auto tw-min-h-40"
+						:class="{
+							'items-center': model.restrictions.length === 0 && !loading,
+							'tw-justify-center': model.restrictions.length === 0 && !loading,
+						}"
+					>
 						<div
 							v-if="tab === 'restrictions'"
 							:class="{
 								'tw-justify-center':
 									model.restrictions.length === 0 && !loading,
-								'tower-min-restriction-panel-height': userCanModify,
-								'tower-min-restriction-panel-height-readOnly': !userCanModify,
 							}"
 							class="tw-flex tw-flex-col"
 						>
@@ -254,6 +258,11 @@
 								</div>
 							</div>
 						</div>
+					</div>
+				</q-tab-panel>
+				<q-tab-panel name="other">
+					<div class="flex tw-flex-col tw-flex-1">
+						<q-checkbox v-model="modelForceComment" label="Force comment" />
 					</div>
 				</q-tab-panel>
 			</q-tab-panels>
@@ -289,7 +298,6 @@
 					:has-errors="hasErrors"
 					:loading="loading"
 					:save-enabled="isDifferent"
-					class="tw-mt-1"
 					@saveClicked="saveModel"
 				></save-panel>
 			</div>
@@ -317,6 +325,7 @@ import { useQuasar } from 'quasar';
 import { userStore } from 'stores/user';
 import RestrictionRow from 'components/configurationModel/restrictionRow.vue';
 import { navigationStore } from 'stores/navigation';
+import { isNil } from 'lodash';
 
 //====================================================
 // Const
@@ -335,6 +344,7 @@ const modelFilter = ref('');
 const rules: Ref<Array<ConfigurationModelRule>> = ref([]);
 const restrictions: Ref<Array<any>> = ref([]);
 const modelHasRestrictions = ref(false);
+const modelForceComment = ref(false);
 const baseModels: Ref<Array<ConfigurationModel>> = ref([]);
 const previousBaseModels: Ref<Array<Array<string>>> = ref([]);
 
@@ -390,7 +400,7 @@ const currentIcon = computed(() => {
 		return found.icon;
 	}
 
-	return null;
+	return undefined;
 });
 
 /**
@@ -436,6 +446,15 @@ const isDifferent = computed(() => {
 	}
 
 	if (modelHasRestrictions.value !== model.value?.options.hasRestrictions) {
+		return true;
+	}
+
+	if (isNil(model.value?.options.forceComment) && modelForceComment.value) {
+		return true;
+	} else if (
+		!isNil(model.value?.options.forceComment) &&
+		modelForceComment.value !== model.value?.options.forceComment
+	) {
 		return true;
 	}
 
@@ -564,7 +583,7 @@ const getBaseModels = async () => {
 		},
 	};
 	const response = await towerAxios.get(
-		`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
+		`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`,
 	);
 
 	if (response.status === 200) {
@@ -594,7 +613,7 @@ const getPreviousBaseModels = async () => {
 		};
 
 		const response = await towerAxios.get(
-			`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
+			`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`,
 		);
 
 		if (response.status === 200) {
@@ -711,6 +730,10 @@ const saveModel = async () => {
 	if (model.value) {
 		loading.value = true;
 
+		model.value.options.forceComment = isNil(modelForceComment.value)
+			? false
+			: modelForceComment.value;
+
 		const toSave: ConfigurationModel = {
 			rules: model.value?.rules,
 			name: model.value.name,
@@ -758,6 +781,9 @@ const updateCurrentData = (current: ConfigurationModel) => {
 	rules.value = [];
 	restrictions.value = [];
 	modelHasRestrictions.value = current.options.hasRestrictions;
+	modelForceComment.value = isNil(current.options.forceComment)
+		? false
+		: current.options.forceComment;
 
 	current.rules.forEach((el) => {
 		rules.value.push({ ...el });
@@ -783,6 +809,7 @@ const addOrDeleteModel = () => {
 			restrictions: [],
 			options: {
 				hasRestrictions: false,
+				forceComment: false,
 			},
 			rules: [],
 		};
@@ -830,7 +857,7 @@ watch(
 		model.value = null;
 		tab.value = 'rules';
 		await getBaseModels();
-	}
+	},
 );
 
 watch(
@@ -839,7 +866,7 @@ watch(
 		if (current) {
 			updateCurrentData(current);
 		}
-	}
+	},
 );
 
 watch(isDifferent, (current: boolean) => {
@@ -851,36 +878,4 @@ watch(isDifferent, (current: boolean) => {
 });
 </script>
 
-<style scoped>
-.tower-min-height {
-	min-height: calc(100vh - 20rem);
-}
-
-.tower-min-height-readOnly {
-	min-height: calc(100vh - 14rem);
-}
-
-.tower-min-panel-height {
-	min-height: max(calc(100vh - 22rem), 6rem);
-	max-height: calc(100vh - 22rem);
-	overflow: auto;
-}
-
-.tower-min-panel-height-readOnly {
-	min-height: max(calc(100vh - 15rem), 6rem);
-	max-height: calc(100vh - 15rem);
-	overflow: auto;
-}
-
-.tower-min-restriction-panel-height {
-	min-height: max(calc(100vh - 24rem), 6rem);
-	max-height: calc(100vh - 24rem);
-	overflow: auto;
-}
-
-.tower-min-restriction-panel-height-readOnly {
-	min-height: max(calc(100vh - 20rem), 6rem);
-	max-height: calc(100vh - 20rem);
-	overflow: auto;
-}
-</style>
+<style scoped></style>

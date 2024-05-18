@@ -17,7 +17,7 @@
   -->
 
 <template>
-	<div>
+	<div class="tw-h-full tw-max-h-full tw-flex tw-flex-col">
 		<base-toolbar @update:baseModels="onBaseModelChange" />
 		<transition
 			enter-active-class="animated fadeIn"
@@ -63,7 +63,7 @@
 		>
 			<div
 				v-if="!isCurrentBaseModelEmpty"
-				class="tw-mt-3 tw-flex-1 tw-flex tw-flex-col"
+				class="tw-mt-3 tw-flex tw-flex-col tw-grow"
 			>
 				<constant-variable-panel
 					v-if="

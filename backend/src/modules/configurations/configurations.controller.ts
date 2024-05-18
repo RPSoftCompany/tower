@@ -262,4 +262,18 @@ export class ConfigurationsController {
       (this.request as any).__userData.__roles,
     );
   }
+
+  @Post('/:id/promote')
+  @UseGuards(TowerAuthGuard)
+  @Roles(['configuration.view'])
+  @ApiBearerAuth()
+  @ApiBasicAuth()
+  @ApiResponse({ status: 200 })
+  @HttpCode(200)
+  async promoteConfiguration(@Param('id') id: string) {
+    return await this.configurationsService.promoteConfiguration(
+      id,
+      (this.request as any).__userData.__roles,
+    );
+  }
 }

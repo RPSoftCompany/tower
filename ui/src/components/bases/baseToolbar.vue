@@ -48,7 +48,7 @@
 			v-for="(base, index) of allBases"
 			:key="base.name"
 			v-model="bases.values[index]"
-			:disable="isSelectDisabled(index as Number) || loading"
+			:disable="isSelectDisabled(index as number) || loading"
 			:label="base.name"
 			:loading="bases.loading[index]"
 			:options="bases.items[index]"
@@ -191,7 +191,7 @@ const setBases = async (sequenceNumber: number) => {
 	};
 
 	const response = await towerAxios.get(
-		`configurationModels?filter=${JSON.stringify(filter, null, '')}`
+		`configurationModels?filter=${JSON.stringify(filter, null, '')}`,
 	);
 
 	if (response.status === 200) {
@@ -335,7 +335,7 @@ const forceBasesUpdate = async (baseObj: any) => {
 			const newBaseValue = bases.value.items[i].find(
 				(el: ConfigurationModel) => {
 					return el.name === baseObj[base.name];
-				}
+				},
 			);
 			if (newBaseValue) {
 				bases.value.values[i] = newBaseValue as ConfigurationModel;

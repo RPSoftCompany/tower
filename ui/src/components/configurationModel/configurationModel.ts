@@ -22,6 +22,7 @@ export interface ConfigurationModel {
 	base: string;
 	options: {
 		hasRestrictions: boolean;
+		forceComment?: boolean;
 	};
 	restrictions: Array<any>;
 	_id?: string;

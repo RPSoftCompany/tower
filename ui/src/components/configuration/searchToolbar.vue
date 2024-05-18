@@ -101,7 +101,7 @@
 						v-if="exportEnabled"
 						color="transparent"
 						flat
-						icon="sym_o_cloud_download"
+						icon="sym_o_download"
 						padding="sm"
 						text-color="secondary"
 						@click="emits('exportClicked')"
@@ -112,7 +112,7 @@
 						v-if="importEnabled"
 						color="transparent"
 						flat
-						icon="sym_o_cloud_upload"
+						icon="sym_o_upload"
 						padding="sm"
 						text-color="secondary"
 						@click="showImportDialog = true"
@@ -155,7 +155,7 @@ const props = withDefaults(
 		importEnabled: false,
 		exportEnabled: false,
 		showDiffEnabled: true,
-	}
+	},
 );
 //====================================================
 // Emits
@@ -232,7 +232,7 @@ const uploadFileData = () => {
 			importDetails.value.fileData = reader.result as string;
 			loadingFile.value = false;
 		},
-		false
+		false,
 	);
 
 	reader.addEventListener(
@@ -244,7 +244,7 @@ const uploadFileData = () => {
 				message: 'Error reading input file',
 			});
 		},
-		false
+		false,
 	);
 
 	reader.readAsText(importDetails.value.inputFile as Blob);
@@ -259,7 +259,7 @@ watch(
 		if (current) {
 			uploadFileData();
 		}
-	}
+	},
 );
 </script>
 

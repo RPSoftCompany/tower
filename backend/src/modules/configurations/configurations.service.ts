@@ -331,6 +331,7 @@ export class ConfigurationsService implements OnModuleInit {
     }
 
     newConfigurationObject.createdBy = userId;
+    newConfigurationObject.comment = createConfigurationDto.comment;
 
     const retValue: Configuration = await this.configurationModel.create(
       newConfigurationObject,
@@ -470,7 +471,10 @@ export class ConfigurationsService implements OnModuleInit {
    * @param id
    */
   async remove(id: string) {
-    return this.configurationModel.findByIdAndRemove(id);
+    return this.configurationModel.findOneAndDelete({
+      _id: new Types.ObjectId(id),
+    });
+    // return this.configurationModel.findByIdAndRemove(id);
   }
 
   /**
@@ -508,6 +512,24 @@ export class ConfigurationsService implements OnModuleInit {
       );
     } else {
       return null;
+    }
+  }
+
+  /**
+   * promoteConfiguration
+   *
+   * @param id
+   * @param userRoles
+   */
+  async promoteConfiguration(id: string, userRoles: string[]) {
+    const configuration = await this.findById(userRoles, id);
+    if (configuration) {
+      await this.configurationModel.updateOne(
+        { _id: new Types.ObjectId(id) },
+        {
+          promoted: true,
+        },
+      );
     }
   }
 
@@ -601,9 +623,14 @@ export class ConfigurationsService implements OnModuleInit {
       { where: whereFilter },
     );
 
-    const all: Configuration[] = await this.configurationModel.aggregate(
-      aggregation,
-    );
+    aggregation.push({
+      $sort: {
+        version: 1,
+      },
+    });
+
+    const all: Configuration[] =
+      await this.configurationModel.aggregate(aggregation);
 
     return all;
   }

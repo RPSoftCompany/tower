@@ -4,7 +4,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { Statement } from '../../helpers/clauses';
 import { filterTranslator } from '../../helpers/filterTranslator';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Role, RoleDocument } from './roles.schema';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class RolesService implements OnModuleInit {
   async count(filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
 
-    return this.roleModel.count(newFilter.where);
+    return this.roleModel.countDocuments(newFilter.where);
   }
 
   async onModuleInit() {
@@ -85,6 +85,8 @@ export class RolesService implements OnModuleInit {
   }
 
   async remove(id: string) {
-    return this.roleModel.findByIdAndRemove(id);
+    return this.roleModel.findOneAndDelete({
+      _id: new Types.ObjectId(id),
+    });
   }
 }
