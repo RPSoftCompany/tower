@@ -18,13 +18,13 @@
 
 <template>
 	<div class="tw-flex tw-flex-col tw-h-full">
-		<div class="tw-flex tw-flex-col tw-items-center">
+		<div class="tw-grid tw-grid-cols-3">
 			<tower-select
 				v-model="currentBase"
 				label="Base"
 				:options="basesSt.getBases"
 				option-label="name"
-				class="tw-w-[33.3%]"
+				class="tw-col-start-2"
 				@update:modelValue="getAllModels"
 				:loading="loading"
 			/>
@@ -33,8 +33,18 @@
 			class="tw-flex tw-flex-col tw-h-full tw-mt-6"
 			v-if="currentConfigurationModels.length > 0"
 		>
+			<search-toolbar
+				class="tw-mb-3"
+				:export-enabled="false"
+				:showDiffEnabled="false"
+				v-model:filter="filter"
+				title=""
+			/>
 			<q-list>
-				<template v-for="model of currentConfigurationModels" :key="model.name">
+				<template
+					v-for="model of filteredConfigurationModels"
+					:key="model.name"
+				>
 					<q-item
 						clickable
 						@click="addOrRemoveCustomPermission(model.name)"
@@ -44,14 +54,14 @@
 							<q-icon
 								:name="
 									currentRoles.includes(
-										`configurationModel.${currentBase?.name}.${model.name}.view`
+										`configurationModel.${currentBase?.name}.${model.name}.view`,
 									)
 										? 'sym_o_check'
 										: 'sym_o_check_box_outline_blank'
 								"
 								:color="
 									currentRoles.includes(
-										`configurationModel.${currentBase?.name}.${model.name}.view`
+										`configurationModel.${currentBase?.name}.${model.name}.view`,
 									)
 										? 'positive'
 										: 'grey-7'
@@ -89,6 +99,7 @@ import { ConfigurationModel } from 'components/configurationModel/configurationM
 import SavePanel from 'components/basic/savePanel.vue';
 import { useQuasar } from 'quasar';
 import { navigationStore } from 'stores/navigation';
+import SearchToolbar from 'components/configuration/searchToolbar.vue';
 
 //====================================================
 // Const
@@ -108,6 +119,8 @@ const currentConfigurationModels: Ref<Array<ConfigurationModel>> = ref([]);
 const currentRoles: Ref<Array<string>> = ref([]);
 
 const loading = ref(false);
+
+const filter = ref('');
 
 //====================================================
 // onMounted
@@ -134,6 +147,22 @@ const isDifferent = computed(() => {
 	});
 });
 
+const filteredConfigurationModels = computed(() => {
+	if (
+		currentConfigurationModels.value &&
+		currentConfigurationModels.value.length > 0 &&
+		filter.value
+	) {
+		const localFilter = filter.value.toLowerCase();
+
+		return currentConfigurationModels.value.filter((el) => {
+			return el.name.toLowerCase().includes(localFilter);
+		});
+	}
+
+	return currentConfigurationModels.value;
+});
+
 //====================================================
 // Methods
 //====================================================
@@ -150,7 +179,7 @@ const getAllRoles = async () => {
 	};
 
 	const response = await towerAxios.get(
-		`Roles?filter=${JSON.stringify(filter, undefined, '')}`
+		`Roles?filter=${JSON.stringify(filter, undefined, '')}`,
 	);
 
 	if (response.status === 200) {
@@ -189,7 +218,7 @@ const getAllModels = async () => {
 	};
 
 	const response = await towerAxios.get(
-		`configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
+		`configurationModels?filter=${JSON.stringify(filter, undefined, '')}`,
 	);
 	if (response.status === 200) {
 		currentConfigurationModels.value = response.data;
@@ -204,25 +233,25 @@ const getAllModels = async () => {
 const addOrRemoveCustomPermission = (name: string) => {
 	if (
 		currentRoles.value.includes(
-			`configurationModel.${currentBase.value?.name}.${name}.view`
+			`configurationModel.${currentBase.value?.name}.${name}.view`,
 		)
 	) {
 		const regex = new RegExp(
-			`^(configurationModel|constantVariable).${currentBase.value?.name}.${name}.(view|modify)$`
+			`^(configurationModel|constantVariable).${currentBase.value?.name}.${name}.(view|modify)$`,
 		);
 		currentRoles.value = currentRoles.value.filter((el) => {
 			return !regex.test(el);
 		});
 	} else {
 		currentRoles.value.push(
-			`configurationModel.${currentBase.value?.name}.${name}.view`
+			`configurationModel.${currentBase.value?.name}.${name}.view`,
 		);
 		currentRoles.value.push(
-			`configurationModel.${currentBase.value?.name}.${name}.modify`
+			`configurationModel.${currentBase.value?.name}.${name}.modify`,
 		);
 
 		currentRoles.value.push(
-			`constantVariable.${currentBase.value?.name}.${name}.modify`
+			`constantVariable.${currentBase.value?.name}.${name}.modify`,
 		);
 	}
 };
@@ -299,7 +328,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 

@@ -207,7 +207,7 @@
 						v-if="localType?.value === ConfigurationVariableType.STRING"
 					>
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							:debounce="300"
 							:disable="forced"
 							:error="!!error"
@@ -227,13 +227,14 @@
 						v-if="localType?.value === ConfigurationVariableType.PASSWORD"
 					>
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							:debounce="300"
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
 							:hide-bottom-space="true"
 							:type="passwordVisible ? 'text' : 'password'"
+							autocomplete="off"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
 									? `Variable value forced by ${sourceBase}`

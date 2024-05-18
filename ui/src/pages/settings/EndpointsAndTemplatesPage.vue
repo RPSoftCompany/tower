@@ -111,7 +111,7 @@
 				v-model="currentEndpoint"
 				:options="allEndpoints"
 				option-label="url"
-				class="tw-w-[33.3%]"
+				class="tw-w-fit tw-min-w-[33.33%]"
 				label="Endpoint"
 				:loading="loading"
 				:disable="loading"
@@ -293,7 +293,7 @@ const getAllEndpoints = async () => {
 
 	try {
 		const response = await towerAxios.get(
-			`/restConfigurations?filter=${JSON.stringify(filter, undefined, '')}`
+			`/restConfigurations?filter=${JSON.stringify(filter, undefined, '')}`,
 		);
 		if (response.status === 200) {
 			allEndpoints.value = [...response.data];
@@ -320,12 +320,12 @@ const save = async () => {
 			if (!currentEndpointClone.value._id) {
 				await towerAxios.post(
 					'/restConfigurations',
-					currentEndpointClone.value
+					currentEndpointClone.value,
 				);
 			} else {
 				await towerAxios.patch(
 					`/restConfigurations/${currentEndpointClone.value._id}`,
-					currentEndpointClone.value
+					currentEndpointClone.value,
 				);
 			}
 		} catch (e) {
@@ -466,7 +466,7 @@ const deleteEndpoint = async () => {
 	if (currentEndpoint.value) {
 		try {
 			await towerAxios.delete(
-				`/restConfigurations/${currentEndpoint.value._id}`
+				`/restConfigurations/${currentEndpoint.value._id}`,
 			);
 		} catch (e) {
 			$q.notify({
@@ -568,7 +568,7 @@ const updateSequence = async () => {
 				allEndpointsClone.value[i].sequenceNumber = i;
 				await towerAxios.patch(
 					`/restConfigurations/${allEndpointsClone.value[i]._id}`,
-					allEndpointsClone.value[i]
+					allEndpointsClone.value[i],
 				);
 			} catch (e) {
 				$q.notify({
@@ -687,7 +687,7 @@ watch(
 		} else {
 			currentEndpointClone.value = null;
 		}
-	}
+	},
 );
 
 watch(
@@ -701,7 +701,7 @@ watch(
 			});
 		}
 	},
-	{ deep: true }
+	{ deep: true },
 );
 
 watch(
@@ -712,7 +712,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 

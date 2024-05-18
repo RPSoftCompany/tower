@@ -224,6 +224,7 @@
 						<q-input
 							v-model="localValue"
 							:disable="disable"
+							autocomplete="off"
 							:type="passwordVisible ? 'text' : 'password'"
 							color="secondary"
 							dense
