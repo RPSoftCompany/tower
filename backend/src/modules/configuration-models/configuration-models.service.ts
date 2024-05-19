@@ -284,6 +284,18 @@ export class ConfigurationModelsService {
         }
       }
 
+      await this.rolesModel.deleteMany({
+        name: {
+          $regex: RegExp(
+            `constantVariable\.${candidate.base}\.${candidate.name}\.(view|modify)`,
+          ),
+        },
+      });
+
+      await this.rolesModel.deleteMany({
+        name: `constantVariable\.${candidate.base}\.${candidate.name}\.modify`,
+      });
+
       await this.configurationModel.findOneAndDelete({
         _id: new Types.ObjectId(id),
       });

@@ -585,6 +585,9 @@ const currentArchiveTypeIcon = computed(() => {
 	return undefined;
 });
 
+/**
+ * revertEnabled
+ */
 const revertEnabled = computed(() => {
 	if (props.deleted) {
 		return true;
@@ -639,6 +642,9 @@ const wasModified = computed(() => {
 	return false;
 });
 
+/**
+ * localTypeComputed
+ */
 const localTypeComputed = computed(() => {
 	return typeof localType.value === 'string'
 		? localType.value

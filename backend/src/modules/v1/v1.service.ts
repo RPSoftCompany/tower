@@ -18,13 +18,19 @@ import {
 import { ConfigurationsService } from '../configurations/configurations.service';
 import {
   Configuration,
+  ConfigurationDocument,
   ConfigurationVariable,
 } from '../configurations/configuration.schema';
 import { Liquid } from 'liquidjs';
 import { ConstantVariablesService } from '../constant-variables/constant-variables.service';
 import { ConnectionsService } from '../connections/connections.service';
-import { Vault } from '../connections/VaultConnection.schema';
 import { AWSConnection } from '../connections/AWSConnection.schema';
+import {
+  ConfigurationModel,
+  ConfigurationModelDocument,
+} from '../configuration-models/configuration-models.schema';
+import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
+import { ConfigurationModelsService } from '../configuration-models/configuration-models.service';
 
 @Injectable()
 export class V1Service {
@@ -33,6 +39,8 @@ export class V1Service {
     private restConfigurationModel: Model<RestConfigurationDocument>,
     @InjectModel(BaseConfiguration.name)
     private baseConfigurationModel: Model<BaseConfigurationDocument>,
+    @InjectModel(ConfigurationModelsModule.name)
+    private configurationModel: Model<ConfigurationModelDocument>,
     @Inject(ConfigurationsService)
     private readonly configurationService: ConfigurationsService,
     @Inject(ConstantVariablesService)
@@ -203,10 +211,30 @@ export class V1Service {
         }
       }
 
+      const findArray = [];
+
       for (const base of allBases) {
         if (!models[base.name]) {
           models[base.name] = null;
+        } else {
+          findArray.push({
+            name: models[base.name],
+            base: base.name,
+          });
         }
+      }
+
+      if (allBases.length === 0) {
+        throw new NotFoundException();
+      }
+
+      //Checks if a user is querying for non-existent model
+      const count = await this.configurationModel.countDocuments({
+        $or: findArray,
+      });
+
+      if (count !== findArray.length) {
+        throw new NotFoundException();
       }
 
       const configuration: Configuration[] =

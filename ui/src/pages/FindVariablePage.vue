@@ -105,8 +105,8 @@
 				>
 					<template #default-header="{ node }">
 						<q-icon v-if="node.icon" :name="node.icon" size="sm" />
-						<div class="tw-ml-2" :class="{ 'tw-font-semibold': !!node.value }">
-							{{ node.name }}
+						<div class="tw-ml-2" :class="{ 'tw-font-semibold': !!node.value, 'tw-text-disabled' : node.name === '__NONE__', 'tw-italic' : node.name === '__NONE__' }">
+							{{ node.name === "__NONE__" ? "EMPTY" : node.name }}
 						</div>
 					</template>
 				</q-tree>

@@ -15,6 +15,8 @@ import {
 import { ConfigurationsModule } from '../configurations/configurations.module';
 import { ConstantVariablesModule } from '../constant-variables/constant-variables.module';
 import { ConnectionsModule } from '../connections/connections.module';
+import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
+import { ConfigurationModelSchema } from '../configuration-models/configuration-models.schema';
 
 @Module({
   imports: [
@@ -23,6 +25,10 @@ import { ConnectionsModule } from '../connections/connections.module';
       { name: Audit.name, schema: AuditsSchema },
       { name: RestConfiguration.name, schema: RestConfigurationSchema },
       { name: BaseConfiguration.name, schema: BaseConfigurationSchema },
+      {
+        name: ConfigurationModelsModule.name,
+        schema: ConfigurationModelSchema,
+      },
     ]),
     ConfigurationsModule,
     ConstantVariablesModule,

@@ -147,6 +147,9 @@ const isDifferent = computed(() => {
 	});
 });
 
+/**
+ * filteredConfigurationModels
+ */
 const filteredConfigurationModels = computed(() => {
 	if (
 		currentConfigurationModels.value &&
@@ -174,7 +177,7 @@ const getAllRoles = async () => {
 
 	const filter = {
 		where: {
-			name: { like: '^configurationModel\.' },
+			name: { like: '^(configurationModel|constantVariable)\.' },
 		},
 	};
 
@@ -183,15 +186,12 @@ const getAllRoles = async () => {
 	);
 
 	if (response.status === 200) {
-		const regEx = new RegExp('^configurationModel.\\S+.(view|modify)$');
 		currentRoles.value = [];
 
-		allRoles.value = response.data.filter((role: Role) => {
-			if (regEx.test(role.name)) {
-				currentRoles.value.push(role.name);
-				return true;
-			}
-			return false;
+		allRoles.value = response.data;
+
+		response.data.forEach((role: Role) => {
+			currentRoles.value.push(role.name);
 		});
 	}
 

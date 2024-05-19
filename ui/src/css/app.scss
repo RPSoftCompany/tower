@@ -56,7 +56,11 @@ html {
 }
 
 .q-chip {
-	background-color: $dark-page;
+	background-color: $dark;
+}
+
+.q-chip__content {
+	margin: 0.25rem;
 }
 
 .q-btn > .q-btn__content > div {
@@ -116,12 +120,12 @@ html {
 	'opsz' 48
 }
 
+.material-symbols-outlined.negative {
+	color: inherit;
+}
+
 .material-symbols-outlined.deleted {
 	color: rgb(107 114 128);
-	font-variation-settings: 'FILL' 0,
-	'wght' 200,
-	'GRAD' 0,
-	'opsz' 48
 }
 
 .material-symbols-outlined.filled {
