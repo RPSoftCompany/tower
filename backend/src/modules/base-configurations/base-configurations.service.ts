@@ -9,10 +9,6 @@ import { UpdatePartialBaseConfigurationDto } from './dto/update-partial-base-con
 import { UpdateFullBaseConfigurationDto } from './dto/update-full-base-configuration.dto';
 import { Statement } from '../../helpers/clauses';
 import { filterTranslator } from '../../helpers/filterTranslator';
-import {
-  ConfigurationModel,
-  ConfigurationModelDocument,
-} from '../configuration-models/configuration-models.schema';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ConfigurationsService } from '../configurations/configurations.service';
 
@@ -21,12 +17,14 @@ export class BaseConfigurationsService {
   constructor(
     @InjectModel(BaseConfiguration.name)
     private baseConfigurationModel: Model<BaseConfigurationDocument>,
-    @InjectModel(ConfigurationModel.name)
-    private configurationModel: Model<ConfigurationModelDocument>,
     @Inject(forwardRef(() => ConfigurationsService))
     private readonly configurationsService: ConfigurationsService,
   ) {}
 
+  /**
+   * create
+   * @param createBaseConfigurationDto
+   */
   async create(createBaseConfigurationDto: CreateBaseConfigurationDto) {
     const created = await this.baseConfigurationModel.create(
       createBaseConfigurationDto,
@@ -39,6 +37,10 @@ export class BaseConfigurationsService {
     return created;
   }
 
+  /**
+   * find
+   * @param filter
+   */
   find(filter?: Statement): Promise<Array<BaseConfiguration>> {
     const newFilter = filterTranslator(filter);
 
@@ -49,20 +51,36 @@ export class BaseConfigurationsService {
     });
   }
 
+  /**
+   * count
+   * @param filter
+   */
   count(filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
 
     return this.baseConfigurationModel.countDocuments(newFilter.where);
   }
 
+  /**
+   * findAll
+   */
   findAll() {
     return this.baseConfigurationModel.find();
   }
 
+  /**
+   * findById
+   * @param id
+   */
   findById(id: string): Promise<BaseConfiguration> {
     return this.baseConfigurationModel.findById(id);
   }
 
+  /**
+   * updatePartial
+   * @param id
+   * @param updatePartialBaseConfigurationDto
+   */
   async updatePartial(
     id: string,
     updatePartialBaseConfigurationDto: UpdatePartialBaseConfigurationDto,
@@ -79,6 +97,11 @@ export class BaseConfigurationsService {
     }
   }
 
+  /**
+   * update
+   * @param id
+   * @param updateBaseConfigurationDto
+   */
   async update(
     id: string,
     updateBaseConfigurationDto: UpdateFullBaseConfigurationDto,
@@ -90,6 +113,10 @@ export class BaseConfigurationsService {
     );
   }
 
+  /**
+   * remove
+   * @param id
+   */
   async remove(id: string) {
     const baseConfiguration: BaseConfiguration =
       await this.baseConfigurationModel.findById(id);

@@ -31,7 +31,8 @@
 			:id="config.id"
 			:key="config.id"
 			:draggable="configs ? configs.length > 1 : false"
-			class="tw-bg-darkPage tw-cursor-grab tw-content-center tw-h-full tw-text-secondary tw-text-center tw-text-sm tw-font-semibold tw-min-h-[3.5rem] tw-col-span-2"
+			class="tw-bg-darkPage tw-content-center tw-h-full tw-text-secondary tw-text-center tw-text-sm tw-font-semibold tw-min-h-[3.5rem] tw-col-span-2"
+			:class="{ 'tw-cursor-grab': configs ? configs.length > 1 : false}"
 			flat
 			square
 			@dragend="dragStarted = false"
@@ -52,7 +53,7 @@
 					<slot name="header" v-bind="config">
 						<div class="tw-self-center">
 							<q-btn
-								:disable="config.version ? config.version <= 0 : false"
+								:disable="config.version ? config.version <= 0 : true"
 								class="tw-flex-none"
 								flat
 								icon="sym_o_chevron_left"
@@ -71,7 +72,7 @@
 									{{ config.path }}
 								</div>
 								<div>
-									Version #{{ config.version ? config.version + 1 : 0 }},
+									Version #{{ config.version ? config.version + 1 : 1 }},
 									created
 									{{
 										config.configuration
@@ -120,11 +121,12 @@
 									>
 								</div>
 							</div>
-							<div class="tw-self-center tw-flex tw-ml-3">
-								<q-separator inset size="md" vertical />
-								<q-btn flat padding="0.25rem">
+							<q-separator class="tw-ml-4 tw-mr-1" vertical />
+							<div class="tw-self-center tw-flex">
+								<q-btn flat padding="0.25rem" text-color="negative">
 									<q-icon
 										name="sym_o_close"
+										color="negative"
 										size="sm"
 										@click="removeConfiguration(config.id)"
 									></q-icon>

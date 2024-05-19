@@ -113,7 +113,7 @@
 							color="secondary"
 							dense
 							hide-dropdown-icon
-							input-debounce="0"
+							:hide-bottom-space="true"
 							label="New variable value"
 							multiple
 							new-value-mode="add"
@@ -171,9 +171,9 @@
 <script lang="ts" setup>
 import {
 	ConfigurationVariableType,
-	typeOptions,
+	typeOptions, valueConverter,
 } from 'components/constantVariables/constantVariable';
-import { Ref, ref } from 'vue';
+import {Ref, ref, watch} from 'vue';
 import TypeSelect from 'components/basic/typeSelect.vue';
 
 //====================================================
@@ -190,7 +190,7 @@ withDefaults(
 
 const name: Ref<string | null> = ref(null);
 const type = ref(typeOptions[0]);
-const value = ref('');
+const value: Ref<string | number | boolean | string[] | null | undefined | unknown> = ref('');
 const valueKey = ref('');
 
 const passwordVisible = ref(false);
@@ -222,6 +222,22 @@ const addNewVariable = () => {
 	value.value = '';
 	valueKey.value = '';
 };
+
+//====================================================
+// Watch
+//====================================================
+watch(
+	type,
+	() => {
+		value.value = valueConverter(
+			value.value,
+			type.value.value,
+		);
+	},
+	{
+		immediate: true,
+	},
+);
 </script>
 
 <style scoped></style>
