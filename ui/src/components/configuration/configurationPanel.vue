@@ -206,14 +206,24 @@
 					v-if="configurationVariablesArchive.length > 0"
 					class="tw-flex tw-col-span-2"
 				>
-					<q-btn
-						:disable="version <= 0"
-						class="tw-flex-none"
-						flat
-						icon="sym_o_chevron_left"
-						padding="sm"
-						@click="version--"
-					/>
+					<div>
+						<q-btn
+							:disable="version <= 0 || loading"
+							class="tw-flex-none"
+							flat
+							icon="sym_o_first_page"
+							padding="sm"
+							@click="version = 0"
+						/>
+						<q-btn
+							:disable="version <= 0 || loading"
+							class="tw-flex-none"
+							flat
+							icon="sym_o_chevron_left"
+							padding="sm"
+							@click="version--"
+						/>
+					</div>
 					<div class="tw-grow tw-self-center tw-flex tw-justify-center">
 						<div class="tw-self-center tw-flex tw-mr-3">
 							<q-btn
@@ -260,14 +270,23 @@
 							</q-btn>
 						</div>
 					</div>
-					<q-btn
-						:disable="version >= configurationVariablesArchive.length - 1"
-						class="tw-flex-none"
-						flat
-						icon="sym_o_chevron_right"
-						padding="sm"
-						@click="version++"
-					/>
+					<div>
+						<q-btn
+							:disable="version >= configurationVariablesArchive.length - 1"
+							class="tw-flex-none"
+							flat
+							icon="sym_o_chevron_right"
+							padding="sm"
+							@click="version++"
+						/>
+						<q-btn
+							:disable="version >= configurationVariablesArchive.length - 1"
+							flat
+							icon="sym_o_last_page"
+							padding="sm"
+							@click="version = configurationVariablesArchive.length - 1"
+						/>
+					</div>
 				</div>
 				<div
 					:class="{ 'tw-col-span-2': configurationVariablesArchive.length > 0 }"
@@ -508,7 +527,7 @@ const commentNeeded = computed(() => {
 const currentVersionDate = computed(() => {
 	if (version.value >= 0) {
 		const date = new Date(
-			configurationVariablesArchive.value[version.value].effectiveDate,
+			configurationVariablesArchive.value[version.value]?.effectiveDate,
 		);
 		return date.toLocaleString();
 	}
@@ -521,7 +540,7 @@ const currentVersionDate = computed(() => {
  */
 const currentVersionAuthor = computed(() => {
 	if (version.value >= 0) {
-		return configurationVariablesArchive.value[version.value].createdBy
+		return configurationVariablesArchive.value[version.value]?.createdBy
 			?.username;
 	}
 
@@ -533,7 +552,7 @@ const currentVersionAuthor = computed(() => {
  */
 const promoted = computed(() => {
 	if (version.value >= 0) {
-		return configurationVariablesArchive.value[version.value].promoted;
+		return configurationVariablesArchive.value[version.value]?.promoted;
 	}
 
 	return false;
@@ -617,7 +636,10 @@ const configurationWithCurrentArchive = computed(() => {
 		});
 	}
 
-	if (configurationVariablesArchive.value.length > 0) {
+	if (
+		configurationVariablesArchive.value.length > 0 &&
+		configurationVariablesArchive.value[version.value]?.variables
+	) {
 		configurationVariablesArchive.value[version.value].variables.forEach(
 			(archiveEl) => {
 				const exists = array.some((currentEl) => {
@@ -750,6 +772,8 @@ const getConfiguration = async () => {
 	localPromotionCandidates.value = [];
 	version.value = -1;
 
+	const rowsLimit = 20;
+
 	if (!props.configModel) {
 		return;
 	}
@@ -770,17 +794,18 @@ const getConfiguration = async () => {
 
 	const filter: any = {
 		order: 'effectiveDate DESC',
+		limit: rowsLimit,
 		include: ['member'],
 		where: {},
 	};
 
 	baseSt.getBases.forEach((el) => {
-		filter.where[el.name] = { $eq: null };
+		filter.where[`__metadata.${el.name}`] = { $eq: null };
 	});
 
 	props.configModel.forEach((el) => {
 		if (el && el.name !== '__NONE__') {
-			filter.where[el.base] = el.name;
+			filter.where[`__metadata.${el.base}`] = el.name;
 			rulesFilter.where.or.push({ name: el.name });
 		}
 	});
@@ -788,6 +813,14 @@ const getConfiguration = async () => {
 	try {
 		const request = towerAxios.get(
 			`configurations?filter=${JSON.stringify(filter, null, '')}`,
+		);
+
+		const countFilter = cloneDeep(filter);
+		countFilter.limit = undefined;
+		countFilter.order = undefined;
+
+		const countRequest = towerAxios.get(
+			`configurations/count?filter=${JSON.stringify(countFilter, null, '')}`,
 		);
 
 		const constVariablesRequest = towerAxios.get(
@@ -808,10 +841,13 @@ const getConfiguration = async () => {
 			request,
 			constVariablesRequest,
 			configurationModelRequest,
+			countRequest,
 		]);
 		response = fullResponse[0];
 		constVariablesResponse = fullResponse[1];
 		configurationModelResponse = fullResponse[2];
+
+		const count = fullResponse[3];
 
 		if (response.status === 200) {
 			configurationVariables.value = null;
@@ -819,10 +855,19 @@ const getConfiguration = async () => {
 			if (response.data.length > 0) {
 				// Deep copy
 				configurationVariables.value = structuredClone(response.data[0]);
-				configurationVariablesArchive.value = response.data.reverse();
+				if (count.data > rowsLimit) {
+					configurationVariablesArchive.value = [
+						...[...Array(count.data - rowsLimit).keys()].map(() => {
+							return {} as Configuration;
+						}),
+						...response.data.reverse(),
+					];
+				} else {
+					configurationVariablesArchive.value = [...response.data.reverse()];
+				}
 
 				if (configurationVariablesArchive.value.length > 0) {
-					version.value = configurationVariablesArchive.value.length - 1;
+					version.value = count.data - 1;
 
 					if (userCanModify.value) {
 						getPromotionCandidates()
@@ -1162,8 +1207,9 @@ const importConfiguration = (importDetails: Import) => {
  */
 const isDifferentThan = (versionToCheck?: number) => {
 	if (
-		configurationVariablesArchive.value.length === 0 &&
-		configurationVariables.value?.variables.length === 0
+		(configurationVariablesArchive.value.length === 0 &&
+			configurationVariables.value?.variables.length === 0) ||
+		!configurationVariablesArchive.value[version.value]?.variables
 	) {
 		return false;
 	}
@@ -1184,7 +1230,7 @@ const isDifferentThan = (versionToCheck?: number) => {
 			configurationVariablesArchive.value[versionToCheck];
 
 		if (
-			currentVariables.variables.length !==
+			currentVariables.variables?.length !==
 			configurationVariables.value?.variables.length
 		) {
 			return true;
@@ -1392,6 +1438,57 @@ watch(
 
 watch(localPromotionCandidates, (current) => {
 	emit('update:promotionCandidates', current);
+});
+
+watch(version, async (current) => {
+	if (
+		configurationVariablesArchive.value[current] &&
+		!configurationVariablesArchive.value[current].variables
+	) {
+		loading.value = true;
+
+		const rulesFilter: any = {
+			where: { or: [], rules: { $gt: { $size: 0 } } },
+		};
+
+		const filter: any = {
+			include: ['member'],
+			where: {
+				version: current + 1,
+			},
+		};
+
+		baseSt.getBases.forEach((el) => {
+			filter.where[el.name] = { $eq: null };
+		});
+
+		props.configModel.forEach((el) => {
+			if (el && el.name !== '__NONE__') {
+				filter.where[el.base] = el.name;
+				rulesFilter.where.or.push({ name: el.name });
+			}
+		});
+
+		try {
+			const request = await towerAxios.get(
+				`configurations?filter=${JSON.stringify(filter, null, '')}`,
+			);
+
+			if (request.status === 200) {
+				configurationVariablesArchive.value[current] = request.data[0];
+			}
+		} catch (e) {
+			$q.notify({
+				color: 'negative',
+				position: 'top',
+				textColor: 'secondary',
+				icon: 'sym_o_error',
+				message: 'Error collecting configuration data',
+			});
+		}
+
+		loading.value = false;
+	}
 });
 
 //====================================================

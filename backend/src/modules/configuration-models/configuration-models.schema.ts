@@ -30,6 +30,9 @@ export class ConfigurationModelRule {
 class ConfigurationModelOptions {
   @Prop({ required: true })
   hasRestrictions: string;
+
+  @Prop({ required: false, default: false })
+  forceComment: boolean;
 }
 
 export type ConfigurationModelDocument = HydratedDocument<ConfigurationModel>;

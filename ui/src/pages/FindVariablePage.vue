@@ -105,8 +105,15 @@
 				>
 					<template #default-header="{ node }">
 						<q-icon v-if="node.icon" :name="node.icon" size="sm" />
-						<div class="tw-ml-2" :class="{ 'tw-font-semibold': !!node.value, 'tw-text-disabled' : node.name === '__NONE__', 'tw-italic' : node.name === '__NONE__' }">
-							{{ node.name === "__NONE__" ? "EMPTY" : node.name }}
+						<div
+							class="tw-ml-2"
+							:class="{
+								'tw-font-semibold': !!node.value,
+								'tw-text-disabled': node.name === '__NONE__',
+								'tw-italic': node.name === '__NONE__',
+							}"
+						>
+							{{ node.name === '__NONE__' ? 'EMPTY' : node.name }}
 						</div>
 					</template>
 				</q-tree>
@@ -206,6 +213,7 @@ enum NameValue {
 
 interface ConfigurationFindItem {
 	_id: string;
+	__metadata: any;
 	variables: Array<ConfigurationVariable>;
 
 	[x: string]: unknown;
@@ -247,7 +255,7 @@ const search = async () => {
 	}&isRegex=${isRegex.value}`;
 
 	const response = await towerAxios.get(
-		`/configurations/findVariable?${params}`
+		`/configurations/findVariable?${params}`,
 	);
 	if (response.status === 200) {
 		if (
@@ -276,8 +284,8 @@ const createResponseTree = (configs: Array<ConfigurationFindItem>) => {
 		let parentIndex = -1;
 		for (let i = 0; i < baseSt.getBases.length; i++) {
 			const base = baseSt.getBases[i];
-			const name = config[base.name]
-				? (config[base.name] as string)
+			const name = config.__metadata[base.name]
+				? (config.__metadata[base.name] as string)
 				: '__NONE__';
 			const parentIndexTemp = parent.findIndex((el) => {
 				return el.name === name;
@@ -317,12 +325,12 @@ const createResponseTree = (configs: Array<ConfigurationFindItem>) => {
  * @param configs
  */
 const createResponseTreeForGlobals = (
-	configs: Array<ConfigurationFindItem>
+	configs: Array<ConfigurationFindItem>,
 ) => {
 	for (const config of configs) {
 		const allBasesInGlobal: Array<Base> = [];
 		for (const base of baseSt.getBases) {
-			if (config[base.name]) {
+			if (config.__metadata[base.name]) {
 				allBasesInGlobal.push(base);
 			}
 		}
@@ -334,14 +342,14 @@ const createResponseTreeForGlobals = (
 			const base = allBasesInGlobal[i];
 
 			const parentIndexTemp = parent.findIndex((el) => {
-				return el.name === config[base.name];
+				return el.name === config.__metadata[base.name];
 			});
 
 			if (parentIndexTemp === -1) {
 				parent.push({
 					id: uuidv4(),
-					name: config[base.name],
-					label: config[base.name] as string,
+					name: config.__metadata[base.name],
+					label: config.__metadata[base.name] as string,
 					icon: base.icon,
 					selectable: false,
 				});

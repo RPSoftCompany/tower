@@ -18,19 +18,14 @@ import {
 import { ConfigurationsService } from '../configurations/configurations.service';
 import {
   Configuration,
-  ConfigurationDocument,
   ConfigurationVariable,
 } from '../configurations/configuration.schema';
 import { Liquid } from 'liquidjs';
 import { ConstantVariablesService } from '../constant-variables/constant-variables.service';
 import { ConnectionsService } from '../connections/connections.service';
 import { AWSConnection } from '../connections/AWSConnection.schema';
-import {
-  ConfigurationModel,
-  ConfigurationModelDocument,
-} from '../configuration-models/configuration-models.schema';
+import { ConfigurationModelDocument } from '../configuration-models/configuration-models.schema';
 import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
-import { ConfigurationModelsService } from '../configuration-models/configuration-models.service';
 
 @Injectable()
 export class V1Service {
@@ -55,8 +50,14 @@ export class V1Service {
    * @param userRoles
    * @param url
    * @param type
+   * @param params
    */
-  async matchUrl(userRoles: string[], url: string, type?: string) {
+  async matchUrl(
+    userRoles: string[],
+    url: string,
+    type?: string,
+    params?: any,
+  ) {
     type ??= 'v1';
 
     const promises = [];
@@ -97,6 +98,7 @@ export class V1Service {
       toUse,
       url,
       allBases,
+      params.version ? params.version : undefined,
     );
 
     return await this.compileConfiguration(
@@ -165,12 +167,14 @@ export class V1Service {
    * @param restConfigurations
    * @param url
    * @param allBases
+   * @param version
    */
   async matchFirstConfiguration(
     userRoles: string[],
     restConfigurations: RestConfiguration[],
     url: string,
     allBases: BaseConfiguration[],
+    version?: string,
   ) {
     const type = 'v1';
 
@@ -204,9 +208,9 @@ export class V1Service {
               tempUrl.indexOf(afterModel) + afterModel.length,
               tempUrl.length,
             );
-            models[baseModel] = modelValue;
+            models[`__metadata.${baseModel}`] = modelValue;
           } else {
-            models[baseModel] = tempUrl;
+            models[`__metadata.${baseModel}`] = tempUrl;
           }
         }
       }
@@ -214,11 +218,11 @@ export class V1Service {
       const findArray = [];
 
       for (const base of allBases) {
-        if (!models[base.name]) {
-          models[base.name] = null;
+        if (!models[`__metadata.${base.name}`]) {
+          models[`__metadata.${base.name}`] = null;
         } else {
           findArray.push({
-            name: models[base.name],
+            name: models[`__metadata.${base.name}`],
             base: base.name,
           });
         }
@@ -237,19 +241,28 @@ export class V1Service {
         throw new NotFoundException();
       }
 
-      const configuration: Configuration[] =
-        await this.configurationService.find(
+      let configuration: Configuration;
+
+      if (version === undefined) {
+        configuration = (await this.configurationService.findLatest(
           userRoles,
           {
             where: models,
-            order: 'version DESC',
-            limit: 1,
           },
           false,
-        );
+        )) as Configuration;
+      } else {
+        configuration = (await this.configurationService.findLatest(
+          userRoles,
+          {
+            where: models,
+          },
+          false,
+        )) as Configuration;
+      }
 
-      if (configuration.length > 0) {
-        return { configuration: configuration[0], template: config };
+      if (configuration) {
+        return { configuration: configuration, template: config };
       }
     }
 
@@ -334,6 +347,7 @@ export class V1Service {
       userRoles,
       bases,
       date ? date : new Date(),
+      !date,
     );
 
     if (constVariables && constVariables.length > 0) {
@@ -367,8 +381,8 @@ export class V1Service {
   /**
    * towerToString
    *
-   * @param {any} str any value
-   * @return {string} value as string
+   * @param str any value
+   * @return value as string
    */
   towerToString(str: any) {
     return `${str}`;
@@ -377,9 +391,9 @@ export class V1Service {
   /**
    * towerGetVariableByName
    *
-   * @param {Array} variables
-   * @param {string} name
-   * @return {*|null}
+   * @param variables
+   * @param name
+   * @return
    */
   towerGetVariableByName(variables: ConfigurationVariable[], name: string) {
     const found = variables.find((el) => {
