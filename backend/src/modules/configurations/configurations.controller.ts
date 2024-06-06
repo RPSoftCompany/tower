@@ -139,28 +139,23 @@ export class ConfigurationsController {
   @ApiBasicAuth()
   @ApiQuery({ name: 'filter', required: false })
   async count(@Query('filter') filter?: string): Promise<number> {
-    let all = [];
     if (filter) {
       try {
         const jFilter = JSON.parse(filter);
-        all = await this.configurationsService.find(
+        return await this.configurationsService.count(
           (this.request as any).__userData.__roles,
           jFilter,
-          false,
         );
       } catch (e) {
         this.logger.error(e);
         throw new HttpException('Invalid filter', 400, { cause: e });
       }
     } else {
-      all = await this.configurationsService.find(
+      return await this.configurationsService.count(
         (this.request as any).__userData.__roles,
         undefined,
-        false,
       );
     }
-
-    return all.length;
   }
 
   @Get()

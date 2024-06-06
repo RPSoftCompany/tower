@@ -22,6 +22,14 @@ import {
 import { HooksModule } from '../hooks/hooks.module';
 import { ConnectionsModule } from '../connections/connections.module';
 import { V1Module } from '../v1/v1.module';
+import {
+  maxConfiguration,
+  MaxConfigurationSchema,
+} from '../max-configuration/max-configuration.schema';
+import {
+  MaxConstantVariable,
+  MaxConstantVariableSchema,
+} from '../max-constant-variable/max-constant-variable.schema';
 
 @Module({
   imports: [
@@ -34,6 +42,8 @@ import { V1Module } from '../v1/v1.module';
       { name: Promotion.name, schema: PromotionSchema },
       { name: Audit.name, schema: AuditsSchema },
       { name: ConstantVariable.name, schema: ConstantVariableSchema },
+      { name: maxConfiguration.name, schema: MaxConfigurationSchema },
+      { name: MaxConstantVariable.name, schema: MaxConstantVariableSchema },
     ]),
     HooksModule,
     forwardRef(() => ConnectionsModule),

@@ -32,7 +32,7 @@
 			:key="config.id"
 			:draggable="configs ? configs.length > 1 : false"
 			class="tw-bg-darkPage tw-content-center tw-h-full tw-text-secondary tw-text-center tw-text-sm tw-font-semibold tw-min-h-[3.5rem] tw-col-span-2"
-			:class="{ 'tw-cursor-grab': configs ? configs.length > 1 : false}"
+			:class="{ 'tw-cursor-grab': configs ? configs.length > 1 : false }"
 			flat
 			square
 			@dragend="dragStarted = false"
@@ -66,7 +66,13 @@
 								"
 							/>
 						</div>
-						<div class="tw-flex-grow tw-flex tw-justify-center">
+						<div
+							class="tw-flex-grow tw-flex tw-justify-center"
+							v-if="
+								config.configuration &&
+								config.configuration[config.version ? config.version : -1]
+							"
+						>
 							<div>
 								<div>
 									{{ config.path }}

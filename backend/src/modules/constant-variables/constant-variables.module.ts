@@ -23,6 +23,14 @@ import {
 } from '../configurations/configuration.schema';
 import { V1Module } from '../v1/v1.module';
 import { ConnectionsModule } from '../connections/connections.module';
+import {
+  MaxConstantVariable,
+  MaxConstantVariableSchema,
+} from '../max-constant-variable/max-constant-variable.schema';
+import {
+  maxConfiguration,
+  MaxConfigurationSchema,
+} from '../max-configuration/max-configuration.schema';
 
 @Module({
   imports: [
@@ -33,6 +41,8 @@ import { ConnectionsModule } from '../connections/connections.module';
       { name: BaseConfiguration.name, schema: BaseConfigurationSchema },
       { name: Audit.name, schema: AuditsSchema },
       { name: Configuration.name, schema: ConfigurationSchema },
+      { name: MaxConstantVariable.name, schema: MaxConstantVariableSchema },
+      { name: maxConfiguration.name, schema: MaxConfigurationSchema },
     ]),
     HooksModule,
     forwardRef(() => V1Module),

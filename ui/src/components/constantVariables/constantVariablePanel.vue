@@ -52,7 +52,7 @@
 				class="tw-flex tw-col-span-2"
 			>
 				<q-btn
-					:disable="version <= 0"
+					:disable="version <= 0 || loading"
 					class="tw-flex-none"
 					flat
 					icon="sym_o_chevron_left"
@@ -88,7 +88,7 @@
 					</div>
 				</div>
 				<q-btn
-					:disable="version >= constVariablesArchive.length - 1"
+					:disable="version >= constVariablesArchive.length - 1 || loading"
 					class="tw-flex-none"
 					flat
 					icon="sym_o_chevron_right"
@@ -207,6 +207,7 @@ import NewConstantVariablePanel from 'components/constantVariables/newConstantVa
 import { Import, ImportDetails } from 'components/models';
 import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
+import { cloneDeep } from 'lodash';
 
 //====================================================
 // Const
@@ -254,21 +255,21 @@ onBeforeMount(async () => {
  * currentVersionDate
  */
 const currentVersionDate = computed(() => {
-	if (version.value >= 0) {
+	if (version.value >= 0 && constVariablesArchive.value[version.value]) {
 		const date = new Date(
 			constVariablesArchive.value[version.value].effectiveDate,
 		);
 		return date.toLocaleString();
 	}
 
-	return new Date();
+	return '';
 });
 
 /**
  * currentVersionAuthor
  */
 const currentVersionAuthor = computed(() => {
-	if (version.value >= 0) {
+	if (version.value >= 0 && constVariablesArchive.value[version.value]) {
 		return constVariablesArchive.value[version.value].createdBy?.username;
 	}
 
@@ -322,7 +323,11 @@ const constVariablesWithCurrentArchive = computed(() => {
 		array = [...constVariables.value.variables];
 	}
 
-	if (constVariablesArchive.value.length > 0) {
+	if (
+		constVariablesArchive.value.length > 0 &&
+		constVariablesArchive.value[version.value] &&
+		constVariablesArchive.value[version.value].variables
+	) {
 		constVariablesArchive.value[version.value].variables.forEach(
 			(archiveEl) => {
 				const exists = array.some((currentEl) => {
@@ -393,6 +398,8 @@ const getConstantVariables = async () => {
 	constVariablesArchive.value = [];
 	navigationSt.allowNavigation();
 
+	const rowsLimit = 20;
+
 	if (!props.configModel) {
 		return;
 	}
@@ -400,8 +407,9 @@ const getConstantVariables = async () => {
 	loading.value = true;
 
 	const filter: any = {
-		order: 'effectiveDate DESC',
+		order: 'version DESC',
 		include: ['member'],
+		limit: rowsLimit,
 		where: {},
 	};
 
@@ -420,13 +428,29 @@ const getConstantVariables = async () => {
 			`constantVariables?filter=${JSON.stringify(filter, null, '')}`,
 		);
 
-		if (response.status === 200) {
+		const countFilter = cloneDeep(filter);
+		countFilter.limit = undefined;
+		countFilter.order = undefined;
+		const countResponse = await towerAxios.get(
+			`constantVariables/count?filter=${JSON.stringify(countFilter, null, '')}`,
+		);
+
+		if (response.status === 200 && countResponse.status === 200) {
 			constVariables.value = null;
 			constVariablesArchive.value = [];
 			if (response.data.length > 0) {
 				// Deep copy
 				constVariables.value = structuredClone(response.data[0]);
-				constVariablesArchive.value = response.data.reverse();
+				if (countResponse.data > rowsLimit) {
+					constVariablesArchive.value = [
+						...[...Array(countResponse.data - rowsLimit).keys()].map(() => {
+							return {} as ConstantVariable;
+						}),
+						...response.data,
+					];
+				} else {
+					constVariablesArchive.value = response.data;
+				}
 
 				if (constVariablesArchive.value.length > 0) {
 					version.value = constVariablesArchive.value.length - 1;
@@ -453,7 +477,11 @@ const getConstantVariables = async () => {
  */
 const constVariableArchiveVersion = (variableName: string, ver?: number) => {
 	ver = ver || version.value;
-	if (ver < 0 || !constVariablesArchive.value[ver]) {
+	if (
+		ver < 0 ||
+		!constVariablesArchive.value[ver] ||
+		!constVariablesArchive.value[ver].variables
+	) {
 		return undefined;
 	}
 
@@ -696,6 +724,10 @@ const isDifferentThan = (version?: number) => {
 			: constVariablesArchive.value.length - 1;
 		const currentVariables = constVariablesArchive.value[currentVersion];
 
+		if (!currentVariables || !currentVariables.variables) {
+			return;
+		}
+
 		if (
 			currentVariables.variables.length !==
 			constVariables.value?.variables.length
@@ -737,11 +769,59 @@ watch(() => props.configModel, getConstantVariables, {
 	deep: true,
 });
 
-watch(isDifferent, (current: boolean) => {
+watch(isDifferent, (current) => {
 	if (current && !loading.value) {
 		navigationSt.preventNavigation();
 	} else {
 		navigationSt.allowNavigation();
+	}
+});
+
+watch(version, async (current) => {
+	if (
+		constVariablesArchive.value[current] &&
+		!constVariablesArchive.value[current].variables
+	) {
+		loading.value = true;
+
+		const filter: any = {
+			include: ['member'],
+			where: {
+				version: current,
+			},
+		};
+
+		baseSt.getBases.forEach((el) => {
+			filter.where[el.name] = { $eq: null };
+		});
+
+		props.configModel.forEach((el) => {
+			if (el) {
+				filter.where[el.base] = el.name;
+			}
+		});
+
+		try {
+			const response = await towerAxios.get(
+				`constantVariables?filter=${JSON.stringify(filter, null, '')}`,
+			);
+
+			if (response.status === 200) {
+				if (response.data.length > 0) {
+					constVariablesArchive.value[current] = response.data[0];
+				}
+			}
+		} catch (e) {
+			$q.notify({
+				color: 'negative',
+				position: 'top',
+				textColor: 'secondary',
+				icon: 'sym_o_error',
+				message: 'Error collecting constant variable data',
+			});
+		}
+
+		loading.value = false;
 	}
 });
 
