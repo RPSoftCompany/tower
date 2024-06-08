@@ -18,7 +18,6 @@ import {
 import { ConfigurationsService } from '../configurations/configurations.service';
 import {
   Configuration,
-  ConfigurationDocument,
   ConfigurationVariable,
 } from '../configurations/configuration.schema';
 import { Liquid } from 'liquidjs';
