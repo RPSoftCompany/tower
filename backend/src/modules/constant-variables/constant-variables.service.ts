@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateConstantVariableDto } from './dto/create-constant-variable.dto';
@@ -35,10 +36,9 @@ import { MaxConstantVariable } from '../max-constant-variable/max-constant-varia
 import { MaxConstantVariableModule } from '../max-constant-variable/max-constant-variable.module';
 import { maxConfiguration } from '../max-configuration/max-configuration.schema';
 import { MaxConfigurationModule } from '../max-configuration/max-configuration.module';
-import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @Injectable()
-export class ConstantVariablesService {
+export class ConstantVariablesService implements OnModuleInit {
   private readonly logger = new Logger(ConstantVariablesService.name);
 
   constructor(
@@ -61,6 +61,120 @@ export class ConstantVariablesService {
     private readonly connectionsService: ConnectionsService,
     private readonly hooksService: HooksService,
   ) {}
+
+  /**
+   *
+   * @param length
+   * @param chars
+   */
+  randomString(length: number, chars: string) {
+    let mask = '';
+    if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+    if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (chars.indexOf('#') > -1) mask += '0123456789';
+    if (chars.indexOf('!') > -1) mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
+    let result = '';
+    for (let i = length; i > 0; --i)
+      result += mask[Math.floor(Math.random() * mask.length)];
+    return result;
+  }
+
+  /**
+   * onModuleInit
+   */
+  async onModuleInit() {
+    const collections = await this.constantVariableModel.db.listCollections();
+    let exists = collections.some((collection) => {
+      return collection.name === 'maxConstantVariable';
+    });
+
+    if (exists) {
+      const count = await this.maxConstantVariable.countDocuments();
+      if (count === 0) {
+        exists = false;
+      }
+    }
+
+    if (exists) {
+      return;
+    }
+
+    const allBases: BaseConfiguration[] =
+      await this.baseConfigurationModel.find();
+
+    const groupId = {};
+    const lookupLet = {
+      maxVersion: '$maxVersion',
+    };
+    const lookupExp = [
+      {
+        $eq: ['$effectiveDate', '$$maxVersion'],
+      },
+    ];
+
+    for (const base of allBases) {
+      groupId[base.name] = `$${base.name}`;
+      const tempRandom = this.randomString(12, 'a');
+      lookupLet[tempRandom] = `$_id.${base.name}`;
+      lookupExp.push({
+        $eq: [`$${base.name}`, `$$${tempRandom}`],
+      });
+    }
+
+    const aggregation = [
+      {
+        $group: {
+          _id: groupId,
+          maxVersion: {
+            $max: '$effectiveDate',
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'constantVariable',
+          let: lookupLet,
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: lookupExp,
+                },
+              },
+            },
+          ],
+          as: 'maxDoc',
+        },
+      },
+      {
+        $unwind: {
+          path: '$maxDoc',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$maxDoc',
+        },
+      },
+      {
+        $out: {
+          db: this.configurationModel.db.name,
+          coll: 'maxConstantVariable',
+        },
+      },
+    ];
+
+    await this.constantVariableModel.aggregate(aggregation).exec();
+
+    await this.constantVariableModel.updateMany({ __metadata: null }, [
+      {
+        $set: {
+          __metadata: groupId,
+        },
+      },
+    ]);
+  }
 
   /**
    * create

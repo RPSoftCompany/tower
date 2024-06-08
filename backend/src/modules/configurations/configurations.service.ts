@@ -104,7 +104,7 @@ export class ConfigurationsService implements OnModuleInit {
 
     await this.createIndexes();
 
-    await this.createMaxConnectionsCollection();
+    await this.createMaxConfigurationsCollection();
   }
 
   /**
@@ -124,11 +124,13 @@ export class ConfigurationsService implements OnModuleInit {
     return result;
   }
 
+  async updateMetadata() {}
+
   /**
    * createMaxConnectionsCollection
    */
-  async createMaxConnectionsCollection() {
-    const collections = await this.configurationModel.db.listCollections();
+  async createMaxConfigurationsCollection() {
+    const collections = await this.maxConfiguration.db.listCollections();
     let exists = collections.some((collection) => {
       return collection.name === 'maxConfiguration';
     });
@@ -144,8 +146,9 @@ export class ConfigurationsService implements OnModuleInit {
       const allBases: BaseConfiguration[] =
         await this.baseConfigurationModel.find();
 
+      await this.maxConfiguration.db.createCollection('maxConfiguration');
+
       if (allBases.length === 0) {
-        await this.configurationModel.db.createCollection('maxConfiguration');
         return;
       }
 
@@ -212,6 +215,17 @@ export class ConfigurationsService implements OnModuleInit {
       ];
 
       await this.configurationModel.aggregate(aggregation).exec();
+
+      await this.configurationModel.updateMany(
+        { $expr: { __metadata: null } },
+        [
+          {
+            $set: {
+              __metadata: groupId,
+            },
+          },
+        ],
+      );
     }
   }
 
@@ -689,7 +703,6 @@ export class ConfigurationsService implements OnModuleInit {
    *
    * @param userRoles
    * @param filter
-   * @param populate
    */
   async count(userRoles: string[], filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
