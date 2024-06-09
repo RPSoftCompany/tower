@@ -413,7 +413,7 @@ import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosError } from 'axios';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isNil } from 'lodash';
 //====================================================
 // Const
 //====================================================
@@ -1222,8 +1222,9 @@ const isDifferentThan = (versionToCheck?: number) => {
 		return true;
 	}
 
-	versionToCheck =
-		versionToCheck || configurationVariablesArchive.value.length - 1;
+	versionToCheck = !isNil(versionToCheck)
+		? versionToCheck
+		: configurationVariablesArchive.value.length - 1;
 
 	if (configurationVariablesArchive.value.length > 0) {
 		const currentVariables =

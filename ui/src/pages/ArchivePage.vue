@@ -220,12 +220,9 @@ const versionChanged = async (data: VersionChangeEvent) => {
 	if (configIndex >= 0) {
 		const config = archiveConfigs.value[configIndex].configuration;
 		if (config && config[data.version].effectiveDate) {
-			console.log('test');
 			archiveConfigs.value[configIndex].version = data.version;
 			archiveConfigs.value[configIndex].comment = data.comment;
 		} else {
-			console.log('test 2');
-
 			archiveConfigs.value[configIndex].loading = true;
 
 			const filter: any = {
