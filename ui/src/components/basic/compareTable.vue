@@ -70,7 +70,7 @@
 							class="tw-flex-grow tw-flex tw-justify-center"
 							v-if="
 								config.configuration &&
-								config.configuration[config.version ? config.version : -1]
+								config.configuration[config.version ? config.version : 1]
 							"
 						>
 							<div>
@@ -142,7 +142,7 @@
 						<div class="tw-self-center">
 							<q-btn
 								:disable="
-									config.version && config.configuration
+									config.version !== undefined && config.configuration
 										? config.version >= config.configuration.length - 1
 										: true
 								"
@@ -153,7 +153,7 @@
 								@click="
 									versionChanged(
 										config.id,
-										config.version ? config.version + 1 : 0,
+										config.version ? config.version + 1 : 1,
 									)
 								"
 							/>
