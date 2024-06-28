@@ -489,6 +489,8 @@ export class ConfigurationsService implements OnModuleInit {
       newConfigurationObject,
     );
 
+    newConfigurationObject.effectiveDate = retValue.effectiveDate;
+
     await this.maxConfiguration.updateOne(
       queryObject,
       { $set: newConfigurationObject },
