@@ -799,6 +799,8 @@ const getConfiguration = async () => {
 		where: {},
 	};
 
+	const constVariablesWhere: any = {};
+
 	baseSt.getBases.forEach((el) => {
 		filter.where[`__metadata.${el.name}`] = { $eq: null };
 	});
@@ -807,6 +809,7 @@ const getConfiguration = async () => {
 		if (el && el.name !== '__NONE__') {
 			filter.where[`__metadata.${el.base}`] = el.name;
 			rulesFilter.where.or.push({ name: el.name });
+			constVariablesWhere[`${el.base}`] = el.name;
 		}
 	});
 
@@ -825,7 +828,7 @@ const getConfiguration = async () => {
 
 		const constVariablesRequest = towerAxios.get(
 			`constantVariables/findLatest?filter=${JSON.stringify(
-				filter.where,
+				constVariablesWhere,
 				null,
 				'',
 			)}`,
