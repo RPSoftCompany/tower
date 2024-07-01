@@ -461,6 +461,8 @@ const promotionCandidatePreviewConfig: Ref<Configuration | null> = ref(null);
 const commentsDialog = ref(false);
 const comment = ref('');
 
+let currentConfigurationFilter: any = {};
+
 //====================================================
 // beforeMounted
 //====================================================
@@ -771,6 +773,7 @@ const getConfiguration = async () => {
 	configurationVariablesArchive.value = [];
 	localPromotionCandidates.value = [];
 	version.value = -1;
+	currentConfigurationFilter = {};
 
 	const rowsLimit = 20;
 
@@ -804,6 +807,8 @@ const getConfiguration = async () => {
 	baseSt.getBases.forEach((el) => {
 		filter.where[`__metadata.${el.name}`] = { $eq: null };
 	});
+
+	currentConfigurationFilter = filter;
 
 	props.configModel.forEach((el) => {
 		if (el && el.name !== '__NONE__') {
@@ -1049,6 +1054,42 @@ const showCommentsDialog = () => {
  * saveConfiguration
  */
 const saveConfiguration = async () => {
+	// Check if configuration with higher version exists already
+	currentConfigurationFilter.limit = 1;
+	const currentConfigurationRequest = await towerAxios.get(
+		`configurations?filter=${JSON.stringify(currentConfigurationFilter, null, '')}`,
+	);
+
+	if (
+		currentConfigurationRequest.status === 200 &&
+		currentConfigurationRequest.data[0]
+	) {
+		let currentVersion = 0;
+		if (
+			configurationVariablesArchive.value &&
+			configurationVariablesArchive.value.length > 0
+		) {
+			currentVersion =
+				configurationVariablesArchive.value[
+					configurationVariablesArchive.value.length - 1
+				].version;
+		}
+
+		if (currentVersion !== currentConfigurationRequest.data[0].version) {
+			$q.notify({
+				color: 'negative',
+				position: 'top',
+				textColor: 'secondary',
+				icon: 'sym_o_error',
+				message: 'Trying to update old configuration version, save aborted',
+			});
+
+			await getConfiguration();
+
+			return;
+		}
+	}
+
 	if (configurationVariables.value?.variables) {
 		loading.value = true;
 
@@ -1210,9 +1251,8 @@ const importConfiguration = (importDetails: Import) => {
  */
 const isDifferentThan = (versionToCheck?: number) => {
 	if (
-		(configurationVariablesArchive.value.length === 0 &&
-			configurationVariables.value?.variables.length === 0) ||
-		!configurationVariablesArchive.value[version.value]?.variables
+		configurationVariablesArchive.value.length === 0 &&
+		configurationVariables.value?.variables.length === 0
 	) {
 		return false;
 	}
