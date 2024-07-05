@@ -10,7 +10,7 @@ import {
 import { CreateConstantVariableDto } from './dto/create-constant-variable.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { BaseConfiguration } from '../base-configurations/base-configurations.schema';
-import { Model, QueryOptions, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { BaseConfigurationsModule } from '../base-configurations/base-configurations.module';
 import { ConfigurationModel } from '../configuration-models/configuration-models.schema';
 import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
@@ -382,7 +382,7 @@ export class ConstantVariablesService implements OnModuleInit {
           limit: newFilter.limit,
           skip: newFilter.skip,
         })
-        .populate('createdBy', 'username');
+        .populate('createdBy', ['username', 'type', 'display']);
     } else {
       const match = await this.getRolesMatch(userRoles);
 
@@ -394,7 +394,7 @@ export class ConstantVariablesService implements OnModuleInit {
       if (aggregation.length === 0) {
         return await this.constantVariableModel
           .find()
-          .populate('createdBy', 'username')
+          .populate('createdBy', ['username', 'type', 'display'])
           .exec();
       } else {
         const all: Configuration[] = await this.constantVariableModel
@@ -403,7 +403,7 @@ export class ConstantVariablesService implements OnModuleInit {
 
         return await this.constantVariableModel.populate(all, {
           path: 'createdBy',
-          select: 'username',
+          select: ['username', 'type', 'display'],
         });
       }
     }
@@ -782,7 +782,7 @@ export class ConstantVariablesService implements OnModuleInit {
     if (userRoles.includes('admin')) {
       return this.maxConstantVariable
         .find(newFilter.where)
-        .populate('createdBy', 'username');
+        .populate('createdBy', ['username', 'type', 'display']);
     } else {
       const match = await this.getRolesMatch(userRoles);
 
@@ -794,7 +794,7 @@ export class ConstantVariablesService implements OnModuleInit {
       if (aggregation.length === 0) {
         return await this.maxConstantVariable
           .find()
-          .populate('createdBy', 'username')
+          .populate('createdBy', ['username', 'type', 'display'])
           .exec();
       } else {
         const all: Array<MaxConstantVariable> = await this.maxConstantVariable
@@ -803,7 +803,7 @@ export class ConstantVariablesService implements OnModuleInit {
 
         return await this.maxConstantVariable.populate(all, {
           path: 'createdBy',
-          select: 'username',
+          select: ['username', 'type', 'display'],
         });
       }
     }

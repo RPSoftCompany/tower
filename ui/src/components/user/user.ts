@@ -21,6 +21,7 @@ export interface Member {
 	newUser: boolean;
 	type: string;
 	username: string;
+	display?: string;
 	id: string;
 	email: string;
 }

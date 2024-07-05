@@ -102,9 +102,9 @@ export class ConfigurationsService implements OnModuleInit {
 
     this.logger.debug('Encryption key check finished');
 
-    await this.createIndexes();
-
     await this.createMaxConfigurationsCollection();
+
+    await this.createIndexes();
   }
 
   /**
@@ -556,7 +556,7 @@ export class ConfigurationsService implements OnModuleInit {
       );
 
       if (populate) {
-        return all.populate('createdBy', 'username');
+        return all.populate('createdBy', ['username', 'type', 'display']);
       } else {
         return all;
       }
@@ -594,7 +594,7 @@ export class ConfigurationsService implements OnModuleInit {
         if (populate) {
           return await this.configurationModel
             .find()
-            .populate('createdBy', 'username')
+            .populate('createdBy', ['username', 'type', 'display'])
             .exec();
         } else {
           return await this.configurationModel.find().exec();
@@ -607,7 +607,7 @@ export class ConfigurationsService implements OnModuleInit {
         if (populate) {
           return await this.configurationModel.populate(all, {
             path: 'createdBy',
-            select: 'username',
+            select: ['username', 'type', 'display'],
           });
         } else {
           return all;
@@ -644,7 +644,7 @@ export class ConfigurationsService implements OnModuleInit {
       );
 
       if (populate) {
-        return all.populate('createdBy', 'username');
+        return all.populate('createdBy', ['username', 'type', 'display']);
       } else {
         return all;
       }
@@ -682,7 +682,7 @@ export class ConfigurationsService implements OnModuleInit {
         if (populate) {
           return await this.maxConfiguration
             .findOne()
-            .populate('createdBy', 'username')
+            .populate('createdBy', ['username', 'type', 'display'])
             .exec();
         } else {
           return await this.maxConfiguration.find().exec();
@@ -699,7 +699,7 @@ export class ConfigurationsService implements OnModuleInit {
         if (populate) {
           return await this.maxConfiguration.populate(all[0], {
             path: 'createdBy',
-            select: 'username',
+            select: ['username', 'type', 'display'],
           });
         } else {
           return all[0];

@@ -118,12 +118,7 @@
 														.createdBy?.username
 												: false
 										"
-										>{{
-											config.configuration
-												? config.configuration[config.version as number]
-														.createdBy?.username
-												: ''
-										}}</span
+										>{{ getUsernameForConfig(config) }}</span
 									>
 								</div>
 							</div>
@@ -297,7 +292,6 @@ import {
 } from 'components/constantVariables/constantVariable';
 import { diffChars } from 'diff';
 import { computed, ref } from 'vue';
-import { now } from '@vue/devtools-api';
 
 //====================================================
 // Interface
@@ -333,6 +327,9 @@ const emit = defineEmits([
 //====================================================
 // Computed
 //====================================================
+/**
+ * filteredVariables
+ */
 const filteredVariables = computed(() => {
 	if (!props.filter) {
 		return props.variables;
@@ -406,6 +403,17 @@ const getVariableFromConfiguration = (
 	}
 
 	return undefined;
+};
+
+const getUsernameForConfig = (config: ArchiveConfig) => {
+	if (config.configuration) {
+		const createdBy = config.configuration[config.version as number].createdBy;
+		if (createdBy) {
+			return createdBy.type === 'ldap' ? createdBy.display : createdBy.username;
+		}
+	}
+
+	return '';
 };
 
 /**
