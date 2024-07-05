@@ -10,7 +10,9 @@
 
 const { configure } = require('quasar/wrappers');
 
-module.exports = configure(function (/* ctx */) {
+module.exports = configure(async function (/* ctx */) {
+	const pluginRewriteAll = await import('vite-plugin-rewrite-all');
+
 	return {
 		eslint: {
 			// fix: true,
@@ -75,9 +77,7 @@ module.exports = configure(function (/* ctx */) {
 			// extendViteConf (viteConf) {},
 			// viteVuePluginOptions: {},
 
-			// vitePlugins: [
-			//   [ 'package-name', { ..options.. } ]
-			// ]
+			vitePlugins: [[pluginRewriteAll.default(), {}]],
 		},
 
 		// Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer

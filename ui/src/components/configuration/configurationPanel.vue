@@ -206,7 +206,7 @@
 					v-if="configurationVariablesArchive.length > 0"
 					class="tw-flex tw-col-span-2"
 				>
-					<div>
+					<div class="tw-place-content-center tw-min-w-max">
 						<q-btn
 							:disable="version <= 0 || loading"
 							class="tw-flex-none"
@@ -243,7 +243,7 @@
 							</q-btn>
 							<q-separator inset vertical />
 						</div>
-						<div class="tw-mr-3 tw-self-center">
+						<div class="tw-mr-3 tw-self-center text-center">
 							<div>
 								Version #{{ version + 1 }}, created
 								{{ currentVersionDate }}
@@ -252,7 +252,9 @@
 								class="tw-text-center tw-text-gray-600 tw-font-light tw-text-xs"
 							>
 								created by
-								<span class="tw-font-medium">{{ currentVersionAuthor }}</span>
+								<div class="tw-font-medium tw-min-w-fit tw-break-all">
+									{{ currentVersionAuthor }}
+								</div>
 							</div>
 						</div>
 						<div v-if="userCanModify" class="tw-flex tw-self-center">
@@ -270,7 +272,7 @@
 							</q-btn>
 						</div>
 					</div>
-					<div>
+					<div class="tw-place-content-center tw-min-w-max">
 						<q-btn
 							:disable="version >= configurationVariablesArchive.length - 1"
 							class="tw-flex-none"
@@ -542,8 +544,12 @@ const currentVersionDate = computed(() => {
  */
 const currentVersionAuthor = computed(() => {
 	if (version.value >= 0) {
-		return configurationVariablesArchive.value[version.value]?.createdBy
-			?.username;
+		const createdBy =
+			configurationVariablesArchive.value[version.value]?.createdBy;
+
+		if (createdBy) {
+			return createdBy.type === 'ldap' ? createdBy.display : createdBy.username;
+		}
 	}
 
 	return '';
