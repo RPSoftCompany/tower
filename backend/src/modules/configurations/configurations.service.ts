@@ -223,6 +223,17 @@ export class ConfigurationsService implements OnModuleInit {
       ];
 
       await this.configurationModel.aggregate(aggregation).exec();
+
+      await this.configurationModel.updateMany(
+        { $expr: { __metadata: null } },
+        [
+          {
+            $set: {
+              __metadata: groupId,
+            },
+          },
+        ],
+      );
     }
   }
 
