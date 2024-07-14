@@ -26,6 +26,7 @@ import { ConnectionsService } from '../connections/connections.service';
 import { AWSConnection } from '../connections/AWSConnection.schema';
 import { ConfigurationModelDocument } from '../configuration-models/configuration-models.schema';
 import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
+import { AzureConnection } from '../connections/AzureConnection.schema';
 
 @Injectable()
 export class V1Service {
@@ -135,6 +136,7 @@ export class V1Service {
     );
 
     await this.incorporateAWSSecretManagerVariables(allBases, configuration);
+    await this.incorporateAzureKeyVaultVariables(allBases, configuration);
 
     configuration.variables = [...variables];
 
@@ -474,6 +476,42 @@ export class V1Service {
           configurationBases,
           variable.value.toString(),
           variable.valueKey,
+        );
+      }
+    }
+
+    return configuration.variables;
+  }
+
+  private async incorporateAzureKeyVaultVariables(
+    allBases: BaseConfiguration[],
+    configuration: Configuration,
+  ) {
+    const configurationBases: any = {};
+
+    for (const base of allBases) {
+      if (configuration[base.name]) {
+        configurationBases[base.name] = configuration[base.name];
+      }
+    }
+
+    const connections: AzureConnection[] = [];
+
+    for (const variable of configuration.variables) {
+      if (variable.type === 'AZURE keyVault') {
+        if (connections.length === 0) {
+          const connectionsQuery =
+            await this.connectionsService.getAzureConnections();
+
+          for (const conn of connectionsQuery) {
+            connections.push(conn as any as AzureConnection);
+          }
+        }
+
+        variable.value = await this.connectionsService.getAzureKeyVaultVariable(
+          connections,
+          configurationBases,
+          variable.value.toString(),
         );
       }
     }

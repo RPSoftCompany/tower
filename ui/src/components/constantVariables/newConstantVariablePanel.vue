@@ -149,6 +149,18 @@
 							/>
 						</div>
 					</template>
+					<!-- Azure -->
+					<template v-if="type.value === ConfigurationVariableType.AZURE">
+						<div class="flex tw-gap-1">
+							<q-input
+								v-model="value"
+								class="tw-flex-grow"
+								color="secondary"
+								dense
+								label="New constant variable value"
+							/>
+						</div>
+					</template>
 				</div>
 				<!-- Forced -->
 				<q-checkbox

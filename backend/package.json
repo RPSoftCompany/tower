@@ -23,6 +23,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@azure/identity": "^4.3.0",
+    "@azure/keyvault-secrets": "^4.8.0",
     "@aws-sdk/client-secrets-manager": "^3.554.0",
     "@nestjs/common": "^10.3.7",
     "@nestjs/config": "^3.2.2",

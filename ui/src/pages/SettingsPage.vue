@@ -291,6 +291,11 @@ const connections: Array<Tab> = [
 		url: 'connections/aws',
 		icon: 'mdi-aws',
 	},
+	{
+		label: 'Key Vault',
+		url: 'connections/azure',
+		icon: 'mdi-microsoft-azure',
+	},
 ];
 
 //====================================================
@@ -372,7 +377,7 @@ watch(
 	() => route.path,
 	(current) => {
 		setTabs(current);
-	}
+	},
 );
 
 watch(
@@ -381,7 +386,7 @@ watch(
 		if (current && route.path !== `${baseUrl}/${current}`) {
 			router.push(`${baseUrl}/${current}`);
 		}
-	}
+	},
 );
 
 watch(
@@ -412,7 +417,7 @@ watch(
 				}
 			}
 		}
-	}
+	},
 );
 
 watch(
@@ -424,7 +429,7 @@ watch(
 				setTabs(route.path);
 			}
 		}
-	}
+	},
 );
 </script>
 

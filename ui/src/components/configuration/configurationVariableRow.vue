@@ -89,13 +89,15 @@
 								v-if="!forced"
 								:class="{
 									'tw-bg-secondary':
-										currentArchive.type !== localType?.value &&
+										currentArchive.type !==
+											(localType as typeInterface)?.value &&
 										!deleted &&
 										showDiff,
 									deleted: deleted,
 								}"
 								:color="
-									currentArchive.type !== localType?.value && showDiff
+									currentArchive.type !== (localType as typeInterface)?.value &&
+									showDiff
 										? 'dark'
 										: undefined
 								"
@@ -119,12 +121,14 @@
 											<template
 												v-for="(diff, index) of diffStrings(
 													valueAsString(
-														localType?.value === 'AWS SM'
+														(localType as typeInterface)?.value ===
+															ConfigurationVariableType.AWS
 															? `${localValue} : ${localKey}`
 															: localValue,
 													),
 													valueAsString(
-														currentArchive?.type === 'AWS SM'
+														currentArchive?.type ===
+															ConfigurationVariableType.AWS
 															? `${currentArchive.value} : ${currentArchive.valueKey}`
 															: currentArchive?.value,
 													),
@@ -148,7 +152,7 @@
 										<template v-else
 											>{{
 												valueAsString(
-													currentArchive?.type === 'AWS SE'
+													currentArchive?.type === ConfigurationVariableType.AWS
 														? `${currentArchive.value}:${currentArchive.valueKey}`
 														: currentArchive?.value,
 												)
@@ -204,7 +208,10 @@
 				<div class="tw-flex-grow tw-mx-2">
 					<!-- String -->
 					<template
-						v-if="localType?.value === ConfigurationVariableType.STRING"
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.STRING
+						"
 					>
 						<q-input
 							v-model="localValue as string"
@@ -214,7 +221,7 @@
 							:error-message="error"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
-									? `Variable value forced by ${sourceBase}`
+									? `Variable value forced by the ${sourceBase}`
 									: undefined
 							"
 							:hide-bottom-space="true"
@@ -224,7 +231,10 @@
 					</template>
 					<!-- Password -->
 					<template
-						v-if="localType?.value === ConfigurationVariableType.PASSWORD"
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.PASSWORD
+						"
 					>
 						<q-input
 							v-model="localValue as string"
@@ -237,7 +247,7 @@
 							autocomplete="off"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
-									? `Variable value forced by ${sourceBase}`
+									? `Variable value forced by the ${sourceBase}`
 									: undefined
 							"
 							color="secondary"
@@ -255,7 +265,10 @@
 					</template>
 					<!-- Number -->
 					<template
-						v-if="localType?.value === ConfigurationVariableType.NUMBER"
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.NUMBER
+						"
 					>
 						<q-input
 							v-model="localValue"
@@ -265,7 +278,7 @@
 							:hide-bottom-space="true"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
-									? `Variable value forced by ${sourceBase}`
+									? `Variable value forced by the ${sourceBase}`
 									: undefined
 							"
 							color="secondary"
@@ -276,7 +289,10 @@
 					</template>
 					<!-- Boolean -->
 					<template
-						v-if="localType?.value === ConfigurationVariableType.BOOLEAN"
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.BOOLEAN
+						"
 					>
 						<q-btn-toggle
 							v-model="localValue"
@@ -299,12 +315,17 @@
 						</div>
 						<div
 							v-else-if="!!sourceBase && !!sourceModel && forced"
-							v-text="`Variable value forced by ${sourceBase}`"
+							v-text="`Variable value forced by the ${sourceBase}`"
 							class="tw-text-disabled booleanErrorField tw-break-words"
 						></div>
 					</template>
 					<!-- Text -->
-					<template v-if="localType?.value === ConfigurationVariableType.TEXT">
+					<template
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.TEXT
+						"
+					>
 						<q-input
 							v-model="localValue"
 							:disable="forced"
@@ -312,7 +333,7 @@
 							:error-message="error"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
-									? `Variable value forced by ${sourceBase}`
+									? `Variable value forced by the ${sourceBase}`
 									: undefined
 							"
 							:hide-bottom-space="true"
@@ -322,7 +343,12 @@
 						/>
 					</template>
 					<!-- List -->
-					<template v-if="localType?.value === ConfigurationVariableType.LIST">
+					<template
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.LIST
+						"
+					>
 						<q-select
 							v-model="localValue"
 							:disable="forced"
@@ -330,7 +356,7 @@
 							:error-message="error"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
-									? `Variable value forced by ${sourceBase}`
+									? `Variable value forced by the ${sourceBase}`
 									: undefined
 							"
 							:hide-bottom-space="true"
@@ -346,14 +372,19 @@
 						</q-select>
 					</template>
 					<!-- Vault -->
-					<template v-if="localType?.value === ConfigurationVariableType.VAULT">
+					<template
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.VAULT
+						"
+					>
 						<q-input
 							v-model="localValue"
 							:disable="forced"
 							:error="!!error"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
-									? `Variable value forced by ${sourceBase}`
+									? `Variable value forced by the ${sourceBase}`
 									: undefined
 							"
 							:error-message="error"
@@ -364,7 +395,12 @@
 						/>
 					</template>
 					<!-- AWS -->
-					<template v-if="localType?.value === ConfigurationVariableType.AWS">
+					<template
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.AWS
+						"
+					>
 						<div class="tw-flex tw-gap-1">
 							<q-input
 								v-model="localValue"
@@ -374,7 +410,7 @@
 								label="Secret name"
 								:hint="
 									!!sourceBase && !!sourceModel && forced
-										? `Variable value forced by ${sourceBase}`
+										? `Variable value forced by the ${sourceBase}`
 										: undefined
 								"
 								:error-message="error"
@@ -394,6 +430,29 @@
 								input-debounce="300"
 							/>
 						</div>
+					</template>
+					<!-- Azure -->
+					<template
+						v-if="
+							(localType as typeInterface)?.value ===
+							ConfigurationVariableType.AZURE
+						"
+					>
+						<q-input
+							v-model="localValue"
+							:disable="forced"
+							:error="!!error"
+							:hint="
+								!!sourceBase && !!sourceModel && forced
+									? `Variable value forced by the ${sourceBase}`
+									: undefined
+							"
+							:error-message="error"
+							:hide-bottom-space="true"
+							color="secondary"
+							dense
+							input-debounce="300"
+						/>
 					</template>
 				</div>
 				<!-- delete variable -->
@@ -494,7 +553,7 @@ const revert = () => {
 			value: props.currentArchive?.value,
 		};
 
-		if (props.currentArchive?.type === 'AWS SM') {
+		if (props.currentArchive?.type === ConfigurationVariableType.AWS) {
 			variable.valueKey = props.currentArchive?.valueKey;
 		}
 

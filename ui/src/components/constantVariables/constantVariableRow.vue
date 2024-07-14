@@ -326,6 +326,16 @@
 							/>
 						</div>
 					</template>
+					<!-- Azure -->
+					<template v-if="localType.value === ConfigurationVariableType.AZURE">
+						<q-input
+							v-model="localValue"
+							label="Secret Name"
+							:disable="disable"
+							color="secondary"
+							dense
+						/>
+					</template>
 				</div>
 				<!-- Forced -->
 				<q-checkbox

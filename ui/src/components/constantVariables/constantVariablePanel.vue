@@ -19,6 +19,10 @@
 <template>
 	<q-card
 		class="tw-bg-darkPage tw-text-secondary tw-flex tw-items-start tw-flex-col tw-pt-2 tw-rounded tower-min-height tw-overflow-hidden"
+		:class="{
+			'tw-justify-center':
+				!constVariables?.variables || constVariables?.variables.length === 0,
+		}"
 		flat
 	>
 		<q-inner-loading :showing="loading">
@@ -26,7 +30,11 @@
 			<div class="tw-mt-3">Please wait, loading...</div>
 		</q-inner-loading>
 		<div
-			v-if="!constVariables?.variables && !loading"
+			v-if="
+				(!constVariables?.variables ||
+					constVariables?.variables.length === 0) &&
+				!loading
+			"
 			class="tw-w-full tw-flex tw-justify-center tw-items-center"
 		>
 			<div class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400">
@@ -40,6 +48,7 @@
 			</div>
 		</div>
 		<div
+			v-if="constVariables?.variables && constVariables?.variables.length > 0"
 			:class="{
 				'tw-grid-cols-5': constVariablesArchive.length > 0,
 				'tw-grid-cols-2': constVariablesArchive.length === 0,
@@ -180,7 +189,7 @@
 			leave-active-class="animated fadeOut"
 		>
 			<save-panel
-				v-if="constVariables?.variables"
+				v-if="constVariables?.variables && constVariables?.variables.length > 0"
 				:save-enabled="isDifferent && !loading"
 				@saveClicked="saveConstantVariables"
 			/>
@@ -725,7 +734,7 @@ const isDifferentThan = (version?: number) => {
 		const currentVariables = constVariablesArchive.value[currentVersion];
 
 		if (!currentVariables || !currentVariables.variables) {
-			return;
+			return false;
 		}
 
 		if (

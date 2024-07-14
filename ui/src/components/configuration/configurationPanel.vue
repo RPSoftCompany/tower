@@ -350,6 +350,8 @@
 							:forced="row.forced || !userCanModify"
 							:grid="configurationVariablesArchive.length > 0 ? 3 : 2"
 							:is-constant-variable="row.constantVariable"
+							:source-base="row.sourceBase"
+							:source-model="row.sourceModel"
 							:name="row.name"
 							:showDiff="showDiff"
 							@addVariable="addNewVariable"

@@ -149,6 +149,25 @@
 							/>
 						</div>
 					</template>
+					<!-- Azure -->
+					<template v-if="type.value === ConfigurationVariableType.AZURE">
+						<div class="flex tw-gap-1">
+							<q-input
+								v-model="value"
+								color="secondary"
+								class="tw-flex-grow"
+								dense
+								label="New variable secret name"
+							/>
+							<q-input
+								v-model="valueKey"
+								class="tw-flex-grow"
+								color="secondary"
+								dense
+								label="New variable key"
+							/>
+						</div>
+					</template>
 				</div>
 				<!-- delete variable -->
 				<q-separator inset vertical />
@@ -171,9 +190,10 @@
 <script lang="ts" setup>
 import {
 	ConfigurationVariableType,
-	typeOptions, valueConverter,
+	typeOptions,
+	valueConverter,
 } from 'components/constantVariables/constantVariable';
-import {Ref, ref, watch} from 'vue';
+import { Ref, ref, watch } from 'vue';
 import TypeSelect from 'components/basic/typeSelect.vue';
 
 //====================================================
@@ -185,12 +205,14 @@ withDefaults(
 	}>(),
 	{
 		existingVariableNames: () => [],
-	}
+	},
 );
 
 const name: Ref<string | null> = ref(null);
 const type = ref(typeOptions[0]);
-const value: Ref<string | number | boolean | string[] | null | undefined | unknown> = ref('');
+const value: Ref<
+	string | number | boolean | string[] | null | undefined | unknown
+> = ref('');
 const valueKey = ref('');
 
 const passwordVisible = ref(false);
@@ -229,10 +251,7 @@ const addNewVariable = () => {
 watch(
 	type,
 	() => {
-		value.value = valueConverter(
-			value.value,
-			type.value.value,
-		);
+		value.value = valueConverter(value.value, type.value.value);
 	},
 	{
 		immediate: true,
