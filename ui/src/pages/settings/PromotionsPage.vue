@@ -43,36 +43,45 @@
 			class="tw-mt-5 tw-flex tw-flex-col tw-h-full"
 			v-if="currentPromotionClone && currentModel"
 		>
-			<q-list>
-				<template v-for="model of allModels" :key="model.name">
-					<q-item
-						v-if="model.name !== currentModel?.name"
-						clickable
-						@click="addOrRemovePromotion(model.name)"
-						:disable="loading"
-					>
-						<q-item-section avatar>
-							<q-icon
-								:name="
-									currentPromotionClone?.toModels.includes(model.name)
-										? 'sym_o_check'
-										: 'sym_o_check_box_outline_blank'
-								"
-								:color="
-									currentPromotionClone?.toModels.includes(model.name)
-										? 'positive'
-										: 'grey-7'
-								"
-								class="heavy"
-								size="sm"
-							/>
-						</q-item-section>
-						<q-item-section>
-							<q-item-label>{{ model.name }}</q-item-label>
-						</q-item-section>
-					</q-item>
-				</template>
-			</q-list>
+			<search-toolbar
+				class="tw-mb-3"
+				:export-enabled="false"
+				:showDiffEnabled="false"
+				v-model:filter="filter"
+				title=""
+			/>
+			<q-virtual-scroll
+				:items="filteredModels"
+				v-slot="{ item }"
+				style="max-height: calc(100vh - 22rem)"
+			>
+				<q-item
+					v-if="item.name !== currentModel?.name"
+					clickable
+					@click="addOrRemovePromotion(item.name)"
+					:disable="loading"
+				>
+					<q-item-section avatar>
+						<q-icon
+							:name="
+								currentPromotionClone?.toModels.includes(item.name)
+									? 'sym_o_check'
+									: 'sym_o_check_box_outline_blank'
+							"
+							:color="
+								currentPromotionClone?.toModels.includes(item.name)
+									? 'positive'
+									: 'grey-7'
+							"
+							class="heavy"
+							size="sm"
+						/>
+					</q-item-section>
+					<q-item-section>
+						<q-item-label>{{ item.name }}</q-item-label>
+					</q-item-section>
+				</q-item>
+			</q-virtual-scroll>
 			<div class="tw-flex-grow" />
 			<save-panel :save-enabled="isDifferent" @save-clicked="save" />
 		</div>
@@ -90,6 +99,7 @@ import { useQuasar } from 'quasar';
 import { Promotion } from 'pages/settings/types/promotion';
 import SavePanel from 'components/basic/savePanel.vue';
 import { navigationStore } from 'stores/navigation';
+import SearchToolbar from 'components/configuration/searchToolbar.vue';
 //====================================================
 // Const
 //====================================================
@@ -109,6 +119,8 @@ const currentPromotion: Ref<Promotion | null> = ref(null);
 const currentPromotionClone: Ref<Promotion | null> = ref(null);
 
 const loading = ref(false);
+
+const filter = ref('');
 
 //====================================================
 // Computed
@@ -139,6 +151,21 @@ const isDifferent = computed(() => {
 	});
 });
 
+/**
+ * filteredModels
+ */
+const filteredModels = computed(() => {
+	if (allModels.value && allModels.value.length > 0 && filter.value) {
+		const localFilter = filter.value.toLowerCase();
+
+		return allModels.value.filter((el) => {
+			return el.name.toLowerCase().includes(localFilter);
+		});
+	}
+
+	return allModels.value;
+});
+
 //====================================================
 // Methods
 //====================================================
@@ -165,7 +192,7 @@ const getAllModels = async () => {
 
 	try {
 		const response = await towerAxios.get(
-			`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`
+			`/configurationModels?filter=${JSON.stringify(filter, undefined, '')}`,
 		);
 		if (response.status === 200) {
 			allModels.value = response.data;
@@ -204,7 +231,7 @@ const getPromotions = async () => {
 
 	try {
 		const response = await towerAxios.get(
-			`/promotions?filter=${JSON.stringify(filter, undefined, '')}`
+			`/promotions?filter=${JSON.stringify(filter, undefined, '')}`,
 		);
 		if (response.status === 200) {
 			if (response.data.length > 0) {
@@ -273,12 +300,12 @@ const save = async () => {
 			if (currentPromotionClone.value._id) {
 				response = await towerAxios.patch(
 					`/promotions/${currentPromotionClone.value._id}`,
-					currentPromotionClone.value
+					currentPromotionClone.value,
 				);
 			} else {
 				response = await towerAxios.post(
 					'/promotions',
-					currentPromotionClone.value
+					currentPromotionClone.value,
 				);
 			}
 
@@ -317,7 +344,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 

@@ -25,6 +25,7 @@ export class ConfigurationVariable {
       'password',
       'Vault',
       'AWS SM',
+      'AZURE keyVault',
     ],
   })
   type: string;
@@ -112,6 +113,7 @@ ConfigurationSchema.pre('validate', async function () {
     'password',
     'Vault',
     'AWS SM',
+    'AZURE keyVault',
   ];
 
   this.variables = this.variables.map((variable: ConfigurationVariable) => {

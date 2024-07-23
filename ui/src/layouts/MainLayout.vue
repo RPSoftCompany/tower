@@ -71,16 +71,18 @@ import DrawerLink from 'components/drawer/drawerLink.vue';
 import { LinkProps } from 'components/drawer/types';
 import ExpansionLink from 'components/drawer/expansionLink.vue';
 import { basesStore } from 'stores/bases';
-import { computed } from 'vue';
+import { computed, onBeforeMount } from 'vue';
 import { Base } from 'components/bases/base';
 import UserLink from 'components/drawer/userLink.vue';
 import { userStore } from 'stores/user';
+import { useQuasar } from 'quasar';
 
 //====================================================
 // Const
 //====================================================
 const basesSt = basesStore();
 const userSt = userStore();
+const $q = useQuasar();
 
 const archiveLinks: LinkProps[] = [
 	{
@@ -129,5 +131,16 @@ const allBases = computed((): Array<LinkProps> => {
  */
 const hasAdminRights = computed(() => {
 	return userSt.hasAdminRights;
+});
+
+//====================================================
+// Mount
+//====================================================
+onBeforeMount(() => {
+	if ($q.localStorage.has('theme')) {
+		$q.dark.set($q.localStorage.getItem('theme') === 'dark');
+	} else {
+		$q.dark.set(true);
+	}
 });
 </script>

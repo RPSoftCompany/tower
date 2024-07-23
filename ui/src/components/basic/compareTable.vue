@@ -21,7 +21,7 @@
 		:class="`tw-grid-cols-${configs ? configs?.length * 2 + 1 : 1} ${
 			hasScroll ? 'tw-mr-[0.65rem]' : ''
 		}`"
-		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 bg-primary"
+		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 bg-darkPage"
 	>
 		<div class="tw-text-sm tw-font-semibold tw-self-center tw-text-center">
 			Variable names

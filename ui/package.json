@@ -13,6 +13,7 @@
 		"build": "quasar build"
 	},
 	"dependencies": {
+		"@fontsource/atkinson-hyperlegible": "^5.0.20",
 		"@quasar/extras": "^1.16.11",
 		"ace-builds": "^1.31.2",
 		"axios": "^1.6.2",

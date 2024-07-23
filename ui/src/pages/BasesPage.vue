@@ -68,7 +68,7 @@
 		<q-dialog v-model="deleteRestrictionDialog">
 			<q-card class="tw-min-w-[30%]">
 				<q-card-section class="tw-bg-negative">
-					<div class="text-h6">Remove restriction</div>
+					<div class="text-h6 tw-text-primary">Remove restriction</div>
 				</q-card-section>
 
 				<q-card-section>
@@ -262,7 +262,11 @@
 				</q-tab-panel>
 				<q-tab-panel name="other">
 					<div class="flex tw-flex-col tw-flex-1">
-						<q-checkbox v-model="modelForceComment" label="Force comment" />
+						<q-checkbox
+							v-model="modelForceComment"
+							label="Force comment"
+							class="tower_checkbox"
+						/>
 					</div>
 				</q-tab-panel>
 			</q-tab-panels>
@@ -878,4 +882,4 @@ watch(isDifferent, (current: boolean) => {
 });
 </script>
 
-<style scoped></style>
+<style></style>

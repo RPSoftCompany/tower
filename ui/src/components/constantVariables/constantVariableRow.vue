@@ -283,6 +283,10 @@
 							v-model="localValue"
 							:disable="disable"
 							color="secondary"
+							:class="{
+								configurationVariableSelectModified:
+									wasModified || isNew || deleted,
+							}"
 							dense
 							hide-dropdown-icon
 							input-debounce="0"
@@ -377,7 +381,7 @@
 			</div>
 			<div
 				v-else
-				class="tw-text-center tw-self-center tw-italic tw-text-gray-500"
+				class="tw-text-center tw-self-center tw-italic tw-text-gray-500 tw-col-span-2"
 			>
 				Deleted variable
 			</div>

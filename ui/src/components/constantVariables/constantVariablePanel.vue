@@ -21,7 +21,8 @@
 		class="tw-bg-darkPage tw-text-secondary tw-flex tw-items-start tw-flex-col tw-pt-2 tw-rounded tower-min-height tw-overflow-hidden"
 		:class="{
 			'tw-justify-center':
-				!constVariables?.variables || constVariables?.variables.length === 0,
+				!constVariablesWithCurrentArchive ||
+				constVariablesWithCurrentArchive.length === 0,
 		}"
 		flat
 	>
@@ -31,8 +32,8 @@
 		</q-inner-loading>
 		<div
 			v-if="
-				(!constVariables?.variables ||
-					constVariables?.variables.length === 0) &&
+				(!constVariablesWithCurrentArchive ||
+					constVariablesWithCurrentArchive.length === 0) &&
 				!loading
 			"
 			class="tw-w-full tw-flex tw-justify-center tw-items-center"
@@ -48,7 +49,10 @@
 			</div>
 		</div>
 		<div
-			v-if="constVariables?.variables && constVariables?.variables.length > 0"
+			v-if="
+				constVariablesWithCurrentArchive &&
+				constVariablesWithCurrentArchive.length > 0
+			"
 			:class="{
 				'tw-grid-cols-5': constVariablesArchive.length > 0,
 				'tw-grid-cols-2': constVariablesArchive.length === 0,
@@ -455,10 +459,10 @@ const getConstantVariables = async () => {
 						...[...Array(countResponse.data - rowsLimit).keys()].map(() => {
 							return {} as ConstantVariable;
 						}),
-						...response.data,
+						...response.data.reverse(),
 					];
 				} else {
-					constVariablesArchive.value = response.data;
+					constVariablesArchive.value = response.data.reverse();
 				}
 
 				if (constVariablesArchive.value.length > 0) {

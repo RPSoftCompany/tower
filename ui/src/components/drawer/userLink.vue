@@ -39,9 +39,21 @@
 					</q-item-section>
 				</q-item>
 				<q-item clickable @click="changePassword" v-if="!userSt.isLdapUser">
+					<q-item-section avatar>
+						<q-icon color="secondary" name="mdi-lock-reset" />
+					</q-item-section>
 					<q-item-section>Change password</q-item-section>
 				</q-item>
+				<q-item clickable @click="changeTheme">
+					<q-item-section avatar>
+						<q-icon color="secondary" name="mdi-theme-light-dark" />
+					</q-item-section>
+					<q-item-section>Change Theme</q-item-section>
+				</q-item>
 				<q-item clickable @click="logout">
+					<q-item-section avatar>
+						<q-icon color="secondary" name="mdi-logout" />
+					</q-item-section>
 					<q-item-section>Logout</q-item-section>
 				</q-item>
 			</q-list>
@@ -54,7 +66,7 @@
 			>
 			</q-icon>
 			<div
-				class="tw-text-xs tw-self-center tw-grow tw-justify-self-center 2xl:tw-block tw-hidden tw-truncate"
+				class="tw-self-center tw-grow tw-justify-self-center 2xl:tw-block tw-hidden tw-truncate"
 			>
 				{{ userSt.name }}
 			</div>
@@ -71,10 +83,12 @@
 import { userStore } from 'stores/user';
 import { useRouter } from 'vue-router';
 import { basesStore } from 'stores/bases';
+import { useQuasar } from 'quasar';
 
 const userSt = userStore();
 const router = useRouter();
 const baseSt = basesStore();
+const $q = useQuasar();
 
 //====================================================
 // Methods
@@ -93,6 +107,19 @@ const logout = () => {
  */
 const changePassword = () => {
 	router.push({ name: 'ChangePassword' });
+};
+
+/**
+ * changeTheme
+ */
+const changeTheme = () => {
+	if (!$q.dark.isActive) {
+		$q.dark.set(true);
+		$q.localStorage.set('theme', 'dark');
+	} else {
+		$q.dark.set(false);
+		$q.localStorage.set('theme', 'light');
+	}
 };
 </script>
 

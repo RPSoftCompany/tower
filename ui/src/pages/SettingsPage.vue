@@ -70,7 +70,7 @@
 					animated
 					class="tw-text-gray-500"
 					dense
-					indicator-color="secondary"
+					indicator-color="transparent"
 					inline-label
 					keep-alive
 					narrow-indicator

@@ -40,42 +40,41 @@
 				v-model:filter="filter"
 				title=""
 			/>
-			<q-list>
-				<template
-					v-for="model of filteredConfigurationModels"
-					:key="model.name"
+			<q-virtual-scroll
+				:items="filteredConfigurationModels"
+				v-slot="{ item }"
+				style="max-height: calc(100vh - 20rem)"
+			>
+				<q-item
+					clickable
+					@click="addOrRemoveCustomPermission(item.name)"
+					:disable="loading"
 				>
-					<q-item
-						clickable
-						@click="addOrRemoveCustomPermission(model.name)"
-						:disable="loading"
-					>
-						<q-item-section avatar>
-							<q-icon
-								:name="
-									currentRoles.includes(
-										`configurationModel.${currentBase?.name}.${model.name}.view`,
-									)
-										? 'sym_o_check'
-										: 'sym_o_check_box_outline_blank'
-								"
-								:color="
-									currentRoles.includes(
-										`configurationModel.${currentBase?.name}.${model.name}.view`,
-									)
-										? 'positive'
-										: 'grey-7'
-								"
-								class="heavy"
-								size="sm"
-							/>
-						</q-item-section>
-						<q-item-section>
-							<q-item-label>{{ model.name }}</q-item-label>
-						</q-item-section>
-					</q-item>
-				</template>
-			</q-list>
+					<q-item-section avatar>
+						<q-icon
+							:name="
+								currentRoles.includes(
+									`configurationModel.${currentBase?.name}.${item.name}.view`,
+								)
+									? 'sym_o_check'
+									: 'sym_o_check_box_outline_blank'
+							"
+							:color="
+								currentRoles.includes(
+									`configurationModel.${currentBase?.name}.${item.name}.view`,
+								)
+									? 'positive'
+									: 'grey-7'
+							"
+							class="heavy"
+							size="sm"
+						/>
+					</q-item-section>
+					<q-item-section>
+						<q-item-label>{{ item.name }}</q-item-label>
+					</q-item-section>
+				</q-item>
+			</q-virtual-scroll>
 			<div class="tw-flex-grow" />
 			<div class="tw-justify-self-end">
 				<save-panel

@@ -19,7 +19,7 @@
 <template>
 	<q-dialog v-model="commentsDialog" persistent>
 		<q-card class="tw-min-w-[30%]">
-			<q-card-section class="tw-bg-darkPage">
+			<q-card-section class="tw-bg-dark">
 				<div class="text-h6">Comment your changes</div>
 			</q-card-section>
 			<q-card-section class="tw-max-h-[70vh] tw-overflow-auto">

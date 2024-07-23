@@ -47,8 +47,8 @@
 				'tw-grid-cols-2': grid === 2,
 				'tw-grid-cols-5': grid === 3,
 				'tw-rounded': wasModified || !!error,
-				configurationRowModified: wasModified,
-				configurationRowError: !!error,
+				configurationRowModified: wasModified && !error,
+				'tw-bg-negative-200': !!error,
 			}"
 			class="tw-grid tw-w-full tw-gap-3 tw-min-h-[2.75rem] tw-pl-2 tw-mr-2 tw-my-px"
 		>
@@ -301,7 +301,8 @@
 								{ label: 'True', value: true },
 								{ label: 'False', value: false },
 							]"
-							:toggle-color="!!error ? 'negative' : 'dark'"
+							:toggle-color="!!error ? 'negative' : 'secondary'"
+							toggle-text-color="primary"
 							class="tw-mt-1.5"
 							dense
 							spread
@@ -354,6 +355,9 @@
 							:disable="forced"
 							:error="!!error"
 							:error-message="error"
+							:class="{
+								configurationVariableSelectModified: wasModified && !error,
+							}"
 							:hint="
 								!!sourceBase && !!sourceModel && forced
 									? `Variable value forced by the ${sourceBase}`

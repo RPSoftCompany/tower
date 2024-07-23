@@ -23,7 +23,7 @@
 				<q-card-section
 					class="tw-text-sm tw-font-semibold tw-text-black"
 					:class="{
-						'tw-bg-accent': testConnectionError,
+						'tw-bg-warning': testConnectionError,
 						'tw-bg-positive': !testConnectionError,
 					}"
 					>{{
@@ -38,7 +38,7 @@
 					<q-btn
 						v-close-popup
 						:class="{
-							'tw-text-accent': testConnectionError,
+							'tw-text-warning': testConnectionError,
 							'tw-text-positive': !testConnectionError,
 						}"
 						flat
@@ -324,7 +324,7 @@ const getCurrentLDAPConfiguration = async () => {
 
 	try {
 		let response = await towerAxios.get(
-			`/connections?filter=${JSON.stringify(filter, undefined, '')}`
+			`/connections?filter=${JSON.stringify(filter, undefined, '')}`,
 		);
 		if (response.status === 200) {
 			savedConfiguration.value = {
@@ -400,7 +400,7 @@ const testConnection = async () => {
 	try {
 		const response = await towerAxios.post(
 			'/connections/testConnection?type=LDAP',
-			currentConfiguration.value
+			currentConfiguration.value,
 		);
 
 		if (response.status === 200) {
@@ -475,7 +475,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 
