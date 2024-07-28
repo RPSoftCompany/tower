@@ -27,6 +27,9 @@ import { AWSConnection } from '../connections/AWSConnection.schema';
 import { ConfigurationModelDocument } from '../configuration-models/configuration-models.schema';
 import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
 import { AzureConnection } from '../connections/AzureConnection.schema';
+import { KeyVaultSecret } from '@azure/keyvault-secrets';
+import { GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager/dist-types/commands';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @Injectable()
 export class V1Service {
@@ -461,7 +464,11 @@ export class V1Service {
 
     const connections: AWSConnection[] = [];
 
-    for (const variable of configuration.variables) {
+    const allPromises: Promise<GetSecretValueCommandOutput>[] = [];
+    const variableIteratorArray: number[] = [];
+
+    for (let i = 0; i < configuration.variables.length; i++) {
+      let variable = configuration.variables[i];
       if (variable.type === 'AWS SM') {
         if (connections.length === 0) {
           const connectionsQuery =
@@ -471,18 +478,39 @@ export class V1Service {
           }
         }
 
-        variable.value = await this.connectionsService.getAWSSMVariable(
-          connections,
-          configurationBases,
-          variable.value.toString(),
-          variable.valueKey,
+        variableIteratorArray.push(i);
+
+        allPromises.push(
+          this.connectionsService.getAWSSMVariable(
+            connections,
+            configurationBases,
+            variable.value.toString(),
+            variable.valueKey,
+          ),
         );
+      }
+    }
+
+    const all = await Promise.all(allPromises);
+
+    for (let i = 0; i < all.length; i++) {
+      const key = variableIteratorArray[i];
+      if (!isNil(all[i])) {
+        const tempJson = JSON.parse(all[i].SecretString);
+        configuration.variables[key].value =
+          tempJson[configuration.variables[key].valueKey];
       }
     }
 
     return configuration.variables;
   }
 
+  /**
+   * incorporateAzureKeyVaultVariables
+   * @param allBases
+   * @param configuration
+   * @private
+   */
   private async incorporateAzureKeyVaultVariables(
     allBases: BaseConfiguration[],
     configuration: Configuration,
@@ -497,7 +525,12 @@ export class V1Service {
 
     const connections: AzureConnection[] = [];
 
-    for (const variable of configuration.variables) {
+    const allPromises: Promise<KeyVaultSecret>[] = [];
+    const variableIteratorArray: number[] = [];
+
+    for (let i = 0; i < configuration.variables.length; i++) {
+      let variable = configuration.variables[i];
+
       if (variable.type === 'AZURE keyVault') {
         if (connections.length === 0) {
           const connectionsQuery =
@@ -508,12 +541,23 @@ export class V1Service {
           }
         }
 
-        variable.value = await this.connectionsService.getAzureKeyVaultVariable(
-          connections,
-          configurationBases,
-          variable.value.toString(),
+        variableIteratorArray.push(i);
+
+        allPromises.push(
+          this.connectionsService.getAzureKeyVaultVariable(
+            connections,
+            configurationBases,
+            variable.value.toString(),
+          ),
         );
       }
+    }
+
+    const all = await Promise.all(allPromises);
+
+    for (let i = 0; i < all.length; i++) {
+      const key = variableIteratorArray[i];
+      configuration.variables[key].value = all[i].value;
     }
 
     return configuration.variables;

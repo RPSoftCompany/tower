@@ -42,7 +42,6 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
-import { isNil } from '@nestjs/common/utils/shared.utils';
 import { AzureConnection } from './AzureConnection.schema';
 import { ClientSecretCredential } from '@azure/identity';
 import { SecretClient } from '@azure/keyvault-secrets';
@@ -514,13 +513,13 @@ export class ConnectionsService implements OnModuleInit {
               VersionStage: 'AWSCURRENT',
             });
 
-            const response = await client.send(command);
+            return client.send(command);
 
-            if (!isNil(response.SecretString)) {
-              const tempJson = JSON.parse(response.SecretString);
-              return tempJson[valueKey];
-              // return JSON.stringify(response.SecretString).slice(1, -1);
-            }
+            // if (!isNil(response.SecretString)) {
+            //   const tempJson = JSON.parse(response.SecretString);
+            //   return tempJson[valueKey];
+            //   // return JSON.stringify(response.SecretString).slice(1, -1);
+            // }
           } catch (e) {
             throw new BadRequestException(e.message);
           }
@@ -528,7 +527,7 @@ export class ConnectionsService implements OnModuleInit {
       }
     }
 
-    return '';
+    return null;
   }
 
   /**
@@ -540,6 +539,12 @@ export class ConnectionsService implements OnModuleInit {
     });
   }
 
+  /**
+   * getAzureKeyVaultVariable
+   * @param connections
+   * @param configurationBases
+   * @param variableName
+   */
   async getAzureKeyVaultVariable(
     connections: AzureConnection[],
     configurationBases: any,
@@ -567,11 +572,7 @@ export class ConnectionsService implements OnModuleInit {
 
             const client = new SecretClient(url, credentials);
 
-            const secret = await client.getSecret(variableName);
-
-            if (secret) {
-              return secret.value;
-            }
+            return client.getSecret(variableName);
           } catch (e) {
             throw new BadRequestException(e.message);
           }
@@ -579,7 +580,7 @@ export class ConnectionsService implements OnModuleInit {
       }
     }
 
-    return '';
+    return null;
   }
 
   /**
