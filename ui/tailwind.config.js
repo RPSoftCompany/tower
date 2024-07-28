@@ -20,7 +20,7 @@ module.exports = {
 					900: 'rgba(186, 34, 34, 0.9)',
 				},
 
-				disabled: '#ffffffb3',
+				disabled: '#6B7280',
 				warning: '#F2C037',
 			},
 		},

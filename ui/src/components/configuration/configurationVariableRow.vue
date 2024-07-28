@@ -47,7 +47,7 @@
 				'tw-grid-cols-2': grid === 2,
 				'tw-grid-cols-5': grid === 3,
 				'tw-rounded': wasModified || !!error,
-				configurationRowModified: wasModified && !error,
+				configurationRowModified: wasModified && !error && !isConstantVariable,
 				'tw-bg-negative-200': !!error,
 			}"
 			class="tw-grid tw-w-full tw-gap-3 tw-min-h-[2.75rem] tw-pl-2 tw-mr-2 tw-my-px"
@@ -107,7 +107,7 @@
 							/>
 							<!-- Variable -->
 							<div class="tw-text-center tw-grow tw-self-center fullWordWrap">
-								<div v-if="valueExists(currentArchive) && !deleted">
+								<div v-if="valueExists(currentArchive) && !deleted && !forced">
 									<template
 										v-if="
 											localTypeComputed ===
@@ -480,6 +480,7 @@
 				Deleted variable
 			</div>
 		</div>
+		<q-separator color="dark"></q-separator>
 	</div>
 </template>
 

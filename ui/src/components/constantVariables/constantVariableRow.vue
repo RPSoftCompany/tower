@@ -211,7 +211,7 @@
 					<!-- String -->
 					<template v-if="localType.value === ConfigurationVariableType.STRING">
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							:disable="disable"
 							color="secondary"
 							dense
@@ -222,7 +222,7 @@
 						v-if="localType.value === ConfigurationVariableType.PASSWORD"
 					>
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							:disable="disable"
 							autocomplete="off"
 							:type="passwordVisible ? 'text' : 'password'"
@@ -242,7 +242,7 @@
 					<!-- Number -->
 					<template v-if="localType.value === ConfigurationVariableType.NUMBER">
 						<q-input
-							v-model="localValue"
+							v-model="localValue as number"
 							:disable="disable"
 							color="secondary"
 							dense
@@ -270,7 +270,7 @@
 					<!-- Text -->
 					<template v-if="localType.value === ConfigurationVariableType.TEXT">
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							:disable="disable"
 							color="secondary"
 							dense
@@ -280,7 +280,7 @@
 					<!-- List -->
 					<template v-if="localType.value === ConfigurationVariableType.LIST">
 						<q-select
-							v-model="localValue"
+							v-model="localValue as Array<string>"
 							:disable="disable"
 							color="secondary"
 							:class="{
@@ -299,7 +299,7 @@
 					<!-- Vault -->
 					<template v-if="localType.value === ConfigurationVariableType.VAULT">
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							:disable="disable"
 							color="secondary"
 							dense
@@ -309,7 +309,7 @@
 					<template v-if="localType.value === ConfigurationVariableType.AWS">
 						<div class="tw-flex tw-gap-1">
 							<q-input
-								v-model="localValue"
+								v-model="localValue as string"
 								class="tw-flex-grow"
 								:disable="disable"
 								label="Secret name"
@@ -333,7 +333,7 @@
 					<!-- Azure -->
 					<template v-if="localType.value === ConfigurationVariableType.AZURE">
 						<q-input
-							v-model="localValue"
+							v-model="localValue as string"
 							label="Secret Name"
 							:disable="disable"
 							color="secondary"
@@ -386,6 +386,7 @@
 				Deleted variable
 			</div>
 		</div>
+		<q-separator color="dark"></q-separator>
 	</div>
 </template>
 

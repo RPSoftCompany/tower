@@ -58,7 +58,7 @@
 				<div
 					class="tw-text-center tw-italic tw-text-xs tw-text-negative tw-opacity-80"
 				>
-					{{ errorText ? errorText : 'All errors should be marked red' }}
+					{{ errorText ? errorText : 'All errors are highlighted in red' }}
 				</div>
 			</div>
 		</div>

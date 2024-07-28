@@ -34,6 +34,7 @@
 				color="secondary"
 				dense
 				label="New variable name"
+				:autofocus="false"
 			/>
 			<!-- Type -->
 			<type-select
@@ -47,19 +48,21 @@
 					<!-- String -->
 					<template v-if="type.value === ConfigurationVariableType.STRING">
 						<q-input
-							v-model="value"
+							v-model="value as string"
 							color="secondary"
 							dense
+							:autofocus="false"
 							label="New variable value"
 						/>
 					</template>
 					<!-- Password -->
 					<template v-if="type.value === ConfigurationVariableType.PASSWORD">
 						<q-input
-							v-model="value"
+							v-model="value as string"
 							:type="passwordVisible ? 'text' : 'password'"
 							color="secondary"
 							dense
+							:autofocus="false"
 							label="New variable value"
 						>
 							<template #append>
@@ -75,8 +78,9 @@
 					<!-- Number -->
 					<template v-if="type.value === ConfigurationVariableType.NUMBER">
 						<q-input
-							v-model="value"
+							v-model="value as number"
 							color="secondary"
+							:autofocus="false"
 							dense
 							label="New variable value"
 							type="number"
@@ -99,8 +103,9 @@
 					<!-- Text -->
 					<template v-if="type.value === ConfigurationVariableType.TEXT">
 						<q-input
-							v-model="value"
+							v-model="value as string"
 							color="secondary"
+							:autofocus="false"
 							dense
 							label="New variable value"
 							type="textarea"
@@ -109,7 +114,7 @@
 					<!-- List -->
 					<template v-if="type.value === ConfigurationVariableType.LIST">
 						<q-select
-							v-model="value"
+							v-model="value as Array<string>"
 							color="secondary"
 							dense
 							hide-dropdown-icon
@@ -124,8 +129,9 @@
 					<!-- Vault -->
 					<template v-if="type.value === ConfigurationVariableType.VAULT">
 						<q-input
-							v-model="value"
+							v-model="value as string"
 							color="secondary"
+							:autofocus="false"
 							dense
 							label="New variable value"
 						/>
@@ -134,14 +140,16 @@
 					<template v-if="type.value === ConfigurationVariableType.AWS">
 						<div class="flex tw-gap-1">
 							<q-input
-								v-model="value"
+								v-model="value as string"
 								color="secondary"
+								:autofocus="false"
 								class="tw-flex-grow"
 								dense
 								label="New variable secret name"
 							/>
 							<q-input
 								v-model="valueKey"
+								:autofocus="false"
 								class="tw-flex-grow"
 								color="secondary"
 								dense
@@ -153,18 +161,12 @@
 					<template v-if="type.value === ConfigurationVariableType.AZURE">
 						<div class="flex tw-gap-1">
 							<q-input
-								v-model="value"
+								v-model="value as string"
 								color="secondary"
+								:autofocus="false"
 								class="tw-flex-grow"
 								dense
 								label="New variable secret name"
-							/>
-							<q-input
-								v-model="valueKey"
-								class="tw-flex-grow"
-								color="secondary"
-								dense
-								label="New variable key"
 							/>
 						</div>
 					</template>
@@ -172,13 +174,13 @@
 				<!-- delete variable -->
 				<q-separator inset vertical />
 				<q-btn
-					:disable="!name || nameRef.hasError"
+					:disable="!name || nameRef?.hasError"
 					flat
 					icon="sym_o_add"
 					padding="sm"
 					@click="addNewVariable"
 				>
-					<q-tooltip v-if="name && !nameRef.hasError"
+					<q-tooltip v-if="name && !nameRef?.hasError"
 						>Add new configuration variable
 					</q-tooltip>
 				</q-btn>
@@ -195,6 +197,7 @@ import {
 } from 'components/constantVariables/constantVariable';
 import { Ref, ref, watch } from 'vue';
 import TypeSelect from 'components/basic/typeSelect.vue';
+import { QInput } from 'quasar';
 
 //====================================================
 // Props
@@ -217,7 +220,7 @@ const valueKey = ref('');
 
 const passwordVisible = ref(false);
 
-const nameRef = ref(null);
+const nameRef: Ref<QInput | null> = ref(null);
 
 //====================================================
 // Emits
