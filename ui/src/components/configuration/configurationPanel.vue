@@ -158,7 +158,7 @@
 		</q-card>
 	</q-dialog>
 	<q-card
-		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tw-flex-1 tower-min-height"
+		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tw-flex-1 tw-grow"
 		flat
 	>
 		<q-inner-loading :showing="loading">
@@ -1595,9 +1595,5 @@ defineExpose({
 .tower-max-height-readOnly {
 	overflow: auto;
 	max-height: calc(100vh - 14rem);
-}
-
-.tower-min-height {
-	min-height: calc(100vh - 18rem);
 }
 </style>

@@ -18,7 +18,7 @@
 
 <template>
 	<q-card
-		class="tw-bg-darkPage tw-text-secondary tw-flex tw-items-start tw-flex-col tw-pt-2 tw-rounded tower-min-height tw-overflow-hidden"
+		class="tw-bg-darkPage tw-text-secondary tw-flex tw-items-start tw-flex-col tw-pt-2 tw-rounded tw-grow tw-overflow-hidden"
 		:class="{
 			'tw-justify-center':
 				!constVariablesArchive || constVariablesArchive.length === 0,

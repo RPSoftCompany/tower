@@ -264,6 +264,7 @@
 					<div class="flex tw-flex-col tw-flex-1">
 						<q-checkbox
 							v-model="modelForceComment"
+							:disable="!userCanModify"
 							label="Force comment"
 							class="tower_checkbox"
 						/>
