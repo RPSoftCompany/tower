@@ -105,9 +105,9 @@
 				</q-td>
 			</template>
 			<template v-slot:header="props">
-				<q-tr :props="props">
+				<q-tr :props="props" class="tw-bg-darkPage">
 					<th v-for="(col, index) in props.cols" :key="col.name" :props="props">
-						<div class="tw-inline-flex tw-items-center tw-w-[100%]">
+						<div class="tw-inline-flex tw-items-center tw-w-full">
 							<q-input
 								filled
 								dense
@@ -329,14 +329,14 @@ const getCurrentPage = async (page: number) => {
 		order: pagination.value.sortBy
 			? `${pagination.value.sortBy} ${
 					pagination.value.descending ? 'DESC' : 'ASC'
-			  }`
+				}`
 			: undefined,
 		where: filterExists ? where : undefined,
 	};
 
 	try {
 		let response = await towerAxios.get(
-			`/audits?filter=${JSON.stringify(queryFilter, undefined, '')}`
+			`/audits?filter=${JSON.stringify(queryFilter, undefined, '')}`,
 		);
 
 		if (response.status === 200) {
@@ -344,7 +344,7 @@ const getCurrentPage = async (page: number) => {
 		}
 
 		response = await towerAxios.get(
-			`/audits/count?filter=${JSON.stringify(countFilter, undefined, '')}`
+			`/audits/count?filter=${JSON.stringify(countFilter, undefined, '')}`,
 		);
 		if (response.status === 200) {
 			pagination.value.rowsNumber = response.data?.count
@@ -433,7 +433,7 @@ watch(
 	async () => {
 		await getCurrentPage(pagination.value.page - 1);
 	},
-	{ deep: true }
+	{ deep: true },
 );
 </script>
 
@@ -451,10 +451,6 @@ watch(
 .tower-sticky-header-table {
 	max-height: calc(100vh - 10rem);
 
-	thead tr:first-child th {
-		background-color: $dark;
-	}
-
 	thead tr th {
 		position: sticky;
 		z-index: 1;
@@ -463,6 +459,8 @@ watch(
 	thead tr:first-child th {
 		top: 0;
 	}
+
+	background-color: var(--q-dark-page);
 
 	&.q-table--loading thead tr:last-child th {
 		/* height of all previous header rows */

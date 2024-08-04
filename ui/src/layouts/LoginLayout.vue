@@ -24,4 +24,17 @@
 	</q-layout>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { onBeforeMount } from 'vue';
+import { useQuasar } from 'quasar';
+
+const $q = useQuasar();
+
+onBeforeMount(() => {
+	if ($q.localStorage.has('theme')) {
+		$q.dark.set($q.localStorage.getItem('theme') === 'dark');
+	} else {
+		$q.dark.set(true);
+	}
+});
+</script>

@@ -18,7 +18,7 @@
 
 <template>
 	<div>
-		<q-dialog v-model="dateDialog">
+		<q-dialog v-model="dateDialog" no-backdrop-dismiss>
 			<q-card class="tw-min-w-[20rem] tw-max-w-full">
 				<q-card-section class="tw-bg-dark">
 					<div class="text-h6">Choose configuration date</div>
@@ -27,20 +27,24 @@
 				<q-card-section class="tw-bg-darkPage tw-grid tw-grid-cols-2 tw-gap-3">
 					<q-date
 						v-model="dateToChoose"
-						class="tw-border-2 tw-border-gray-700"
 						mask="YYYY-MM-DDTHH:mm:ss.SSSZ"
 						flat
+						color="secondary"
+						text-color="primary"
+						class="tw-border tw-border-gray-700"
 					/>
 					<q-time
 						v-model="dateToChoose"
-						class="tw-border-2 tw-border-gray-700"
+						class="tw-border tw-border-gray-700"
 						mask="YYYY-MM-DDTHH:mm:ss.SSSZ"
+						color="secondary"
+						text-color="primary"
 						with-seconds
 						flat
 					/>
 				</q-card-section>
 
-				<q-card-actions align="right" class="tw-bg-darkPage">
+				<q-card-actions align="right">
 					<q-btn v-close-popup color="secondary" flat label="Cancel" />
 					<q-btn
 						v-close-popup
@@ -92,7 +96,7 @@
 					:configs="archiveConfigs"
 					:filter="filter"
 					:showDiff="showDiff"
-					:variables="currentVariables"
+					:variables="currentVariables as string[]"
 					@removeConfiguration="removeConfiguration"
 					@switchPlaces="switchPlaces"
 				>
@@ -108,7 +112,7 @@
 									class="tw-text-accent tw-cursor-pointer tw-font-light tw-underline tw-text-xs"
 									@click="showDateDialog(config)"
 								>
-									{{ config.effectiveDate.toLocaleString() }}
+									{{ config.effectiveDate?.toLocaleString() }}
 								</div>
 							</div>
 							<div class="tw-self-center tw-flex tw-ml-3">
@@ -215,8 +219,8 @@ const addArchiveConfig = async (date?: Date, place?: number) => {
 			`configurations/findByDate?filter=${JSON.stringify(
 				filter.where,
 				null,
-				''
-			)}&date=${date.toISOString()}`
+				'',
+			)}&date=${date.toISOString()}`,
 		);
 
 		if (response.status === 200 && response.data?.effectiveDate) {
@@ -351,7 +355,9 @@ const currentVariables = computed(() => {
 	});
 
 	return Array.from(all).sort((a, b) =>
-		(a as string).localeCompare(b as string, undefined, { sensitivity: 'base' })
+		(a as string).localeCompare(b as string, undefined, {
+			sensitivity: 'base',
+		}),
 	);
 });
 </script>

@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import {
   CreateAWSConnectionDto,
+  CreateAzureConnectionDto,
   CreateLDAPConnectionDto,
   CreateSCPConnectionDto,
   CreateVaultConnectionDto,
@@ -41,7 +42,9 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
-import { isNil } from '@nestjs/common/utils/shared.utils';
+import { AzureConnection } from './AzureConnection.schema';
+import { ClientSecretCredential } from '@azure/identity';
+import { SecretClient } from '@azure/keyvault-secrets';
 
 @Injectable()
 export class ConnectionsService implements OnModuleInit {
@@ -114,7 +117,8 @@ export class ConnectionsService implements OnModuleInit {
       | CreateLDAPConnectionDto
       | CreateSCPConnectionDto
       | CreateVaultConnectionDto
-      | CreateAWSConnectionDto,
+      | CreateAWSConnectionDto
+      | CreateAzureConnectionDto,
   ) {
     if (!!createConnectionDto._id) {
       if (createConnectionDto.system === 'LDAP') {
@@ -184,6 +188,25 @@ export class ConnectionsService implements OnModuleInit {
         } else {
           throw new BadRequestException('Invalid system id');
         }
+      } else if (createConnectionDto.system === AzureConnection.name) {
+        const AzureConn = createConnectionDto as CreateAzureConnectionDto;
+
+        const existingConnection = await this.connectionModel.findById(
+          AzureConn._id,
+        );
+
+        if (
+          existingConnection &&
+          existingConnection.system === AzureConnection.name
+        ) {
+          for (const key in existingConnection) {
+            if (key !== 'id' && AzureConn[key]) {
+              existingConnection[key] = AzureConn[key];
+            }
+          }
+
+          return await existingConnection.save();
+        }
       } else {
         throw new BadRequestException('Invalid system name');
       }
@@ -193,6 +216,9 @@ export class ConnectionsService implements OnModuleInit {
     } else if (createConnectionDto.system === AWSConnection.name) {
       const AWSConnection = createConnectionDto as CreateAWSConnectionDto;
       return await this.connectionModel.create(AWSConnection);
+    } else if (createConnectionDto.system === AzureConnection.name) {
+      const AzureConnection = createConnectionDto as CreateAzureConnectionDto;
+      return await this.connectionModel.create(AzureConnection);
     }
 
     throw new BadRequestException('Invalid connection details');
@@ -259,7 +285,7 @@ export class ConnectionsService implements OnModuleInit {
    */
   async testConnection(
     type: string,
-    body?: LDAP | Vault | SCP | AWSConnection,
+    body?: LDAP | Vault | SCP | AWSConnection | AzureConnection,
   ) {
     if (type === SCP.name) {
       //====================================================
@@ -329,7 +355,7 @@ export class ConnectionsService implements OnModuleInit {
         throw new ServiceUnavailableException(e.message);
       }
     } else if (type === AWSConnection.name) {
-      let awsConnection;
+      let awsConnection: AWSConnection;
       if (body) {
         awsConnection = body as AWSConnection;
       } else {
@@ -354,6 +380,33 @@ export class ConnectionsService implements OnModuleInit {
         await client.send(command);
       } catch (e) {
         if (e.message !== "Secrets Manager can't find the specified secret.") {
+          throw new ServiceUnavailableException(e.message);
+        }
+      }
+    } else if (type === AzureConnection.name) {
+      let connection: AzureConnection;
+      if (body) {
+        connection = body as AzureConnection;
+      } else {
+        throw new BadRequestException('Connection not provided');
+      }
+
+      try {
+        const credentials = new ClientSecretCredential(
+          connection.tenantId,
+          connection.clientId,
+          connection.clientSecret,
+        );
+
+        const vaultName = connection.vaultName;
+        const url = connection.url;
+
+        const client = new SecretClient(url, credentials);
+
+        // Try random secret
+        await client.getSecret(`${(Math.random() * 1e32).toString(36)}`);
+      } catch (e) {
+        if (e.details?.error?.code !== 'SecretNotFound') {
           throw new ServiceUnavailableException(e.message);
         }
       }
@@ -413,6 +466,9 @@ export class ConnectionsService implements OnModuleInit {
     return '';
   }
 
+  /**
+   * getAWSConnections
+   */
   async getAWSConnections() {
     return this.connectionModel.find({
       system: AWSConnection.name,
@@ -425,6 +481,7 @@ export class ConnectionsService implements OnModuleInit {
    * @param connections
    * @param configurationBases
    * @param variableName
+   * @param valueKey
    */
   async getAWSSMVariable(
     connections: AWSConnection[],
@@ -456,13 +513,13 @@ export class ConnectionsService implements OnModuleInit {
               VersionStage: 'AWSCURRENT',
             });
 
-            const response = await client.send(command);
+            return client.send(command);
 
-            if (!isNil(response.SecretString)) {
-              const tempJson = JSON.parse(response.SecretString);
-              return tempJson[valueKey];
-              // return JSON.stringify(response.SecretString).slice(1, -1);
-            }
+            // if (!isNil(response.SecretString)) {
+            //   const tempJson = JSON.parse(response.SecretString);
+            //   return tempJson[valueKey];
+            //   // return JSON.stringify(response.SecretString).slice(1, -1);
+            // }
           } catch (e) {
             throw new BadRequestException(e.message);
           }
@@ -470,7 +527,60 @@ export class ConnectionsService implements OnModuleInit {
       }
     }
 
-    return '';
+    return null;
+  }
+
+  /**
+   * getAzureConnections
+   */
+  async getAzureConnections() {
+    return this.connectionModel.find({
+      system: AzureConnection.name,
+    });
+  }
+
+  /**
+   * getAzureKeyVaultVariable
+   * @param connections
+   * @param configurationBases
+   * @param variableName
+   */
+  async getAzureKeyVaultVariable(
+    connections: AzureConnection[],
+    configurationBases: any,
+    variableName: string,
+  ) {
+    for (const connection of connections) {
+      for (const item of connection.items) {
+        let valid = true;
+        for (const key in configurationBases) {
+          if (item[key] && item[key] !== configurationBases[key]) {
+            valid = false;
+          }
+        }
+
+        if (valid) {
+          try {
+            const credentials = new ClientSecretCredential(
+              connection.tenantId,
+              connection.clientId,
+              connection.clientSecret,
+            );
+
+            const vaultName = connection.vaultName;
+            const url = connection.url;
+
+            const client = new SecretClient(url, credentials);
+
+            return client.getSecret(variableName);
+          } catch (e) {
+            throw new BadRequestException(e.message);
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -521,9 +631,8 @@ export class ConnectionsService implements OnModuleInit {
       },
     ];
 
-    const connections: SCP[] = await this.connectionModel.aggregate(
-      aggregation,
-    );
+    const connections: SCP[] =
+      await this.connectionModel.aggregate(aggregation);
 
     const allBases = await this.baseConfigurationModel.find();
 

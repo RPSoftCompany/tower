@@ -19,7 +19,7 @@
 <template>
 	<q-dialog v-model="commentsDialog" persistent>
 		<q-card class="tw-min-w-[30%]">
-			<q-card-section class="tw-bg-darkPage">
+			<q-card-section class="tw-bg-dark">
 				<div class="text-h6">Comment your changes</div>
 			</q-card-section>
 			<q-card-section class="tw-max-h-[70vh] tw-overflow-auto">
@@ -158,7 +158,7 @@
 		</q-card>
 	</q-dialog>
 	<q-card
-		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tw-flex-1 tower-min-height"
+		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tw-flex-1 tw-grow"
 		flat
 	>
 		<q-inner-loading :showing="loading">
@@ -166,16 +166,21 @@
 			<div class="tw-mt-3">Please wait, loading...</div>
 		</q-inner-loading>
 		<div
-			v-if="configurationWithCurrentArchive.length === 0 && !loading && !filter"
+			v-if="
+				configurationWithCurrentArchive.length === 0 &&
+				configurationVariablesArchive.length === 0 &&
+				!loading &&
+				!filter
+			"
 			class="tw-w-full tw-flex tw-justify-center tw-items-center"
 		>
 			<div class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400">
-				There aren't any variables in this configuration
+				There are no variables in this configuration
 				<div
 					class="tw-text-center tw-text-xs tw-text-gray-500"
 					v-if="userCanModify"
 				>
-					You can create one using panel below
+					You can create one using the panel below
 				</div>
 			</div>
 		</div>
@@ -191,7 +196,11 @@
 			</div>
 		</div>
 		<div
-			v-if="!loading && configurationWithCurrentArchive.length > 0"
+			v-if="
+				!loading &&
+				(configurationWithCurrentArchive.length > 0 ||
+					configurationVariablesArchive.length > 0)
+			"
 			class="tw-w-full"
 		>
 			<div
@@ -214,7 +223,11 @@
 							icon="sym_o_first_page"
 							padding="sm"
 							@click="version = 0"
-						/>
+						>
+							<q-tooltip :delay="1000" v-if="version > 0"
+								>Go to the first version</q-tooltip
+							>
+						</q-btn>
 						<q-btn
 							:disable="version <= 0 || loading"
 							class="tw-flex-none"
@@ -222,7 +235,11 @@
 							icon="sym_o_chevron_left"
 							padding="sm"
 							@click="version--"
-						/>
+						>
+							<q-tooltip :delay="1000" v-if="version > 0">
+								Go to the {{ toOrdinal(version) }} version
+							</q-tooltip>
+						</q-btn>
 					</div>
 					<div class="tw-grow tw-self-center tw-flex tw-justify-center">
 						<div class="tw-self-center tw-flex tw-mr-3">
@@ -237,9 +254,7 @@
 									:color="promoted ? 'accent' : undefined"
 									name="sym_o_star"
 								/>
-								<q-tooltip v-if="differentThanShownVersion && !promoted"
-									>Promote</q-tooltip
-								>
+								<q-tooltip v-if="!promoted" :delay="1000">Promote</q-tooltip>
 							</q-btn>
 							<q-separator inset vertical />
 						</div>
@@ -266,7 +281,7 @@
 								padding="sm"
 								@click="fullRevert"
 							>
-								<q-tooltip v-if="differentThanShownVersion"
+								<q-tooltip v-if="differentThanShownVersion" :delay="1000"
 									>Revert to this version
 								</q-tooltip>
 							</q-btn>
@@ -280,14 +295,26 @@
 							icon="sym_o_chevron_right"
 							padding="sm"
 							@click="version++"
-						/>
+						>
+							<q-tooltip
+								:delay="1000"
+								v-if="version !== configurationVariablesArchive.length - 1"
+								>Go to the {{ toOrdinal(version + 2) }} version</q-tooltip
+							>
+						</q-btn>
 						<q-btn
 							:disable="version >= configurationVariablesArchive.length - 1"
 							flat
 							icon="sym_o_last_page"
 							padding="sm"
 							@click="version = configurationVariablesArchive.length - 1"
-						/>
+						>
+							<q-tooltip
+								:delay="1000"
+								v-if="version !== configurationVariablesArchive.length - 1"
+								>Go to the latest version</q-tooltip
+							>
+						</q-btn>
 					</div>
 				</div>
 				<div
@@ -297,67 +324,63 @@
 					Value
 				</div>
 			</div>
-			<div
+			<q-intersection
+				v-if="
+					configurationWithCurrentArchive.length === 0 &&
+					configurationVariablesArchive.length > 0 &&
+					!loading &&
+					!filter
+				"
+				transition="fade"
+				class="tw-w-full tw-h-full tw-my-auto tw-flex tw-justify-center tw-items-center"
+			>
+				<div class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400">
+					There are no configuration variables in this version or the latest
+					configuration
+					<div
+						class="tw-text-center tw-text-xs tw-text-gray-500"
+						v-if="userCanModify"
+					>
+						There is no existing data set that can be used for comparison.
+					</div>
+				</div>
+			</q-intersection>
+			<q-intersection
 				:class="{
 					'tw-col-span-2': configurationVariablesArchive.length > 0,
 					'tower-max-height': userCanModify,
 					'tower-max-height-readOnly': !userCanModify,
 				}"
+				transition="fade"
+				v-else
 			>
-				<template v-if="configurationWithCurrentArchive.length >= 100">
-					<q-intersection
-						once
-						v-for="row of configurationWithCurrentArchive"
-						:key="row.name"
-						class="tower-configuration-row"
-						ssr-prerender
-					>
-						<configuration-variable-row
-							v-model:type="row.type"
-							v-model:value="row.value"
-							v-model:value-key="row.valueKey"
-							:allow-delete="!row.addIfAbsent && userCanModify"
-							:current-archive="configurationArchiveVersion(row.name)"
-							:deleted="row.deleted"
-							:error="row.error"
-							:forced="row.forced || !userCanModify"
-							:grid="configurationVariablesArchive.length > 0 ? 3 : 2"
-							:is-constant-variable="row.constantVariable"
-							:name="row.name"
-							:source-base="row.sourceBase"
-							:source-model="row.sourceModel"
-							:showDiff="showDiff"
-							@addVariable="addNewVariable"
-							@removeVariable="removeVariable"
-						/>
-					</q-intersection>
-				</template>
-				<template v-else>
-					<transition-group
-						enter-active-class="animated fadeIn"
-						leave-active-class="animated fadeOut"
-					>
-						<configuration-variable-row
-							v-for="row of configurationWithCurrentArchive"
-							:key="row.name"
-							v-model:type="row.type"
-							v-model:value="row.value"
-							v-model:value-key="row.valueKey"
-							:allow-delete="!row.addIfAbsent && userCanModify"
-							:current-archive="configurationArchiveVersion(row.name)"
-							:deleted="row.deleted"
-							:error="row.error"
-							:forced="row.forced || !userCanModify"
-							:grid="configurationVariablesArchive.length > 0 ? 3 : 2"
-							:is-constant-variable="row.constantVariable"
-							:name="row.name"
-							:showDiff="showDiff"
-							@addVariable="addNewVariable"
-							@removeVariable="removeVariable"
-						/>
-					</transition-group>
-				</template>
-			</div>
+				<q-intersection
+					once
+					v-for="row of configurationWithCurrentArchive"
+					:key="row.name"
+					class="tower-configuration-row"
+					ssr-prerender
+				>
+					<configuration-variable-row
+						v-model:type="row.type"
+						v-model:value="row.value"
+						v-model:value-key="row.valueKey"
+						:allow-delete="!row.addIfAbsent && userCanModify"
+						:current-archive="configurationArchiveVersion(row.name)"
+						:deleted="row.deleted"
+						:error="row.error"
+						:forced="row.forced || !userCanModify"
+						:grid="configurationVariablesArchive.length > 0 ? 3 : 2"
+						:is-constant-variable="row.constantVariable"
+						:name="row.name"
+						:source-base="row.sourceBase"
+						:source-model="row.sourceModel"
+						:showDiff="showDiff"
+						@addVariable="addNewVariable"
+						@removeVariable="removeVariable"
+					/>
+				</q-intersection>
+			</q-intersection>
 		</div>
 	</q-card>
 	<div v-if="userCanModify">
@@ -416,6 +439,7 @@ import { navigationStore } from 'stores/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosError } from 'axios';
 import { cloneDeep, isNil } from 'lodash';
+import { toOrdinal } from 'number-to-words';
 //====================================================
 // Const
 //====================================================
@@ -1370,7 +1394,16 @@ const promoteConfiguration = async () => {
 				icon: 'sym_o_error',
 				message: 'Error promoting configuration',
 			});
+
+			return;
 		}
+
+		$q.notify({
+			color: 'positive',
+			position: 'top',
+			textColor: 'secondary',
+			message: 'Configuration has been promoted successfully',
+		});
 	}
 };
 
@@ -1562,9 +1595,5 @@ defineExpose({
 .tower-max-height-readOnly {
 	overflow: auto;
 	max-height: calc(100vh - 14rem);
-}
-
-.tower-min-height {
-	min-height: calc(100vh - 18rem);
 }
 </style>

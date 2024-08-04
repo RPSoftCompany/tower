@@ -56,6 +56,7 @@ export enum ConfigurationVariableType {
 	PASSWORD = 'password',
 	VAULT = 'Vault',
 	AWS = 'AWS SM',
+	AZURE = 'AZURE keyVault',
 }
 
 export interface typeInterface {
@@ -104,20 +105,26 @@ export const typeOptions: Array<typeInterface> = [
 	{
 		label: 'AWS',
 		value: ConfigurationVariableType.AWS,
-		icon: 'sym_o_enhanced_encryption',
+		icon: 'mdi-aws',
+	},
+	{
+		label: 'Azure',
+		value: ConfigurationVariableType.AZURE,
+		icon: 'mdi-microsoft-azure',
 	},
 ];
 
 export const valueConverter = (
 	value: string | number | boolean | string[] | null | undefined | unknown,
-	type: ConfigurationVariableType
+	type: ConfigurationVariableType,
 ) => {
 	if (
 		type === ConfigurationVariableType.STRING ||
 		type === ConfigurationVariableType.PASSWORD ||
 		type === ConfigurationVariableType.TEXT ||
 		type === ConfigurationVariableType.VAULT ||
-		type === ConfigurationVariableType.AWS
+		type === ConfigurationVariableType.AWS ||
+		type === ConfigurationVariableType.AZURE
 	) {
 		if (!valueExists(value)) {
 			return '';
@@ -176,13 +183,13 @@ export const valueConverter = (
 };
 
 export const valueAsString = (
-	value: string | number | boolean | string[] | null | undefined | unknown
+	value: string | number | boolean | string[] | null | undefined | unknown,
 ) => {
 	return valueConverter(value, ConfigurationVariableType.STRING) as string;
 };
 
 export const valueExists = (
-	value: string | number | boolean | string[] | null | undefined | unknown
+	value: string | number | boolean | string[] | null | undefined | unknown,
 ) => {
 	return !(value === undefined || value === null || value === '');
 };

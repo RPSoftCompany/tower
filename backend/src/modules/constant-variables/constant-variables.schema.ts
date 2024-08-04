@@ -26,6 +26,7 @@ export class ConstantVariableObject {
       'password',
       'Vault',
       'AWS SM',
+      'AZURE keyVault',
     ],
   })
   type: string;
@@ -112,6 +113,7 @@ ConstantVariableSchema.pre('validate', async function () {
     'password',
     'Vault',
     'AWS SM',
+    'AZURE keyVault',
   ];
 
   this.variables = this.variables.map((variable: ConstantVariableObject) => {

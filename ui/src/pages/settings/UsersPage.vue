@@ -136,7 +136,7 @@
 											</div>
 										</template>
 										<template v-else>
-											<div class="tw-text-accent">
+											<div class="tw-text-warning">
 												<span class="tw-ml-3">{{
 													currentUser?.technicalUser ? 'Yes' : 'No'
 												}}</span>
@@ -167,7 +167,7 @@
 											</div>
 										</template>
 										<template v-else>
-											<div class="tw-text-accent">
+											<div class="tw-text-warning">
 												<span class="tw-ml-3">{{
 													currentUser?.newUser ? 'Yes' : 'No'
 												}}</span>

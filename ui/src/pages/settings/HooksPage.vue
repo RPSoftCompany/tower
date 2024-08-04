@@ -172,7 +172,7 @@
 							v-model:value="currentHookClone.template"
 							class="tower-editor tw-flex-grow"
 							lang="liquid"
-							theme="monokai"
+							:theme="$q.dark.isActive ? 'monokai' : 'tomorrow'"
 							style="height: calc(100vh - 21rem)"
 							:options="{
 								useWorker: true,
@@ -186,7 +186,7 @@
 				</div>
 				<div class="tw-w-[20rem] tw-ml-3">
 					<div
-						class="tw-mt-1 tw-flex tw-flex-col tw-py-3 tw-self-start tw-rounded tw-border tw-border-dark tw-bg-dark"
+						class="tw-mt-1 tw-flex tw-flex-col tw-py-3 tw-self-start tw-rounded tw-border tw-border-darkPage tw-bg-dark"
 					>
 						<div class="tw-text-xl tw-font-medium tw-mx-3">Headers</div>
 						<div class="tw-text-gray-500 tw-mx-3">
@@ -245,6 +245,7 @@ import TowerSelect from 'components/basic/towerSelect.vue';
 import { VAceEditor } from 'vue3-ace-editor';
 import modeLiquidUrl from 'ace-builds/src-noconflict/mode-liquid?url';
 import themeMonokaiUrl from 'ace-builds/src-noconflict/theme-monokai?url';
+import themeTomorrowUrl from 'ace-builds/src-noconflict/theme-tomorrow?url';
 import snippetsLiquidUrl from 'ace-builds/src-noconflict/snippets/html?url';
 import ace from 'ace-builds';
 import 'ace-builds/src-noconflict/ext-language_tools';
@@ -292,6 +293,7 @@ const currentHookUrlRef = ref(null);
 onMounted(async () => {
 	ace.config.setModuleUrl('ace/mode/liquid', modeLiquidUrl);
 	ace.config.setModuleUrl('ace/theme/monokai', themeMonokaiUrl);
+	ace.config.setModuleUrl('ace/theme/chrome', themeTomorrowUrl);
 	ace.config.setModuleUrl('ace/snippets/liquid', snippetsLiquidUrl);
 
 	urlRules.push(nonEmptyUrlRule);
@@ -537,7 +539,7 @@ const deleteHook = async () => {
 		try {
 			if (parent) {
 				await towerAxios.delete(
-					`/hooks/${parent._id}/hookObject/${currentHookClone.value?._id}`
+					`/hooks/${parent._id}/hookObject/${currentHookClone.value?._id}`,
 				);
 			}
 
@@ -585,13 +587,13 @@ const save = async () => {
 			if (currentHookClone.value?._id) {
 				response = await towerAxios.put(
 					`/hooks/${parent._id}/hookObject`,
-					currentHookClone.value
+					currentHookClone.value,
 				);
 			} else {
 				currentHookClone.value._id = uuidv4();
 				response = await towerAxios.post(
 					`/hooks/${parent._id}/hookObject`,
-					currentHookClone.value
+					currentHookClone.value,
 				);
 			}
 
@@ -642,7 +644,7 @@ watch(
 				headers: current.headers,
 			};
 		}
-	}
+	},
 );
 
 watch(
@@ -662,7 +664,7 @@ watch(
 				}
 			});
 		}
-	}
+	},
 );
 
 watch(
@@ -682,7 +684,7 @@ watch(
 				}
 			});
 		}
-	}
+	},
 );
 
 watch(
@@ -693,7 +695,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 

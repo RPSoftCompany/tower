@@ -18,7 +18,11 @@
 
 <template>
 	<q-card
-		class="tw-bg-darkPage tw-text-secondary tw-flex tw-items-start tw-flex-col tw-pt-2 tw-rounded tower-min-height tw-overflow-hidden"
+		class="tw-bg-darkPage tw-text-secondary tw-flex tw-items-start tw-flex-col tw-pt-2 tw-rounded tw-grow tw-overflow-hidden"
+		:class="{
+			'tw-justify-center':
+				!constVariablesArchive || constVariablesArchive.length === 0,
+		}"
 		flat
 	>
 		<q-inner-loading :showing="loading">
@@ -26,7 +30,10 @@
 			<div class="tw-mt-3">Please wait, loading...</div>
 		</q-inner-loading>
 		<div
-			v-if="!constVariables?.variables && !loading"
+			v-if="
+				(!constVariablesArchive || constVariablesArchive.length === 0) &&
+				!loading
+			"
 			class="tw-w-full tw-flex tw-justify-center tw-items-center"
 		>
 			<div class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400">
@@ -35,11 +42,14 @@
 					class="tw-text-center tw-text-xs tw-text-gray-500"
 					v-if="userCanModify"
 				>
-					You can create one using panel below
+					You can create one using the panel below
 				</div>
 			</div>
 		</div>
 		<div
+			v-if="
+				constVariablesArchive && constVariablesArchive.length > 0 && !loading
+			"
 			:class="{
 				'tw-grid-cols-5': constVariablesArchive.length > 0,
 				'tw-grid-cols-2': constVariablesArchive.length === 0,
@@ -55,10 +65,26 @@
 					:disable="version <= 0 || loading"
 					class="tw-flex-none"
 					flat
+					icon="sym_o_first_page"
+					padding="sm"
+					@click="version = 0"
+				>
+					<q-tooltip :delay="1000" v-if="version > 0"
+						>Go to the first version</q-tooltip
+					>
+				</q-btn>
+				<q-btn
+					:disable="version <= 0 || loading"
+					class="tw-flex-none"
+					flat
 					icon="sym_o_chevron_left"
 					padding="sm"
 					@click="version--"
-				/>
+				>
+					<q-tooltip :delay="1000" v-if="version > 0">
+						Go to the {{ toOrdinal(version) }} version
+					</q-tooltip>
+				</q-btn>
 				<div class="tw-grow tw-flex tw-justify-center">
 					<div class="tw-mr-3">
 						<div>
@@ -81,7 +107,7 @@
 							padding="sm"
 							@click="fullRevert"
 						>
-							<q-tooltip v-if="differentThanShownVersion"
+							<q-tooltip v-if="differentThanShownVersion" :delay="1000"
 								>Revert to this version
 							</q-tooltip>
 						</q-btn>
@@ -94,7 +120,26 @@
 					icon="sym_o_chevron_right"
 					padding="sm"
 					@click="version++"
-				/>
+				>
+					<q-tooltip
+						:delay="1000"
+						v-if="version !== constVariablesArchive.length - 1"
+						>Go to the {{ toOrdinal(version + 2) }} version</q-tooltip
+					>
+				</q-btn>
+				<q-btn
+					:disable="version >= constVariablesArchive.length - 1"
+					flat
+					icon="sym_o_last_page"
+					padding="sm"
+					@click="version = constVariablesArchive.length - 1"
+				>
+					<q-tooltip
+						:delay="1000"
+						v-if="version !== constVariablesArchive.length - 1"
+						>Go to the current version</q-tooltip
+					>
+				</q-btn>
 			</div>
 			<div
 				:class="{ 'tw-col-span-2': constVariablesArchive.length > 0 }"
@@ -109,8 +154,45 @@
 				'tower-max-height': userCanModify,
 				'tower-max-height-readOnly': !userCanModify,
 			}"
-			class="tw-w-full tw-flex"
+			class="tw-w-full tw-flex tw-grow"
 		>
+			<q-intersection
+				v-if="
+					(!constVariablesWithCurrentArchive ||
+						constVariablesWithCurrentArchive.length === 0) &&
+					!loading
+				"
+				transition="fade"
+				class="tw-w-full tw-flex tw-justify-center tw-items-stretch tw-my-auto"
+			>
+				<div>
+					<div
+						class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400"
+						v-if="version === constVariablesArchive.length - 1"
+					>
+						There are no constant variables in this configuration
+						<div
+							class="tw-text-center tw-text-xs tw-text-gray-500"
+							v-if="userCanModify"
+						>
+							You can create one using the panel below
+						</div>
+					</div>
+					<div
+						class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400"
+						v-else
+					>
+						There are no constant variables in this version or the latest
+						configuration
+						<div
+							class="tw-text-center tw-text-xs tw-text-gray-500"
+							v-if="userCanModify"
+						>
+							There is no existing data set that can be used for comparison.
+						</div>
+					</div>
+				</div>
+			</q-intersection>
 			<div
 				:class="{ 'tw-col-span-2': constVariablesArchive.length > 0 }"
 				class="tw-flex-1 tw-overflow-auto"
@@ -120,7 +202,6 @@
 					:key="constVar.name"
 					once
 					class="tower-configuration-row"
-					ssr-prerender
 					transition="fade"
 				>
 					<constant-variable-row
@@ -180,7 +261,10 @@
 			leave-active-class="animated fadeOut"
 		>
 			<save-panel
-				v-if="constVariables?.variables"
+				v-if="
+					(constVariables?.variables && constVariables?.variables.length > 0) ||
+					allDeleted
+				"
 				:save-enabled="isDifferent && !loading"
 				@saveClicked="saveConstantVariables"
 			/>
@@ -208,6 +292,7 @@ import { Import, ImportDetails } from 'components/models';
 import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
 import { cloneDeep } from 'lodash';
+import { toOrdinal } from 'number-to-words'; //====================================================
 
 //====================================================
 // Const
@@ -263,6 +348,19 @@ const currentVersionDate = computed(() => {
 	}
 
 	return '';
+});
+
+/**
+ * allDeleted
+ */
+const allDeleted = computed(() => {
+	if (constVariables.value) {
+		return !constVariables.value.variables.some((el) => {
+			return !el.deleted;
+		});
+	}
+
+	return false;
 });
 
 /**
@@ -446,10 +544,10 @@ const getConstantVariables = async () => {
 						...[...Array(countResponse.data - rowsLimit).keys()].map(() => {
 							return {} as ConstantVariable;
 						}),
-						...response.data,
+						...response.data.reverse(),
 					];
 				} else {
-					constVariablesArchive.value = response.data;
+					constVariablesArchive.value = response.data.reverse();
 				}
 
 				if (constVariablesArchive.value.length > 0) {
@@ -589,9 +687,7 @@ const exportConfiguration = () => {
 		return;
 	}
 
-	let exportDetails: ImportDetails | null | string = null;
-
-	exportDetails = exportJSON();
+	const exportDetails = exportJSON();
 	return JSON.stringify(exportDetails);
 };
 
@@ -725,7 +821,7 @@ const isDifferentThan = (version?: number) => {
 		const currentVariables = constVariablesArchive.value[currentVersion];
 
 		if (!currentVariables || !currentVariables.variables) {
-			return;
+			return false;
 		}
 
 		if (
@@ -787,7 +883,7 @@ watch(version, async (current) => {
 		const filter: any = {
 			include: ['member'],
 			where: {
-				version: current,
+				version: current + 1,
 			},
 		};
 

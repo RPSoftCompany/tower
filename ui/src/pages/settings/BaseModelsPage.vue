@@ -71,7 +71,7 @@
 					<div
 						v-for="icon of filteredIcons"
 						:key="icon"
-						class="tw-grid tw-justify-items-center tw-rounded tw-px-3 tw-py-2 tw-w-[9rem] tw-cursor-pointer hover:tw-bg-gray-500"
+						class="tw-grid tw-justify-items-center tw-rounded tw-px-3 tw-py-2 tw-w-[9rem] tw-cursor-pointer hover:tw-bg-dark"
 						@click="chosenIcon = icon"
 						:class="{ 'tw-bg-dark': chosenIcon === icon }"
 					>
@@ -124,7 +124,9 @@
 					:class="{ 'tw-opacity-0': draggedId === base._id }"
 					class="tw-p-0"
 				>
-					<div class="tw-flex tw-justify-between tw-p-2">
+					<div
+						class="tw-flex tw-justify-between tw-p-2 tw-border tw-border-dark"
+					>
 						<div class="tw-flex tw-items-center">
 							<q-icon
 								name="sym_o_drag_indicator"
@@ -307,9 +309,8 @@ const showChooseIconDialog = (index: number) => {
  */
 const updateIcon = () => {
 	if (currentBases.value[chooseIconIndex.value]) {
-		currentBases.value[
-			chooseIconIndex.value
-		].icon = `sym_o_${chosenIcon.value}`;
+		currentBases.value[chooseIconIndex.value].icon =
+			`sym_o_${chosenIcon.value}`;
 	}
 };
 
@@ -440,7 +441,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 

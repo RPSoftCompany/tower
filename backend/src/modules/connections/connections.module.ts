@@ -17,6 +17,10 @@ import {
   BaseConfigurationSchema,
 } from '../base-configurations/base-configurations.schema';
 import { AWSConnection, AWSConnectionSchema } from './AWSConnection.schema';
+import {
+  AzureConnection,
+  AzureConnectionSchema,
+} from './AzureConnection.schema';
 
 @Module({
   imports: [
@@ -29,6 +33,7 @@ import { AWSConnection, AWSConnectionSchema } from './AWSConnection.schema';
           { name: Vault.name, schema: VaultConnectionSchema },
           { name: SCP.name, schema: SCPConnectionSchema },
           { name: AWSConnection.name, schema: AWSConnectionSchema },
+          { name: AzureConnection.name, schema: AzureConnectionSchema },
         ],
       },
       { name: Audit.name, schema: AuditsSchema },

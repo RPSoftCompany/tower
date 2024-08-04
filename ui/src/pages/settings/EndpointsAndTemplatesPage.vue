@@ -177,7 +177,7 @@
 							class="tower-editor"
 							v-model:value="currentEndpointClone.template"
 							lang="liquid"
-							theme="monokai"
+							:theme="$q.dark.isActive ? 'monokai' : 'tomorrow'"
 							style="height: calc(100vh - 21rem)"
 							:options="{
 								useWorker: true,
@@ -228,6 +228,7 @@ import { towerAxios } from 'boot/axios';
 import { VAceEditor } from 'vue3-ace-editor';
 import modeLiquidUrl from 'ace-builds/src-noconflict/mode-liquid?url';
 import themeMonokaiUrl from 'ace-builds/src-noconflict/theme-monokai?url';
+import themeTomorrowUrl from 'ace-builds/src-noconflict/theme-tomorrow?url';
 import snippetsLiquidUrl from 'ace-builds/src-noconflict/snippets/html?url';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import ace from 'ace-builds';
@@ -269,6 +270,7 @@ const draggedId = ref('-1');
 onMounted(async () => {
 	ace.config.setModuleUrl('ace/mode/liquid', modeLiquidUrl);
 	ace.config.setModuleUrl('ace/theme/monokai', themeMonokaiUrl);
+	ace.config.setModuleUrl('ace/theme/tomorrow', themeTomorrowUrl);
 	ace.config.setModuleUrl('ace/snippets/liquid', snippetsLiquidUrl);
 
 	ace.require('ace/ext/language_tools');
