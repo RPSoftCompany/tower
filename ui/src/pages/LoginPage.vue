@@ -17,64 +17,70 @@
   -->
 
 <template>
-	<q-page class="row items-center justify-evenly">
+	<q-page class="row items-center justify-center">
 		<div
-			class="tw-grid tw-grid-cols-1 tw-gap-1 tw-w-1/5 tw-justify-items-center animate__animated animate__bounce"
+			class="tw-grid tw-grid-cols-2 tw-gap-1 tw-justify-items-center animate__animated animate__bounce"
 		>
 			<q-img
 				alt="Tower configuration server logo"
-				class="tw-h-40 tw-w-40 tw-mb-10 tw-min-w-[10rem]"
+				class="tw-h-80 tw-w-80 tw-mr-20 tw-min-w-[10rem]"
 				spinner-color="secondary"
 				src="img/tower.png"
 			/>
 			<q-form
 				autofocus
-				class="tw-w-full tw-grid tw-grid-cols-1 tw-gap-1 tw-justify-items-center"
+				class="tw-w-full tw-grid tw-grid-cols-1 tw-gap-1 tw-justify-items-center tw-items-center"
 				greedy
 				@submit="loginMethod"
 			>
-				<q-input
-					v-model="login"
-					:rules="[
-						(val) => (val && val.length > 0) || 'Please type your username',
-					]"
-					class="tw-w-full tw-min-w-[10rem] tw-max-w-[25rem]"
-					color="secondary"
-					label="Username"
-					autocomplete="towerUsername"
-					lazy-rules
-				/>
-				<q-input
-					v-model="password"
-					:rules="[
-						(val) => (val && val.length > 0) || 'Please type your password',
-					]"
-					class="tw-w-full tw-min-w-[10rem] tw-max-w-[25rem]"
-					color="secondary"
-					label="Password"
-					lazy-rules
-					type="password"
-					autocomplete="towerPassword"
-				/>
-				<q-btn
-					:disable="!login || !password"
-					:loading="loading"
-					class="tw-mt-5 tw-bg-secondary"
-					flat
-					text-color="primary"
-					type="submit"
+				<div class="tw-w-full tw-grid tw-justify-items-center">
+					<q-input
+						v-model="login"
+						:rules="[
+							(val) => (val && val.length > 0) || 'Please type your username',
+						]"
+						class="tw-w-full tw-min-w-[10rem] tw-max-w-[25rem]"
+						color="secondary"
+						label="Username"
+						autocomplete="towerUsername"
+						lazy-rules
+					/>
+					<q-input
+						v-model="password"
+						:rules="[
+							(val) => (val && val.length > 0) || 'Please type your password',
+						]"
+						class="tw-w-full tw-min-w-[10rem] tw-max-w-[25rem]"
+						color="secondary"
+						label="Password"
+						lazy-rules
+						type="password"
+						autocomplete="towerPassword"
+					/>
+					<q-btn
+						:disable="!login || !password"
+						:loading="loading"
+						class="tw-mt-5 tw-bg-secondary"
+						flat
+						text-color="primary"
+						type="submit"
+					>
+						<q-icon class="tw-mr-3" color="dark" name="sym_o_login"></q-icon>
+						<div>Login</div>
+					</q-btn>
+				</div>
+				<q-separator class="tw-bg-secondary tw-w-full"></q-separator>
+				<q-btn :disable="!isSsoAvailable" outline @click="redirectToSSO"
+					>SSO Login</q-btn
 				>
-					<q-icon class="tw-mr-3" color="dark" name="sym_o_login"></q-icon>
-					<div>Login</div>
-				</q-btn>
 			</q-form>
 		</div>
 	</q-page>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, Ref, ref } from 'vue';
-import { towerAxios as axios } from 'boot/axios';
+import { onMounted, Ref, ref, watch } from 'vue';
+import { towerAxios, towerAxios as axios } from 'boot/axios';
 import { useQuasar } from 'quasar';
 import { ionWarning } from '@quasar/extras/ionicons-v6';
 import { userStore } from 'stores/user';
@@ -93,19 +99,38 @@ const password: Ref<null | string> = ref(null);
 const loading = ref(false);
 const userSt = userStore();
 const navigationSt = navigationStore();
+const isSsoAvailable = ref(false);
 
 //====================================================
 // Mounted
 //====================================================
-onMounted(() => {
-	if (userSt) {
-		userSt.$reset();
-	}
+onMounted(async () => {
+	await mounted();
 });
 
 //====================================================
 // Methods
 //====================================================
+
+const mounted = async () => {
+	if (userSt) {
+		userSt.$reset();
+	}
+	if ($q.cookies.has('accessToken')) {
+		$q.cookies.remove('accessToken');
+	}
+
+	try {
+		const isSsoAvailableResponse = await towerAxios.get('/sso/available');
+		if (isSsoAvailableResponse.status === 200) {
+			isSsoAvailable.value = isSsoAvailableResponse.data;
+		}
+
+		console.log(isSsoAvailableResponse);
+	} catch (e) {
+		// IGNORE
+	}
+};
 
 /**
  * loginMethod
@@ -126,7 +151,7 @@ const loginMethod = async () => {
 						? response.data.user.display
 						: response.data.user.username,
 					[],
-					response.data.user.type === 'ldap'
+					response.data.user.type === 'ldap',
 				);
 				navigationSt.allowNavigation();
 				await router.push({ name: 'ChangePassword' });
@@ -147,7 +172,7 @@ const loginMethod = async () => {
 						? response.data.user.display
 						: response.data.user.username,
 					responseUserRoles.data,
-					response.data.user.type === 'ldap'
+					response.data.user.type === 'ldap',
 				);
 			}
 		}
@@ -181,4 +206,25 @@ const loginMethod = async () => {
 
 	loading.value = false;
 };
+
+/**
+ * redirectToSSO
+ */
+const redirectToSSO = () => {
+	if (process.env.NODE_ENV === 'development') {
+		location.href = 'http://localhost:3000/sso/login';
+	} else {
+		location.href = '/sso/login';
+	}
+};
+
+watch(
+	() => router.currentRoute,
+	async () => {
+		await mounted();
+	},
+	{
+		immediate: true,
+	},
+);
 </script>

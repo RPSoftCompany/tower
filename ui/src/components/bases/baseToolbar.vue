@@ -104,7 +104,7 @@ const navigationSt = navigationStore();
 //====================================================
 // Emits
 //====================================================
-const emit = defineEmits(['update:baseModels']);
+const emit = defineEmits(['update:baseModels', 'update:basesCount']);
 
 //====================================================
 // Data
@@ -134,7 +134,25 @@ onBeforeMount(async () => {
 /**
  * allBases
  */
-const allBases = computed(() => baseSt.getBases);
+const allBases = computed(() => {
+	if (bases.value.values[0]) {
+		const baseModel = bases.value.values[0] as ConfigurationModel;
+		if (baseModel.options.templateEnabled) {
+			const all: Array<Base> = [];
+			for (let i = 0; i < baseSt.getBases.length; i++) {
+				if (baseModel.template && baseModel.template[i]) {
+					all.push(baseSt.getBases[i]);
+				}
+			}
+
+			emit('update:basesCount', all.length);
+			return all;
+		}
+	}
+
+	emit('update:basesCount', baseSt.getBases.length);
+	return baseSt.getBases;
+});
 
 /**
  * basesClasses

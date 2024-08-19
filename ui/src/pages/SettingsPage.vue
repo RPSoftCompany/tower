@@ -296,6 +296,11 @@ const connections: Array<Tab> = [
 		url: 'connections/azure',
 		icon: 'mdi-microsoft-azure',
 	},
+	{
+		label: 'Kubernetes',
+		url: 'connections/kubernetes',
+		icon: 'mdi-kubernetes',
+	},
 ];
 
 //====================================================

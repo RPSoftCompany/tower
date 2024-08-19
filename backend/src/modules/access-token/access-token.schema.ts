@@ -21,6 +21,9 @@ export class AccessToken {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'Member' })
   userId: Member;
+
+  @Prop({ required: false })
+  nonce: String;
 }
 
 export const AccessTokenSchema = SchemaFactory.createForClass(AccessToken);

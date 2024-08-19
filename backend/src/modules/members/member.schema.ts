@@ -21,7 +21,7 @@ export class Member {
   @Prop({ required: false })
   display: string;
 
-  @Prop({ required: true, enum: ['local', 'ldap'] })
+  @Prop({ required: true, enum: ['local', 'ldap', 'openId'] })
   type: string;
 
   @Prop({ type: [String], required: true })

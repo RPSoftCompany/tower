@@ -8,6 +8,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as express from 'express';
 import * as fs from 'fs';
+import { auth } from 'express-openid-connect';
 
 async function bootstrap() {
   const logger = new Logger('Tower');
@@ -52,6 +53,27 @@ async function bootstrap() {
       operationsSorter: 'alpha',
     },
   });
+
+  if (
+    process.env.OIDC_SECRET_PRIVATE_KEY &&
+    process.env.OIDC_SECRET &&
+    process.env.OIDC_CALLBACK_HOST &&
+    process.env.OIDC_CLIENT_ID &&
+    process.env.OIDC_ISSUER_BASE_URL
+  ) {
+    const ssoConfig = {
+      authRequired: false,
+      secret: process.env.OIDC_SECRET,
+      baseURL: `${sslKey && sslCert ? 'https://' : 'http://'}${process.env.OIDC_CALLBACK_HOST}`,
+      clientID: process.env.OIDC_CLIENT_ID,
+      issuerBaseURL: process.env.OIDC_ISSUER_BASE_URL,
+      routes: {
+        callback: '/sso/callback',
+      },
+    };
+
+    app.getHttpAdapter().use('/sso', auth(ssoConfig));
+  }
 
   if (process.env.NODE_ENV === 'production') {
     app.use(

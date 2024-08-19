@@ -20,6 +20,7 @@ import { Audit } from '../modules/audits/audits.schema';
 import { Model } from 'mongoose';
 import { AuditsModule } from '../modules/audits/audits.module';
 import { stringify } from 'ts-jest';
+import { JwtPayload } from 'jsonwebtoken';
 
 interface TowerJWTToken {
   data: {
@@ -119,13 +120,22 @@ export class TowerAuthGuard implements CanActivate {
       return this.validateBasicAuth(token.replace('Basic ', ''));
     }
 
-    const jwtTokenObject = this.accessTokenService.verifyJWTToken(
+    let localJwt = true;
+    let jwtTokenObject: JwtPayload = this.accessTokenService.verifyJWTToken(
       token,
     ) as TowerJWTToken;
 
+    if (!jwtTokenObject) {
+      localJwt = false;
+      jwtTokenObject = this.accessTokenService.verifyOIDCToken(
+        token,
+      ) as TowerJWTToken;
+    }
+
     if (jwtTokenObject) {
       const user = await this.accessTokenService.validateToken(
-        jwtTokenObject.data.tokenId,
+        jwtTokenObject.nonce,
+        !localJwt,
       );
 
       if (user) {

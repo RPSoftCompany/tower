@@ -38,7 +38,7 @@
 						</div>
 					</q-item-section>
 				</q-item>
-				<q-item clickable @click="changePassword" v-if="!userSt.isLdapUser">
+				<q-item clickable @click="changePassword" v-if="!userSt.isNonLocalUser">
 					<q-item-section avatar>
 						<q-icon color="secondary" name="mdi-lock-reset" />
 					</q-item-section>

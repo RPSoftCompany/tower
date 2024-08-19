@@ -178,6 +178,24 @@ export class MembersController {
   }
 
   /**
+   * getUserData
+   */
+  @Get('/getUserData')
+  @UseGuards(TowerAuthGuard)
+  @Roles([])
+  @ApiBearerAuth()
+  @ApiBasicAuth()
+  async getUserData() {
+    return {
+      username: (this.request.__userData as Member).username,
+      type: (this.request.__userData as Member).type,
+      display: (this.request.__userData as Member).display,
+      groups: (this.request.__userData as Member).groups,
+      roles: (this.request.__userData as any).__roles,
+    };
+  }
+
+  /**
    * GET /members/:id
    *
    * @param id

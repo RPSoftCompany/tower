@@ -17,22 +17,23 @@
   -->
 
 <template>
-	<div
-		class="fullscreen bg-darkPage text-white text-center q-pa-md flex flex-center"
-	>
+	<div class="fullscreen bg-darkPage text-center q-pa-md flex flex-center">
 		<div>
-			<div style="font-size: 30vh">403</div>
+			<div class="text-secondary" style="font-size: min(30vh, 30vw)">403</div>
 
-			<div class="text-h2" style="opacity: 0.4">
+			<div
+				class="text-secondary"
+				style="opacity: 0.4; font-size: min(6vh, 6vw)"
+			>
 				You have insufficient permissions to view this page
 			</div>
 
 			<q-btn
 				class="q-mt-xl"
-				color="white"
+				color="secondary"
 				label="Go Home"
 				no-caps
-				text-color="dark"
+				text-color="primary"
 				to="/login"
 				unelevated
 			/>

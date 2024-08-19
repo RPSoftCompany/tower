@@ -20,6 +20,7 @@ import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
 import { TowerAxios } from 'boot/classes/TowerAxios';
 import { userStore } from 'stores/user';
+import { useQuasar } from 'quasar';
 
 declare module '@vue/runtime-core' {
 	interface ComponentCustomProperties {
@@ -47,8 +48,9 @@ export default boot(({ app, router }) => {
 	// for use inside Vue files (Options API) through this.$axios and this.$api
 
 	const userSt = userStore();
+	const $q = useQuasar();
 
-	towerAxios = new TowerAxios(axiosApi as AxiosInstance, userSt, router);
+	towerAxios = new TowerAxios(axiosApi as AxiosInstance, userSt, router, $q);
 
 	app.config.globalProperties.$axios = axios;
 	// ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
