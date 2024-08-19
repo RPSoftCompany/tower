@@ -125,6 +125,8 @@ const mounted = async () => {
 		if (isSsoAvailableResponse.status === 200) {
 			isSsoAvailable.value = isSsoAvailableResponse.data;
 		}
+
+		console.log(isSsoAvailableResponse);
 	} catch (e) {
 		// IGNORE
 	}

@@ -18,7 +18,10 @@
 
 <template>
 	<div class="tw-h-full tw-max-h-full tw-flex tw-flex-col">
-		<base-toolbar @update:baseModels="onBaseModelChange" />
+		<base-toolbar
+			@update:baseModels="onBaseModelChange"
+			v-model:bases-count="basesCount"
+		/>
 		<transition
 			enter-active-class="animated fadeIn"
 			leave-active-class="animated fadeOut"
@@ -111,7 +114,8 @@ const showDiff = ref(true);
 
 const promotionCandidates: Ref<Array<Configuration>> = ref([]);
 
-const baseSt = basesStore();
+const basesCount = ref(0);
+
 //====================================================
 // Methods
 //====================================================
@@ -200,27 +204,6 @@ const baseModelComputed = computed(() => {
 	});
 
 	return baseModel;
-});
-
-/**
- * basesCount
- */
-const basesCount = computed(() => {
-	if (currentBaseModels.value[0]) {
-		const baseModel = currentBaseModels.value[0] as ConfigurationModel;
-		if (baseModel.options.templateEnabled) {
-			const all: Array<Base> = [];
-			for (let i = 0; i < baseSt.getBases.length; i++) {
-				if (baseModel.template && baseModel.template[i]) {
-					all.push(baseSt.getBases[i]);
-				}
-			}
-
-			return all.length;
-		}
-	}
-
-	return baseSt.getBases.length;
 });
 
 /**

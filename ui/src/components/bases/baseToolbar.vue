@@ -131,9 +131,9 @@ onBeforeMount(async () => {
 //====================================================
 // Computed
 //====================================================
-// /**
-//  * allBases
-//  */
+/**
+ * allBases
+ */
 const allBases = computed(() => {
 	if (bases.value.values[0]) {
 		const baseModel = bases.value.values[0] as ConfigurationModel;
@@ -145,10 +145,12 @@ const allBases = computed(() => {
 				}
 			}
 
+			emit('update:basesCount', all.length);
 			return all;
 		}
 	}
 
+	emit('update:basesCount', baseSt.getBases.length);
 	return baseSt.getBases;
 });
 
