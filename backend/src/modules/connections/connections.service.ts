@@ -985,6 +985,185 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
+   * executeKubernetesHook
+   *
+   * @param userRoles
+   * @param configurationBases
+   * @param configuration
+   */
+  async executeKubernetesHook(
+    userRoles: string[],
+    configurationBases: any,
+    configuration: Configuration,
+  ) {
+    const allConnections = await this.connectionModel.find({
+      system: KubernetesConnection.name,
+    });
+
+    for (const connection of allConnections) {
+      const kubernetesConnection =
+        connection as unknown as KubernetesConnection;
+      for (const connectionItem of kubernetesConnection.items) {
+        let valid = true;
+        for (const base in configurationBases) {
+          if (
+            connectionItem[base] !== null &&
+            connectionItem[base] !== configurationBases[base]
+          ) {
+            valid = false;
+          }
+        }
+
+        if (valid) {
+          const values = {};
+          configuration.variables.forEach((variable) => {
+            if (variable.type === 'password') {
+              values[variable.name] = `${decryptPassword(variable.value)}`;
+            } else {
+              values[variable.name] = `${variable.value}`;
+            }
+          });
+
+          try {
+            let secretName: string = connectionItem.__secretName__ as string;
+            let i = Object.keys(configurationBases).length - 1;
+            while (!secretName && i >= 0) {
+              const baseName = Object.keys(configurationBases)[i];
+              secretName = configurationBases[`${baseName}`];
+              i--;
+            }
+
+            if (!secretName) {
+              this.logger.error(`Can't establish secretName`);
+            } else {
+              let isNew = false;
+
+              for (const base of Object.keys(configurationBases)) {
+                secretName = secretName.replace(
+                  `{${base}}`,
+                  configurationBases[base],
+                );
+              }
+              secretName = secretName.toLowerCase();
+
+              try {
+                await axios.get(
+                  `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${kubernetesConnection.token}`,
+                    },
+                  },
+                );
+              } catch (e) {
+                if (e.response?.status === 404) {
+                  isNew = true;
+                }
+              }
+
+              if (connectionItem.__mode__ === 'Full') {
+                if (isNew) {
+                  await axios.post(
+                    `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
+                    {
+                      apiVersion: 'v1',
+                      kind: 'Secret',
+                      metadata: {
+                        name: secretName,
+                      },
+                      type: 'Opaque',
+                      stringData: values,
+                    },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${kubernetesConnection.token}`,
+                      },
+                    },
+                  );
+                } else {
+                  await axios.put(
+                    `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                    {
+                      apiVersion: 'v1',
+                      kind: 'Secret',
+                      metadata: {
+                        name: secretName,
+                      },
+                      type: 'Opaque',
+                      stringData: values,
+                    },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${kubernetesConnection.token}`,
+                      },
+                    },
+                  );
+                }
+              } else {
+                const template = await this.restModel.findOne({
+                  _id: connectionItem.__template__,
+                });
+
+                if (template) {
+                  const renderedData = await this.v1Service.renderTemplate(
+                    template.template,
+                    template.returnType,
+                    configuration,
+                  );
+                  let stringData = {};
+                  stringData[`${connectionItem.__variableName__}`] =
+                    renderedData;
+
+                  if (isNew) {
+                    await axios.post(
+                      `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
+                      {
+                        apiVersion: 'v1',
+                        kind: 'Secret',
+                        metadata: {
+                          name: secretName,
+                        },
+                        type: 'Opaque',
+                        stringData: stringData,
+                      },
+                      {
+                        headers: {
+                          Authorization: `Bearer ${kubernetesConnection.token}`,
+                        },
+                      },
+                    );
+                  } else {
+                    await axios.patch(
+                      `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                      {
+                        apiVersion: 'v1',
+                        kind: 'Secret',
+                        metadata: {
+                          name: secretName,
+                        },
+                        type: 'Opaque',
+                        stringData: stringData,
+                      },
+                      {
+                        headers: {
+                          Authorization: `Bearer ${kubernetesConnection.token}`,
+                          'Content-Type': 'application/merge-patch+json',
+                        },
+                      },
+                    );
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            this.logger.error(e.message);
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * requestVault
    *
    * @param token

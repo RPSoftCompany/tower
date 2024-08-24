@@ -528,7 +528,7 @@ export class ConfigurationsService implements OnModuleInit {
         });
 
       this.connectionsService
-        .executeKubernetesHook(queryObject, retValue)
+        .executeKubernetesHook(userRoles, queryObject, retValue)
         .then(() => {
           // IGNORE
         })
