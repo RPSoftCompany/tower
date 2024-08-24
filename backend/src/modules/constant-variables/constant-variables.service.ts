@@ -29,7 +29,6 @@ import {
 } from '../../helpers/filterTranslator';
 import { HooksService } from '../hooks/hooks.service';
 import { ConfigurationsModule } from '../configurations/configurations.module';
-import { decryptPassword } from '../../helpers/encryptionHelper';
 import { V1Service } from '../v1/v1.service';
 import { ConnectionsService } from '../connections/connections.service';
 import { MaxConstantVariable } from '../max-constant-variable/max-constant-variable.schema';
@@ -665,82 +664,17 @@ export class ConstantVariablesService implements OnModuleInit {
     bases: BaseModelStatement,
     allBases: BaseConfiguration[],
   ) {
-    // Find differences
-    const diff: Array<string> = [];
-    let forceAll = false;
-
-    if (
-      previousConstantVariables.variables.length >
-      currentConstantVariables.variables.length
-    ) {
-      for (const variable of previousConstantVariables.variables) {
-        const found = currentConstantVariables.variables.some((el) => {
-          return el.name === variable.name;
-        });
-
-        if (!found) {
-          if (variable.addIfAbsent) {
-            forceAll = true;
-            break;
-          }
-          diff.push(variable.name);
-        }
-      }
-    }
-
-    if (!forceAll) {
-      for (const variable of currentConstantVariables.variables) {
-        const found = previousConstantVariables.variables.find((el) => {
-          return el.name === variable.name;
-        });
-
-        if (found) {
-          if (found.addIfAbsent !== variable.addIfAbsent) {
-            forceAll = true;
-            break;
-          }
-
-          const foundValue =
-            found.type === 'password'
-              ? decryptPassword(found.value)
-              : found.value;
-
-          if (
-            found.forced !== variable.forced ||
-            found.type !== variable.type ||
-            foundValue !== variable.value
-          ) {
-            if (!variable.addIfAbsent) {
-              forceAll = true;
-              break;
-            }
-            diff.push(variable.name);
-          }
-        } else {
-          diff.push(variable.name);
-        }
-      }
-    }
-
     // Find all configurations
     for (const key in bases) {
       if (!bases[key]) {
-        bases[key] = undefined;
+        bases[key] = null;
         delete bases[key];
       }
     }
 
     const query: any = bases;
 
-    if (!forceAll && diff.length > 0) {
-      query['variables.name'] = {
-        $in: diff,
-      };
-    }
-
-    const all: Configuration[] = await this.maxConfigurationModel.find({
-      query,
-    });
+    const all: Configuration[] = await this.maxConfigurationModel.find(query);
 
     for (const configuration of all) {
       this.hooksService
@@ -755,15 +689,21 @@ export class ConstantVariablesService implements OnModuleInit {
         bases[base.name] = configuration[base.name];
       }
 
-      const newConfig = await this.v1Service.incorporateConstantVariables(
+      const newConfig = await this.v1Service.incorporateAll(
         userRoles,
         allBases,
         configuration,
-        new Date(),
       );
 
+      // Kubernetes
       this.connectionsService
         .executeSCPHook(userRoles, bases, newConfig)
+        .then(() => {
+          // IGNORE
+        });
+
+      this.connectionsService
+        .executeKubernetesHook(userRoles, bases, newConfig)
         .then(() => {
           // IGNORE
         });

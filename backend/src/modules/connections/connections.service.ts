@@ -10,6 +10,7 @@ import {
 import {
   CreateAWSConnectionDto,
   CreateAzureConnectionDto,
+  CreateKubernetesConnectionDto,
   CreateLDAPConnectionDto,
   CreateSCPConnectionDto,
   CreateVaultConnectionDto,
@@ -45,6 +46,8 @@ import {
 import { AzureConnection } from './AzureConnection.schema';
 import { ClientSecretCredential } from '@azure/identity';
 import { SecretClient } from '@azure/keyvault-secrets';
+import { KubernetesConnection } from './KubernetesConnection.schema';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class ConnectionsService implements OnModuleInit {
@@ -118,7 +121,8 @@ export class ConnectionsService implements OnModuleInit {
       | CreateSCPConnectionDto
       | CreateVaultConnectionDto
       | CreateAWSConnectionDto
-      | CreateAzureConnectionDto,
+      | CreateAzureConnectionDto
+      | CreateKubernetesConnectionDto,
   ) {
     if (!!createConnectionDto._id) {
       if (createConnectionDto.system === 'LDAP') {
@@ -129,7 +133,7 @@ export class ConnectionsService implements OnModuleInit {
         });
 
         for (const key in existingConnection) {
-          if (key !== '_id' && ldapConnection[key]) {
+          if (key !== '_id' && !isEmpty(ldapConnection[key])) {
             existingConnection[key] = ldapConnection[key];
           }
         }
@@ -158,7 +162,7 @@ export class ConnectionsService implements OnModuleInit {
 
         if (existingConnection && existingConnection.system === SCP.name) {
           for (const key in existingConnection) {
-            if (key !== 'id' && SCPConnection[key]) {
+            if (key !== 'id' && !isEmpty(SCPConnection[key])) {
               existingConnection[key] = SCPConnection[key];
             }
           }
@@ -179,7 +183,7 @@ export class ConnectionsService implements OnModuleInit {
           existingConnection.system === AWSConnection.name
         ) {
           for (const key in existingConnection) {
-            if (key !== 'id' && AWSConn[key]) {
+            if (key !== 'id' && !isEmpty(AWSConn[key])) {
               existingConnection[key] = AWSConn[key];
             }
           }
@@ -200,8 +204,28 @@ export class ConnectionsService implements OnModuleInit {
           existingConnection.system === AzureConnection.name
         ) {
           for (const key in existingConnection) {
-            if (key !== 'id' && AzureConn[key]) {
+            if (key !== 'id' && !isEmpty(AzureConn[key])) {
               existingConnection[key] = AzureConn[key];
+            }
+          }
+
+          return await existingConnection.save();
+        }
+      } else if (KubernetesConnection.name) {
+        const KubernetesConn =
+          createConnectionDto as CreateKubernetesConnectionDto;
+
+        const existingConnection = await this.connectionModel.findById(
+          KubernetesConn._id,
+        );
+
+        if (
+          existingConnection &&
+          existingConnection.system === KubernetesConnection.name
+        ) {
+          for (const key in existingConnection) {
+            if (key !== 'id' && !isEmpty(KubernetesConn[key])) {
+              existingConnection[key] = KubernetesConn[key];
             }
           }
 
@@ -219,6 +243,10 @@ export class ConnectionsService implements OnModuleInit {
     } else if (createConnectionDto.system === AzureConnection.name) {
       const AzureConnection = createConnectionDto as CreateAzureConnectionDto;
       return await this.connectionModel.create(AzureConnection);
+    } else if (createConnectionDto.system === KubernetesConnection.name) {
+      const kubernetesConnection =
+        createConnectionDto as CreateKubernetesConnectionDto;
+      return await this.connectionModel.create(kubernetesConnection);
     }
 
     throw new BadRequestException('Invalid connection details');
@@ -268,7 +296,12 @@ export class ConnectionsService implements OnModuleInit {
 
     if (connection.length > 0) {
       if (
-        ![SCP.name, AWSConnection.name].includes((connection[0] as any).system)
+        ![
+          SCP.name,
+          AWSConnection.name,
+          AzureConnection.name,
+          KubernetesConnection.name,
+        ].includes((connection[0] as any).system)
       ) {
         throw new BadRequestException("Can't delete this connection");
       }
@@ -285,13 +318,19 @@ export class ConnectionsService implements OnModuleInit {
    */
   async testConnection(
     type: string,
-    body?: LDAP | Vault | SCP | AWSConnection | AzureConnection,
+    body?:
+      | LDAP
+      | Vault
+      | SCP
+      | AWSConnection
+      | AzureConnection
+      | KubernetesConnection,
   ) {
     if (type === SCP.name) {
       //====================================================
       // SCP
       //====================================================
-      let scpConnection;
+      let scpConnection: SCP;
       if (body) {
         scpConnection = body as SCP;
       } else {
@@ -322,7 +361,7 @@ export class ConnectionsService implements OnModuleInit {
         throw new ServiceUnavailableException(e.message);
       }
     } else if (type === Vault.name) {
-      let vaultConnection;
+      let vaultConnection: Vault;
       if (body) {
         vaultConnection = body as Vault;
       } else {
@@ -338,7 +377,7 @@ export class ConnectionsService implements OnModuleInit {
         throw new ServiceUnavailableException(e.message);
       }
     } else if (type === LDAP.name) {
-      let ldapConnection;
+      let ldapConnection: LDAP;
       if (body) {
         ldapConnection = body as LDAP;
       } else {
@@ -409,6 +448,26 @@ export class ConnectionsService implements OnModuleInit {
         if (e.details?.error?.code !== 'SecretNotFound') {
           throw new ServiceUnavailableException(e.message);
         }
+      }
+    } else if (type === KubernetesConnection.name) {
+      let connection: KubernetesConnection;
+      if (body) {
+        connection = body as KubernetesConnection;
+      } else {
+        throw new BadRequestException('Connection not provided');
+      }
+
+      try {
+        await axios.get(
+          `${connection.url}/api/v1/namespaces/${connection.namespace}/secrets`,
+          {
+            headers: {
+              Authorization: `Bearer ${connection.token}`,
+            },
+          },
+        );
+      } catch (e) {
+        throw new ServiceUnavailableException(e.message);
       }
     }
   }
@@ -514,12 +573,6 @@ export class ConnectionsService implements OnModuleInit {
             });
 
             return client.send(command);
-
-            // if (!isNil(response.SecretString)) {
-            //   const tempJson = JSON.parse(response.SecretString);
-            //   return tempJson[valueKey];
-            //   // return JSON.stringify(response.SecretString).slice(1, -1);
-            // }
           } catch (e) {
             throw new BadRequestException(e.message);
           }
@@ -690,6 +743,185 @@ export class ConnectionsService implements OnModuleInit {
                 `Error during the SCP connection: ${e.message}`,
               );
             }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * executeKubernetesHook
+   *
+   * @param userRoles
+   * @param configurationBases
+   * @param configuration
+   */
+  async executeKubernetesHook(
+    userRoles: string[],
+    configurationBases: any,
+    configuration: Configuration,
+  ) {
+    const allConnections = await this.connectionModel.find({
+      system: KubernetesConnection.name,
+    });
+
+    for (const connection of allConnections) {
+      const kubernetesConnection =
+        connection as unknown as KubernetesConnection;
+      for (const connectionItem of kubernetesConnection.items) {
+        let valid = true;
+        for (const base in configurationBases) {
+          if (
+            connectionItem[base] !== null &&
+            connectionItem[base] !== configurationBases[base]
+          ) {
+            valid = false;
+          }
+        }
+
+        if (valid) {
+          const values = {};
+          configuration.variables.forEach((variable) => {
+            if (variable.type === 'password') {
+              values[variable.name] = `${decryptPassword(variable.value)}`;
+            } else {
+              values[variable.name] = `${variable.value}`;
+            }
+          });
+
+          try {
+            let secretName: string = connectionItem.__secretName__ as string;
+            let i = Object.keys(configurationBases).length - 1;
+            while (!secretName && i >= 0) {
+              const baseName = Object.keys(configurationBases)[i];
+              secretName = configurationBases[`${baseName}`];
+              i--;
+            }
+
+            if (!secretName) {
+              this.logger.error(`Can't establish secretName`);
+            } else {
+              let isNew = false;
+
+              for (const base of Object.keys(configurationBases)) {
+                secretName = secretName.replace(
+                  `{${base}}`,
+                  configurationBases[base],
+                );
+              }
+              secretName = secretName.toLowerCase();
+
+              try {
+                await axios.get(
+                  `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${kubernetesConnection.token}`,
+                    },
+                  },
+                );
+              } catch (e) {
+                if (e.response?.status === 404) {
+                  isNew = true;
+                }
+              }
+
+              if (connectionItem.__mode__ === 'Full') {
+                if (isNew) {
+                  await axios.post(
+                    `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
+                    {
+                      apiVersion: 'v1',
+                      kind: 'Secret',
+                      metadata: {
+                        name: secretName,
+                      },
+                      type: 'Opaque',
+                      stringData: values,
+                    },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${kubernetesConnection.token}`,
+                      },
+                    },
+                  );
+                } else {
+                  await axios.put(
+                    `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                    {
+                      apiVersion: 'v1',
+                      kind: 'Secret',
+                      metadata: {
+                        name: secretName,
+                      },
+                      type: 'Opaque',
+                      stringData: values,
+                    },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${kubernetesConnection.token}`,
+                      },
+                    },
+                  );
+                }
+              } else {
+                const template = await this.restModel.findOne({
+                  _id: connectionItem.__template__,
+                });
+
+                if (template) {
+                  const renderedData = await this.v1Service.renderTemplate(
+                    template.template,
+                    template.returnType,
+                    configuration,
+                  );
+                  let stringData = {};
+                  stringData[`${connectionItem.__variableName__}`] =
+                    renderedData;
+
+                  if (isNew) {
+                    await axios.post(
+                      `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
+                      {
+                        apiVersion: 'v1',
+                        kind: 'Secret',
+                        metadata: {
+                          name: secretName,
+                        },
+                        type: 'Opaque',
+                        stringData: stringData,
+                      },
+                      {
+                        headers: {
+                          Authorization: `Bearer ${kubernetesConnection.token}`,
+                        },
+                      },
+                    );
+                  } else {
+                    await axios.patch(
+                      `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                      {
+                        apiVersion: 'v1',
+                        kind: 'Secret',
+                        metadata: {
+                          name: secretName,
+                        },
+                        type: 'Opaque',
+                        stringData: stringData,
+                      },
+                      {
+                        headers: {
+                          Authorization: `Bearer ${kubernetesConnection.token}`,
+                          'Content-Type': 'application/merge-patch+json',
+                        },
+                      },
+                    );
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            this.logger.error(e.message);
           }
         }
       }

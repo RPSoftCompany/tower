@@ -523,6 +523,15 @@ export class ConfigurationsService implements OnModuleInit {
         .catch((e) => {
           this.logger.error(e);
         });
+
+      this.connectionsService
+        .executeKubernetesHook(userRoles, queryObject, retValue)
+        .then(() => {
+          // IGNORE
+        })
+        .catch((e) => {
+          this.logger.error(e);
+        });
     }, 100);
 
     return retValue;

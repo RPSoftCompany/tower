@@ -84,19 +84,20 @@
 			>
 				<q-input
 					v-model="currentConnectionClone.url"
-					ref="urlInput"
-					label="URL"
+					label="Cluster URL"
 					dense
 					color="secondary"
 					class="tw-flex-grow"
-					:rules="[(val) => !!val || 'URL can\'t be empty']"
+					:rules="[
+						(val) => !!val || 'URL can\'t be empty',
+						(val) => /^https*:\/\//.test(val) || 'Invalid Cluster URL',
+					]"
 					:autofocus="false"
 				/>
 				<q-input
 					v-model="currentConnectionClone.token"
 					autocomplete="new-password"
-					ref="tokenInput"
-					label="Token"
+					label="Access Token"
 					color="secondary"
 					:type="tokenVisible ? 'text' : 'password'"
 					dense
@@ -113,11 +114,19 @@
 						></q-btn>
 					</template>
 				</q-input>
+				<q-input
+					v-model="currentConnectionClone.namespace"
+					label="Namespace"
+					dense
+					color="secondary"
+					class="tw-flex-grow"
+					:rules="[(val) => !!val || 'Namespace can\'t be empty']"
+					:autofocus="false"
+				/>
 				<tower-select
 					v-model="currentConnectionItem"
 					:options="currentConnectionClone.items"
 					label="Connection item"
-					class="tw-mt-3"
 					option-label="__name__"
 				>
 					<template #after>
@@ -136,27 +145,67 @@
 							:key="base._id"
 							:label="base.name"
 							:options="allModels.get(base.name)"
+							clearable
 							option-label="name"
+							displayAsEmpty="ANY"
 							class="tw-flex-grow"
-							:rules="[(val) => !!val || `${base.name} can't be empty`]"
 							v-model="currentConnectionItem[base.name]"
 							@update:modelValue="changeCurrentConnectionItemName"
 						>
 						</tower-select>
 					</div>
 					<tower-select
-						v-model="currentConnectionItem.template"
-						:options="allTemplates"
-						label="Template"
-						option-label="url"
-						:rules="[(val) => !!val || 'Template can\'t be empty']"
-					/>
-					<q-input
-						v-model="currentConnectionItem.path"
+						label="Mode"
+						:options="['Full', 'Variable']"
+						class="tw-mt-3"
 						dense
-						label="Path on server"
+						v-model="currentConnectionItem.__mode__"
+						@update:modelValue="onItemModeChange"
+					></tower-select>
+					<q-input
+						v-if="currentConnectionItem.__mode__ === 'Variable'"
+						ref="variableNameRef"
+						v-model="currentConnectionItem.__variableName__"
+						class="animateMargin tw-mt-3"
+						dense
+						label="Variable name"
 						color="secondary"
-						:rules="[(val) => !!val || 'Path can\'t be empty']"
+						:rules="[(val) => !!val || 'Variable name can\'t be empty']"
+						:autofocus="false"
+					></q-input>
+					<tower-select
+						v-if="currentConnectionItem.__mode__ === 'Variable'"
+						ref="templateRef"
+						v-model="currentConnectionItem.__template__"
+						:options="allTemplates"
+						option-label="url"
+						option-value="_id"
+						:class="{
+							'tw-mt-3':
+								currentConnectionItem.__mode__ === 'Variable' &&
+								!currentConnectionItem.__variableName__,
+						}"
+						class="animateMargin"
+						dense
+						label="Template"
+						color="secondary"
+						:rules="[(val) => !!val || 'Template can\'t be empty']"
+					></tower-select>
+					<q-input
+						v-model="currentConnectionItem.__secretName__"
+						:class="{
+							'tw-mt-3':
+								(currentConnectionItem.__mode__ === 'Variable' &&
+									!currentConnectionItem.__template__) ||
+								currentConnectionItem.__mode__ === 'Full',
+						}"
+						class="animateMargin"
+						dense
+						label="Secret name (optional)"
+						color="secondary"
+						:rules="[secretsValidationRule]"
+						:hint="`You can use base names, e.g. {${basesSt.getBases[0].name}}. If not specified, it will be set to {${basesSt.getBases[basesSt.getBases.length - 1].name}}`"
+						:autofocus="false"
 					/>
 				</template>
 			</q-form>
@@ -173,7 +222,8 @@
 						class="tw-bg-secondary tw-mx-3 tw-flex-grow"
 						flat
 						text-color="primary"
-						:disable="!!hasErrors"
+						:disable="!!hasErrors || loading"
+						:loading="loading"
 						@click="testConnection"
 					>
 						<q-icon
@@ -204,11 +254,12 @@ import TowerSelect from 'components/basic/towerSelect.vue';
 import { towerAxios } from 'boot/axios';
 import { basesStore } from 'stores/bases';
 import SavePanel from 'components/basic/savePanel.vue';
-import { RestConfiguration } from 'pages/settings/types/restConfiguration';
-import { QInput, useQuasar } from 'quasar';
+import { QInput, QSelect, useQuasar } from 'quasar';
 import { ConfigurationModel } from 'components/configurationModel/configurationModel';
-import { AxiosError } from 'axios/index';
+import { AxiosError } from 'axios';
 import { navigationStore } from 'stores/navigation';
+import { cloneDeep, isEqual } from 'lodash';
+import { RestConfiguration } from 'pages/settings/types/restConfiguration';
 
 //====================================================
 // Const
@@ -225,14 +276,12 @@ interface KubernetesConnection {
 	url: string;
 	items: Array<ConnectionItem>;
 	token: string;
+	namespace: string;
 }
 
 interface ConnectionItem {
-	path: string;
-	template: {
-		id: string;
-		url: string;
-	} | null;
+	__secretName__: string;
+	__mode__: string;
 
 	[x: string]: unknown;
 }
@@ -252,20 +301,16 @@ const tokenVisible = ref(false);
 
 const loading = ref(false);
 
-const sshKeyInput = ref(null);
-const urlInput = ref(null);
-const tokenInput = ref(null);
-const portInput = ref(null);
-
 const removeConnectionDialog = ref(false);
+
+const templateRef: Ref<QSelect | null> = ref(null);
+const variableNameRef: Ref<QInput | null> = ref(null);
 
 //====================================================
 // onMounted
 //====================================================
 onMounted(async () => {
-	await getAllConnections();
-	await getAllModels();
-	await getAllTemplates();
+	await Promise.all([getAllConnections(), getAllModels(), getAllTemplates()]);
 });
 
 //====================================================
@@ -275,6 +320,20 @@ onMounted(async () => {
  * isDifferent
  */
 const isDifferent = computed(() => {
+	if (currentConnectionClone.value) {
+		const clone = cloneDeep(currentConnectionClone.value);
+		clone.items = clone.items.map((el) => {
+			if (el.__template__?._id) {
+				el.__template__ = el.__template__._id;
+			} else {
+				el.__template__ = undefined;
+				delete el.__template__;
+			}
+			return el;
+		});
+		return !isEqual(currentConnection.value, clone);
+	}
+
 	return true;
 });
 
@@ -282,7 +341,33 @@ const isDifferent = computed(() => {
  * hasErrors
  */
 const hasErrors = computed(() => {
-	return true;
+	if (!currentConnectionClone.value?.url) {
+		return 'Please provide the cluster URL';
+	} else if (!/https*:\/\//.test(currentConnectionClone.value?.url)) {
+		return 'Invalid Cluster URL';
+	}
+
+	if (currentConnectionClone.value.items.length === 0) {
+		return 'There must be at least one Connection Item configured';
+	}
+
+	for (const item of currentConnectionClone.value.items) {
+		const validation = secretsValidationRule(item.__secretName__);
+		if (validation !== true) {
+			return validation;
+		}
+
+		if (item.__mode__ === 'Variable') {
+			if (!item.__variableName__) {
+				return "Variable name can't be empty";
+			}
+			if (!item.__template__) {
+				return "Template can't be empty";
+			}
+		}
+	}
+
+	return '';
 });
 
 //====================================================
@@ -294,7 +379,7 @@ const hasErrors = computed(() => {
 const getAllConnections = async () => {
 	const filter = {
 		where: {
-			system: 'SCP',
+			system: 'KubernetesConnection',
 		},
 	};
 
@@ -317,16 +402,13 @@ const getAllConnections = async () => {
 
 				allConnections.value.push({
 					_id: el._id,
+					system: 'KubernetesConnection',
 					enabled: true,
-					authType: el.authType,
-					host: el.host,
+					url: el.url,
 					items: items,
-					key: el.key,
-					port: el.port,
-					password: el.password,
-					system: el.system,
-					username: el.username,
-					connectionName: `${el.username}@${el.host}`,
+					namespace: el.namespace,
+					token: el.token,
+					connectionName: el.url,
 				});
 			});
 		}
@@ -336,7 +418,7 @@ const getAllConnections = async () => {
 			position: 'top',
 			textColor: 'secondary',
 			icon: 'sym_o_error',
-			message: 'Error collecting SCP details',
+			message: 'Error collecting Kubernetes connections details',
 		});
 	}
 
@@ -344,29 +426,8 @@ const getAllConnections = async () => {
 };
 
 /**
- * getAllTemplates
+ * getAllModels
  */
-const getAllTemplates = async () => {
-	loading.value = true;
-
-	try {
-		const response = await towerAxios.get('/restConfigurations');
-		if (response.status === 200) {
-			allTemplates.value = response.data;
-		}
-	} catch (e) {
-		$q.notify({
-			color: 'negative',
-			position: 'top',
-			textColor: 'secondary',
-			icon: 'sym_o_error',
-			message: 'Error collecting SCP details',
-		});
-	}
-
-	loading.value = false;
-};
-
 const getAllModels = async () => {
 	loading.value = true;
 
@@ -393,7 +454,31 @@ const getAllModels = async () => {
 			position: 'top',
 			textColor: 'secondary',
 			icon: 'sym_o_error',
-			message: 'Error collecting SCP details',
+			message: 'Error collecting Kubernetes connections details',
+		});
+	}
+
+	loading.value = false;
+};
+
+/**
+ * getAllTemplates
+ */
+const getAllTemplates = async () => {
+	loading.value = true;
+
+	try {
+		const response = await towerAxios.get('/restConfigurations');
+		if (response.status === 200) {
+			allTemplates.value = response.data;
+		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting Kubernetes connections details',
 		});
 	}
 
@@ -406,11 +491,13 @@ const getAllModels = async () => {
 const extractItemName = (item: ConnectionItem) => {
 	let name = '';
 	for (const base of basesSt.getBases) {
-		if (name && item[base.name]) {
+		if (name) {
 			name += '/';
 		}
 		if (item[base.name]) {
 			name += `${item[base.name]}`;
+		} else {
+			name += 'ANY';
 		}
 	}
 
@@ -434,15 +521,32 @@ const changeCurrentConnectionItemName = () => {
 const addConnectionItem = () => {
 	if (currentConnectionClone.value) {
 		currentConnectionItem.value = {
-			template: null,
-			path: '',
+			__secretName__: null,
+			__mode__: 'Full',
 		};
 
 		for (const base of basesSt.getBases) {
 			currentConnectionItem.value[base.name] = null;
 		}
 
-		currentConnectionItem.value.__name__ = 'New Connection item';
+		let connectionItemNumber = 0;
+		while (
+			currentConnectionClone.value.items.some((el) => {
+				if (connectionItemNumber === 0) {
+					return el.__name__ === 'New Connection item';
+				} else {
+					return el.__name__ === `New Connection item ${connectionItemNumber}`;
+				}
+			})
+		) {
+			connectionItemNumber++;
+		}
+
+		if (connectionItemNumber) {
+			currentConnectionItem.value.__name__ = `New Connection item ${connectionItemNumber}`;
+		} else {
+			currentConnectionItem.value.__name__ = 'New Connection item';
+		}
 
 		currentConnectionClone.value.items.push(currentConnectionItem.value);
 	}
@@ -477,13 +581,20 @@ const currentConnectionUpdated = () => {
 		const items: Array<ConnectionItem> = [];
 		currentConnection.value?.items.forEach((el) => {
 			const item: ConnectionItem = {
-				path: el.path,
-				template: el.template,
+				__secretName__: el.__secretName__,
+				__mode__: el.__mode__,
+				__template__: el.__template__,
 			};
 
 			const names = Object.getOwnPropertyNames(el);
 			for (const name of names) {
 				item[name] = el[name];
+			}
+
+			if (item.__mode__ === 'Variable') {
+				item.__template__ = allTemplates.value.find((variable) => {
+					return variable._id === item.__template__;
+				});
 			}
 
 			item.__name__ = extractItemName(item);
@@ -493,16 +604,13 @@ const currentConnectionUpdated = () => {
 
 		currentConnectionClone.value = {
 			_id: currentConnection.value._id,
+			system: 'KubernetesConnection',
 			enabled: true,
-			username: currentConnection.value.username,
-			key: currentConnection.value?.key,
-			port: currentConnection.value?.port,
-			password: currentConnection.value?.password,
-			authType: currentConnection.value?.authType,
+			url: currentConnection.value.url,
+			namespace: currentConnection.value.namespace,
 			items: items,
-			connectionName: currentConnectionClone.value?.connectionName,
-			host: currentConnection.value?.host,
-			system: currentConnection.value?.system,
+			token: currentConnection.value.token,
+			connectionName: currentConnection.value?.connectionName,
 		};
 	} else {
 		currentConnectionClone.value = null;
@@ -518,6 +626,8 @@ const removeSelectedConnection = async () => {
 			const response = await towerAxios.delete(
 				`/connections/${currentConnection.value._id}`,
 			);
+
+			await getAllConnections();
 
 			if (response.status === 204) {
 				$q.notify({
@@ -547,34 +657,16 @@ const removeSelectedConnection = async () => {
  */
 const addNewConnection = () => {
 	currentConnection.value = {
-		system: 'SCP',
+		system: 'KubernetesConnection',
+		namespace: '',
 		enabled: true,
-		key: '',
-		username: '',
-		host: '',
-		port: 22,
+		url: '',
 		items: [],
-		password: '',
+		token: '',
 		connectionName: 'New connection',
-		authType: 'key',
 	};
 
 	currentConnectionUpdated();
-
-	nextTick(() => {
-		if (urlInput.value) {
-			(urlInput.value as QInput).validate();
-		}
-		if (tokenInput.value) {
-			(tokenInput.value as QInput).validate();
-		}
-		if (portInput.value) {
-			(portInput.value as QInput).validate();
-		}
-		if (sshKeyInput.value) {
-			(sshKeyInput.value as QInput).validate();
-		}
-	});
 };
 
 /**
@@ -585,11 +677,13 @@ const saveConnection = async () => {
 		loading.value = true;
 
 		currentConnectionClone.value?.items.map((el) => {
-			if (el.template) {
-				el.template = {
-					id: el.template?.id,
-					url: el.template?.url,
-				};
+			if (el.__mode__ === 'Full') {
+				el.__variableName__ = undefined;
+				delete el.__variableName;
+				el.__template__ = undefined;
+				delete el.__template__;
+			} else {
+				el.__template__ = el.__template__._id;
 			}
 
 			return el;
@@ -604,10 +698,7 @@ const saveConnection = async () => {
 				await getAllConnections();
 
 				const currentCon = allConnections.value.find((el) => {
-					return (
-						el.host === currentConnectionClone.value?.host &&
-						el.username === currentConnectionClone.value?.username
-					);
+					return el._id === response.data._id;
 				});
 
 				if (currentCon) {
@@ -644,7 +735,7 @@ const testConnection = async () => {
 		loading.value = true;
 
 		const response = await towerAxios.post(
-			'/connections/testConnection?type=SCP',
+			'/connections/testConnection?type=KubernetesConnection',
 			currentConnectionClone.value,
 		);
 
@@ -658,8 +749,7 @@ const testConnection = async () => {
 		}
 	} catch (e) {
 		const testConnectionMessage = ((e as AxiosError).response?.data as any)
-			?.error?.message
-			? ((e as AxiosError).response?.data as any)?.error?.message
+			? ((e as AxiosError).response?.data as any)?.message
 			: (e as AxiosError).message;
 
 		$q.notify({
@@ -672,6 +762,54 @@ const testConnection = async () => {
 	}
 
 	loading.value = false;
+};
+
+/**
+ * onItemModeChange
+ *
+ * @param val
+ */
+const onItemModeChange = (val: string) => {
+	if (val === 'Variable') {
+		nextTick(() => {
+			if (templateRef.value) {
+				templateRef.value.validate();
+			}
+			if (variableNameRef.value) {
+				variableNameRef.value.validate();
+			}
+		});
+	}
+};
+
+/**
+ * secretsValidationRule
+ *
+ * @param val
+ */
+const secretsValidationRule = (val: string) => {
+	if (!val) {
+		return true;
+	}
+
+	if (/^[0-9a-z\-]+$/.test(val)) {
+		return true;
+	}
+
+	let currentVal = val;
+	for (let base of basesSt.getBases) {
+		currentVal = currentVal.replace(`{${base.name}}`, '');
+	}
+
+	if (/\{.*\}/.test(currentVal)) {
+		return 'Invalid base name';
+	}
+
+	if (!/^[0-9a-z\-]+$/.test(currentVal)) {
+		return 'Secret name can contain only numbers, lower case letters and dashes';
+	}
+
+	return true;
 };
 
 //====================================================

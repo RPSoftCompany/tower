@@ -1590,7 +1590,7 @@ defineExpose({
 <style scoped>
 .tower-max-height {
 	overflow: auto;
-	max-height: calc(100vh - 19.5rem);
+	max-height: calc(100vh - 22rem);
 }
 
 .tower-max-height-readOnly {

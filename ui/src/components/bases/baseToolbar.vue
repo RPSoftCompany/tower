@@ -22,7 +22,7 @@
 		class="tw-bg-darkPage tw-text-secondary tw-gap-3 tw-grid tw-px-4 tw-pb-3 tw-pt-3 tw-rounded"
 	>
 		<q-dialog v-model="navigationPreventDialog" persistent>
-			<q-card style="width: 30rem">
+			<q-card class="tw-w-[30rem]">
 				<q-card-section
 					class="tw-text-sm tw-font-semibold tw-bg-warning tw-text-black"
 				>
@@ -270,31 +270,17 @@ const baseChanged = async (value: ConfigurationModel) => {
 		return;
 	}
 
-	//set current path
-	let path = '';
-	for (let el of bases.value.values) {
-		if (el && typeof el === 'object') {
-			if (el.name === '__NONE__') {
-				path += '/_';
-			} else {
-				path += `/${el.name}`;
-			}
-		} else {
-			break;
-		}
-	}
-
-	if (route.path.startsWith('/configuration')) {
-		await router.push(`/configuration${path}`);
-	}
-
 	if (value) {
 		const base = allBases.value.find((el) => {
 			return el.name === value.base;
 		});
 
 		if (base) {
-			for (let i = base.sequenceNumber + 1; i < allBases.value.length; i++) {
+			for (
+				let i = base.sequenceNumber + 1;
+				i < bases.value.values.length;
+				i++
+			) {
 				bases.value.values[i] = '';
 				bases.value.items[i] = [];
 			}
@@ -321,6 +307,24 @@ const baseChanged = async (value: ConfigurationModel) => {
 				}
 			}
 		}
+	}
+
+	//set current path
+	let path = '';
+	for (let el of bases.value.values) {
+		if (el && typeof el === 'object') {
+			if (el.name === '__NONE__') {
+				path += '/_';
+			} else {
+				path += `/${el.name}`;
+			}
+		} else {
+			break;
+		}
+	}
+
+	if (route.path.startsWith('/configuration')) {
+		await router.push(`/configuration${path}`);
 	}
 
 	previousBases.value = [...bases.value.values];
