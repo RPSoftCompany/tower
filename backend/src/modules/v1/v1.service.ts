@@ -127,26 +127,11 @@ export class V1Service {
     allBases: BaseConfiguration[],
     template: RestConfiguration,
   ) {
-    configuration = await this.incorporateConstantVariables(
+    configuration = await this.incorporateAll(
       userRoles,
       allBases,
       configuration,
     );
-
-    const variables = await this.incorporateVaultVariables(
-      allBases,
-      configuration,
-    );
-
-    await this.incorporateAWSSecretManagerVariables(allBases, configuration);
-    await this.incorporateAzureKeyVaultVariables(allBases, configuration);
-
-    configuration.variables = [...variables];
-
-    configuration.variablesByName = {};
-    configuration.variables.forEach((variable) => {
-      configuration.variablesByName[variable.name] = variable.value;
-    });
 
     let contentType = 'application/json';
     if (template.returnType === 'plain text') {
@@ -163,6 +148,37 @@ export class V1Service {
       ),
       contentType: contentType,
     };
+  }
+
+  /**
+   * incorporateAll
+   *
+   * @param userRoles
+   * @param allBases
+   * @param configuration
+   */
+  async incorporateAll(
+    userRoles: string[],
+    allBases: BaseConfiguration[],
+    configuration: Configuration,
+  ) {
+    configuration = await this.incorporateConstantVariables(
+      userRoles,
+      allBases,
+      configuration,
+    );
+
+    const variables = await this.incorporateVaultVariables(
+      allBases,
+      configuration,
+    );
+
+    configuration.variables = [...variables];
+
+    await this.incorporateAWSSecretManagerVariables(allBases, configuration);
+    await this.incorporateAzureKeyVaultVariables(allBases, configuration);
+
+    return configuration;
   }
 
   /**

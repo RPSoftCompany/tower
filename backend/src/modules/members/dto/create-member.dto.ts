@@ -12,4 +12,5 @@ export class CreateMemberDto {
 export enum memberType {
   LOCAL = 'local',
   LDAP = 'ldap',
+  OPEN_ID = 'openId',
 }

@@ -104,3 +104,17 @@ class VaultConnectionTokenDto {
   base: string;
   token?: string;
 }
+
+export class CreateKubernetesConnectionDto {
+  _id: string;
+  system: string;
+  enabled: boolean;
+  token: string;
+  url: string;
+  namespace: string;
+  tokens: KubernetesConnectionItemDto[];
+}
+
+class KubernetesConnectionItemDto {
+  [x: string]: unknown;
+}

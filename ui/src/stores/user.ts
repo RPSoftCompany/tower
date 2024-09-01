@@ -17,12 +17,13 @@
  */
 
 import { defineStore } from 'pinia';
+import { Cookies } from 'quasar';
 
 export const userStore = defineStore('tower_user', {
 	state: () => ({
 		tokenId: '',
 		name: '',
-		LDAPUser: false,
+		nonLocalUser: false,
 		roles: [] as Array<string>,
 	}),
 	getters: {
@@ -32,8 +33,8 @@ export const userStore = defineStore('tower_user', {
 		hasAdminRights: (state) => {
 			return state.name === 'admin' || state.roles.includes('admin');
 		},
-		isLdapUser: (state) => {
-			return state.LDAPUser;
+		isNonLocalUser: (state) => {
+			return state.nonLocalUser;
 		},
 	},
 	actions: {
@@ -41,15 +42,18 @@ export const userStore = defineStore('tower_user', {
 			tokenId: string,
 			name: string,
 			roles: string[],
-			isLdapUser: boolean
+			nonLocalUser: boolean,
 		) {
 			this.tokenId = tokenId;
 			this.name = name;
 			this.roles = roles;
-			this.LDAPUser = isLdapUser;
+			this.nonLocalUser = nonLocalUser;
 		},
 		logout() {
 			this.$reset();
+			if (Cookies.has('accessToken')) {
+				Cookies.remove('accessToken');
+			}
 		},
 	},
 });

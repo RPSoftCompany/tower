@@ -399,7 +399,7 @@
 			leave-active-class="animated fadeOut"
 		>
 			<save-panel
-				v-if="configurationVariables?.variables"
+				v-if="!loading"
 				:has-errors="hasErrors"
 				:save-enabled="isDifferent && !loading"
 				@saveClicked="
@@ -439,7 +439,6 @@ import { navigationStore } from 'stores/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosError } from 'axios';
 import { cloneDeep, isNil } from 'lodash';
-import { toOrdinal } from 'number-to-words';
 //====================================================
 // Const
 //====================================================
@@ -545,7 +544,9 @@ const promotionCandidatesCategories = computed(() => {
 
 const commentNeeded = computed(() => {
 	return props.configModel.some((el) => {
-		return el.options.forceComment === true;
+		if (el) {
+			return el.options.forceComment === true;
+		}
 	});
 });
 

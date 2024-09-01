@@ -142,12 +142,21 @@ export class MembersService implements OnModuleInit {
     });
   }
 
+  /**
+   * create
+   * @param createMemberDto
+   */
   async create(createMemberDto: CreateMemberDto) {
     return CRUDExceptionWrapper(async () => {
       return await this.memberModel.create(createMemberDto);
     });
   }
 
+  /**
+   * find
+   *
+   * @param filter
+   */
   find(filter?: Statement): Promise<Array<Member>> {
     const newFilter = filterTranslator(filter);
 
@@ -158,6 +167,11 @@ export class MembersService implements OnModuleInit {
     });
   }
 
+  /**
+   * findOne
+   *
+   * @param id
+   */
   findOne(id: string): Promise<Member> {
     return this.memberModel.findById(id);
   }

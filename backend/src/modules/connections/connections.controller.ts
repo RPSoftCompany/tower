@@ -19,6 +19,7 @@ import { ConnectionsService } from './connections.service';
 import {
   CreateAWSConnectionDto,
   CreateAzureConnectionDto,
+  CreateKubernetesConnectionDto,
   CreateLDAPConnectionDto,
   CreateSCPConnectionDto,
   CreateVaultConnectionDto,
@@ -42,6 +43,7 @@ import { SCP } from './ScpConnection.schema';
 import { AuditInterceptor } from '../../audit-interceptor/audit-interceptor.interceptor';
 import { AWSConnection } from './AWSConnection.schema';
 import { AzureConnection } from './AzureConnection.schema';
+import { KubernetesConnection } from './KubernetesConnection.schema';
 
 @ApiTags('Connections')
 @UseGuards(TowerAuthGuard)
@@ -63,6 +65,7 @@ export class ConnectionsController {
     CreateVaultConnectionDto,
     CreateAzureConnectionDto,
     CreateAWSConnectionDto,
+    CreateKubernetesConnectionDto,
   )
   @ApiBody({
     schema: {
@@ -82,6 +85,9 @@ export class ConnectionsController {
         {
           $ref: getSchemaPath(CreateAzureConnectionDto),
         },
+        {
+          $ref: getSchemaPath(CreateKubernetesConnectionDto),
+        },
       ],
     },
   })
@@ -92,7 +98,8 @@ export class ConnectionsController {
       | CreateSCPConnectionDto
       | CreateVaultConnectionDto
       | CreateAWSConnectionDto
-      | CreateAzureConnectionDto,
+      | CreateAzureConnectionDto
+      | CreateKubernetesConnectionDto,
   ) {
     return CRUDExceptionWrapper(async () => {
       return this.connectionsService.upsert(createConnectionDto);
@@ -154,7 +161,13 @@ export class ConnectionsController {
   @ApiQuery({ name: 'type', required: false })
   testConnection(
     @Body()
-    connection: LDAP | Vault | SCP | AWSConnection | AzureConnection,
+    connection:
+      | LDAP
+      | Vault
+      | SCP
+      | AWSConnection
+      | AzureConnection
+      | KubernetesConnection,
     @Query('type') type: string,
   ) {
     return this.connectionsService.testConnection(type, connection);

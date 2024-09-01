@@ -2,10 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { AccessToken, AccessTokenDocument } from './access-token.schema';
-import { sign, verify } from 'jsonwebtoken';
+import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { Statement } from '../../helpers/clauses';
 import { filterTranslator } from '../../helpers/filterTranslator';
 import { Cron } from '@nestjs/schedule';
+import * as fs from 'node:fs';
+import { readFileSync } from 'fs';
 
 @Injectable()
 export class AccessTokenService {
@@ -80,7 +82,8 @@ export class AccessTokenService {
     } else {
       return sign(
         {
-          data: { tokenId: newToken.id },
+          iss: 'Tower',
+          nonce: newToken.id,
           exp: Math.floor(Date.now() / 1000) + ttl,
         },
         process.env.SECRET,
@@ -89,15 +92,33 @@ export class AccessTokenService {
   }
 
   /**
+   * createAccessTokenFromJWT
+   *
+   * @param jwt
+   * @param userId
+   */
+  async createAccessTokenFromJWT(jwt: JwtPayload, userId: string) {
+    let ttl = Number(process.env.TTL);
+    if (jwt.exp && jwt.iat) {
+      ttl = jwt.exp - jwt.iat;
+    }
+
+    return await this.accessTokenModel.create({
+      ttl: ttl,
+      userId: userId,
+      nonce: jwt.nonce,
+    });
+  }
+
+  /**
    * signAccessToken
    *
-   * @param ttl
    * @param tokenId
    */
-  async signTechnicalAccessToken(tokenId) {
+  async signTechnicalAccessToken(tokenId: string) {
     return sign(
       {
-        data: { tokenId: tokenId },
+        nonce: tokenId,
       },
       process.env.SECRET,
     );
@@ -107,13 +128,24 @@ export class AccessTokenService {
    * validateToken
    *
    * @param tokenId
+   * @param isOpenId
    */
-  async validateToken(tokenId: string): Promise<AccessToken> | null {
+  async validateToken(
+    tokenId: string,
+    isOpenId?: boolean,
+  ): Promise<AccessToken> | null {
+    let match: any = {
+      _id: tokenId,
+    };
+    if (isOpenId) {
+      match = {
+        nonce: tokenId,
+      };
+    }
+
     const token = await this.accessTokenModel.aggregate([
       {
-        $match: {
-          _id: tokenId,
-        },
+        $match: match,
       },
       {
         $project: {
@@ -161,6 +193,28 @@ export class AccessTokenService {
     } catch (e) {
       return false;
     }
+  }
+
+  /**
+   * verifyOIDCToken
+   *
+   * @param token
+   */
+  verifyOIDCToken(token: string) {
+    try {
+      if (process.env.OIDC_SECRET_PRIVATE_KEY) {
+        let secret = process.env.OIDC_SECRET_PRIVATE_KEY;
+        if (fs.existsSync(process.env.OIDC_SECRET_PRIVATE_KEY)) {
+          secret = readFileSync(process.env.OIDC_SECRET_PRIVATE_KEY).toString();
+        }
+
+        return verify(token, secret);
+      }
+    } catch (e) {
+      return false;
+    }
+
+    return false;
   }
 
   /**

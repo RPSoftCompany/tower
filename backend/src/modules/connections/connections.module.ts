@@ -21,6 +21,10 @@ import {
   AzureConnection,
   AzureConnectionSchema,
 } from './AzureConnection.schema';
+import {
+  KubernetesConnection,
+  KubernetesConnectionSchema,
+} from './KubernetesConnection.schema';
 
 @Module({
   imports: [
@@ -34,6 +38,10 @@ import {
           { name: SCP.name, schema: SCPConnectionSchema },
           { name: AWSConnection.name, schema: AWSConnectionSchema },
           { name: AzureConnection.name, schema: AzureConnectionSchema },
+          {
+            name: KubernetesConnection.name,
+            schema: KubernetesConnectionSchema,
+          },
         ],
       },
       { name: Audit.name, schema: AuditsSchema },

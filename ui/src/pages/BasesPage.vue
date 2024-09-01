@@ -154,6 +154,12 @@
 					name="restrictions"
 				/>
 				<q-tab class="tw-rounded" label="Other settings" name="other"></q-tab>
+				<q-tab
+					v-if="model?.base === baseSt.getBases[0].name"
+					class="tw-rounded"
+					label="Configuration Template"
+					name="template"
+				></q-tab>
 			</q-tabs>
 		</transition>
 		<transition
@@ -270,6 +276,26 @@
 						/>
 					</div>
 				</q-tab-panel>
+				<q-tab-panel name="template">
+					<div class="flex tw-flex-col tw-flex-1">
+						<q-checkbox
+							v-model="modelTemplateEnabled"
+							:disable="!userCanModify"
+							label="Enable template"
+							class="tower_checkbox"
+						/>
+						<div class="flex tw-flex-col tw-flex-1">
+							<template v-for="(base, i) of baseSt.getBases" :key="base.id">
+								<q-toggle
+									color="accent"
+									:disable="!modelTemplateEnabled || i == 0"
+									v-model="templateValues[i]"
+									:label="base.name"
+								/>
+							</template>
+						</div>
+					</div>
+				</q-tab-panel>
 			</q-tab-panels>
 		</transition>
 		<transition
@@ -330,7 +356,7 @@ import { useQuasar } from 'quasar';
 import { userStore } from 'stores/user';
 import RestrictionRow from 'components/configurationModel/restrictionRow.vue';
 import { navigationStore } from 'stores/navigation';
-import { isNil } from 'lodash';
+import { cloneDeep, isEqual, isNil } from 'lodash';
 
 //====================================================
 // Const
@@ -350,6 +376,8 @@ const rules: Ref<Array<ConfigurationModelRule>> = ref([]);
 const restrictions: Ref<Array<any>> = ref([]);
 const modelHasRestrictions = ref(false);
 const modelForceComment = ref(false);
+const modelTemplateEnabled = ref(false);
+const templateValues: Ref<Array<boolean>> = ref([]);
 const baseModels: Ref<Array<ConfigurationModel>> = ref([]);
 const previousBaseModels: Ref<Array<Array<string>>> = ref([]);
 
@@ -388,6 +416,9 @@ const deleteDialog = ref(false);
 //====================================================
 onMounted(async () => {
 	await getBaseModels();
+	for (let i = 0; i < baseSt.getBases.length; i++) {
+		templateValues.value[i] = true;
+	}
 });
 
 //====================================================
@@ -459,6 +490,25 @@ const isDifferent = computed(() => {
 	} else if (
 		!isNil(model.value?.options.forceComment) &&
 		modelForceComment.value !== model.value?.options.forceComment
+	) {
+		return true;
+	}
+
+	if (
+		isNil(model.value?.options.templateEnabled) &&
+		modelTemplateEnabled.value
+	) {
+		return true;
+	} else if (
+		!isNil(model.value?.options.templateEnabled) &&
+		modelTemplateEnabled.value !== model.value?.options.templateEnabled
+	) {
+		return true;
+	}
+
+	if (
+		!isEqual(model.value.template, templateValues.value) &&
+		modelTemplateEnabled.value
 	) {
 		return true;
 	}
@@ -739,12 +789,21 @@ const saveModel = async () => {
 			? false
 			: modelForceComment.value;
 
+		model.value.options.templateEnabled = isNil(modelTemplateEnabled.value)
+			? false
+			: modelTemplateEnabled.value;
+
+		if (model.value.options.templateEnabled) {
+			model.value.template = templateValues.value;
+		}
+
 		const toSave: ConfigurationModel = {
 			rules: model.value?.rules,
 			name: model.value.name,
 			base: model.value?.base,
 			options: model.value?.options,
 			restrictions: model.value?.restrictions,
+			template: model.value?.template,
 			_id: model.value?._id,
 		};
 
@@ -789,6 +848,18 @@ const updateCurrentData = (current: ConfigurationModel) => {
 	modelForceComment.value = isNil(current.options.forceComment)
 		? false
 		: current.options.forceComment;
+
+	modelTemplateEnabled.value = isNil(current.options.templateEnabled)
+		? false
+		: current.options.templateEnabled;
+
+	if (isNil(current.template) || current.template.length === 0) {
+		for (let i = 0; i < baseSt.getBases.length; i++) {
+			templateValues.value[i] = true;
+		}
+	} else {
+		templateValues.value = cloneDeep(current.template);
+	}
 
 	current.rules.forEach((el) => {
 		rules.value.push({ ...el });
