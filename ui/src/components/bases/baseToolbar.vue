@@ -131,9 +131,9 @@ onBeforeMount(async () => {
 //====================================================
 // Computed
 //====================================================
-/**
- * allBases
- */
+// /**
+//  * allBases
+//  */
 const allBases = computed(() => {
 	if (bases.value.values[0]) {
 		const baseModel = bases.value.values[0] as ConfigurationModel;
@@ -145,12 +145,10 @@ const allBases = computed(() => {
 				}
 			}
 
-			emit('update:basesCount', all.length);
 			return all;
 		}
 	}
 
-	emit('update:basesCount', baseSt.getBases.length);
 	return baseSt.getBases;
 });
 
@@ -287,6 +285,22 @@ const baseChanged = async (value: ConfigurationModel) => {
 
 			if (base.sequenceNumber + 1 <= allBases.value.length) {
 				await setBases(base.sequenceNumber + 1);
+			}
+
+			if (bases.value.values[0]) {
+				const baseModel = bases.value.values[0] as ConfigurationModel;
+				if (baseModel.options.templateEnabled) {
+					const all: Array<Base> = [];
+					for (let i = 0; i < baseSt.getBases.length; i++) {
+						if (baseModel.template && baseModel.template[i]) {
+							all.push(baseSt.getBases[i]);
+						}
+					}
+
+					emit('update:basesCount', all.length);
+				} else {
+					emit('update:basesCount', baseSt.getBases.length);
+				}
 			}
 		}
 	} else {
