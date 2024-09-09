@@ -716,12 +716,6 @@ export class ConstantVariablesService implements OnModuleInit {
         .catch((e) => {
           // IGNORE
         });
-
-      this.connectionsService
-        .executeKubernetesHook(userRoles, bases, newConfig)
-        .then(() => {
-          // IGNORE
-        });
     }
   }
 
