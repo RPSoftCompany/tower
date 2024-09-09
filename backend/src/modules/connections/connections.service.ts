@@ -690,59 +690,80 @@ export class ConnectionsService implements OnModuleInit {
     const allBases = await this.baseConfigurationModel.find();
 
     for (const connection of connections) {
-      for (const connectionItem of connection.items) {
-        if (connectionItem.template.id) {
-          const template: RestConfiguration = await this.restModel.findById(
-            connectionItem.template.id,
-          );
+      const allPromises = [];
+      allPromises.push(
+        this.requestSCP(connection, userRoles, allBases, configuration),
+      );
 
-          if (template) {
-            const sftpConnection = new sftp();
+      await Promise.all(allPromises);
+    }
+  }
 
-            try {
-              if (connection.authType === 'userpass') {
-                await sftpConnection.connect({
-                  port: connection.port,
-                  host: connection.host,
-                  username: connection.username,
-                  password: decryptPassword(connection.password),
-                  readyTimeout: 3000,
-                });
-              } else {
-                await sftpConnection.connect({
-                  port: connection.port,
-                  host: connection.host,
-                  username: connection.username,
-                  privateKey: decryptPassword(connection.key),
-                  readyTimeout: 3000,
-                });
+  /**
+   * requestSCP
+   *
+   * @param connection
+   * @param userRoles
+   * @param allBases
+   * @param configuration
+   * @private
+   */
+  private async requestSCP(
+    connection: SCP,
+    userRoles: string[],
+    allBases: any,
+    configuration: Configuration,
+  ) {
+    for (const connectionItem of connection.items) {
+      if (connectionItem.template.id) {
+        const template: RestConfiguration = await this.restModel.findById(
+          connectionItem.template.id,
+        );
+
+        if (template) {
+          const sftpConnection = new sftp();
+
+          try {
+            if (connection.authType === 'userpass') {
+              await sftpConnection.connect({
+                port: connection.port,
+                host: connection.host,
+                username: connection.username,
+                password: decryptPassword(connection.password),
+                readyTimeout: 3000,
+              });
+            } else {
+              await sftpConnection.connect({
+                port: connection.port,
+                host: connection.host,
+                username: connection.username,
+                privateKey: decryptPassword(connection.key),
+                readyTimeout: 3000,
+              });
+            }
+
+            configuration.variables = configuration.variables.map((el) => {
+              if (el.type === 'password') {
+                el.value = decryptPassword(el.value);
               }
 
-              configuration.variables = configuration.variables.map((el) => {
-                if (el.type === 'password') {
-                  el.value = decryptPassword(el.value);
-                }
+              return el;
+            });
 
-                return el;
-              });
+            const all = await this.v1Service.compileConfiguration(
+              userRoles,
+              configuration,
+              allBases,
+              template,
+            );
 
-              const all = await this.v1Service.compileConfiguration(
-                userRoles,
-                configuration,
-                allBases,
-                template,
-              );
+            const stream = new Readable();
+            stream.push(all.template);
+            stream.push(null);
 
-              const stream = new Readable();
-              stream.push(all.template);
-              stream.push(null);
-
-              await sftpConnection.put(stream, connectionItem.path);
-            } catch (e) {
-              this.logger.error(
-                `Error during the SCP connection: ${e.message}`,
-              );
-            }
+            await sftpConnection.put(stream, connectionItem.path);
+          } catch (e) {
+            this.logger.error(`Error during the SCP connection: ${e.message}`);
           }
         }
       }
@@ -752,12 +773,10 @@ export class ConnectionsService implements OnModuleInit {
   /**
    * executeKubernetesHook
    *
-   * @param userRoles
    * @param configurationBases
    * @param configuration
    */
   async executeKubernetesHook(
-    userRoles: string[],
     configurationBases: any,
     configuration: Configuration,
   ) {
@@ -768,65 +787,143 @@ export class ConnectionsService implements OnModuleInit {
     for (const connection of allConnections) {
       const kubernetesConnection =
         connection as unknown as KubernetesConnection;
-      for (const connectionItem of kubernetesConnection.items) {
-        let valid = true;
-        for (const base in configurationBases) {
-          if (
-            connectionItem[base] !== null &&
-            connectionItem[base] !== configurationBases[base]
-          ) {
-            valid = false;
-          }
+      const promises = [];
+      promises.push(
+        this.requestKubernetes(
+          kubernetesConnection,
+          configurationBases,
+          configuration,
+        ),
+      );
+
+      await Promise.all(promises);
+    }
+  }
+
+  /**
+   * requestKubernetes
+   *
+   * @param kubernetesConnection
+   * @param configurationBases
+   * @param configuration
+   * @private
+   */
+  private async requestKubernetes(
+    kubernetesConnection: KubernetesConnection,
+    configurationBases: any,
+    configuration: Configuration,
+  ) {
+    for (const connectionItem of kubernetesConnection.items) {
+      let valid = true;
+
+      for (const base in configurationBases) {
+        if (
+          connectionItem[base] !== null &&
+          connectionItem[base] !== configurationBases[base]
+        ) {
+          valid = false;
         }
+      }
 
-        if (valid) {
-          const values = {};
-          configuration.variables.forEach((variable) => {
-            if (variable.type === 'password') {
-              values[variable.name] = `${decryptPassword(variable.value)}`;
-            } else {
-              values[variable.name] = `${variable.value}`;
+      if (valid) {
+        const values = {};
+        configuration.variables.forEach((variable) => {
+          if (variable.type === 'password') {
+            values[variable.name] = `${decryptPassword(variable.value)}`;
+          } else {
+            values[variable.name] = `${variable.value}`;
+          }
+        });
+
+        try {
+          let secretName: string = connectionItem.__secretName__ as string;
+          let i = Object.keys(configurationBases).length - 1;
+          while (!secretName && i >= 0) {
+            const baseName = Object.keys(configurationBases)[i];
+            secretName = configurationBases[`${baseName}`];
+            i--;
+          }
+
+          if (!secretName) {
+            this.logger.error(`Can't establish secretName`);
+          } else {
+            let isNew = false;
+
+            for (const base of Object.keys(configurationBases)) {
+              secretName = secretName.replace(
+                `{${base}}`,
+                configurationBases[base],
+              );
             }
-          });
+            secretName = secretName.toLowerCase();
 
-          try {
-            let secretName: string = connectionItem.__secretName__ as string;
-            let i = Object.keys(configurationBases).length - 1;
-            while (!secretName && i >= 0) {
-              const baseName = Object.keys(configurationBases)[i];
-              secretName = configurationBases[`${baseName}`];
-              i--;
-            }
-
-            if (!secretName) {
-              this.logger.error(`Can't establish secretName`);
-            } else {
-              let isNew = false;
-
-              for (const base of Object.keys(configurationBases)) {
-                secretName = secretName.replace(
-                  `{${base}}`,
-                  configurationBases[base],
-                );
+            try {
+              await axios.get(
+                `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${kubernetesConnection.token}`,
+                  },
+                },
+              );
+            } catch (e) {
+              if (e.response?.status === 404) {
+                isNew = true;
               }
-              secretName = secretName.toLowerCase();
+            }
 
-              try {
-                await axios.get(
-                  `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+            if (connectionItem.__mode__ === 'Full') {
+              if (isNew) {
+                await axios.post(
+                  `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
+                  {
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    metadata: {
+                      name: secretName,
+                    },
+                    type: 'Opaque',
+                    stringData: values,
+                  },
                   {
                     headers: {
                       Authorization: `Bearer ${kubernetesConnection.token}`,
                     },
                   },
                 );
-              } catch (e) {
-                if (e.response?.status === 404) {
-                  isNew = true;
-                }
+              } else {
+                await axios.put(
+                  `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                  {
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    metadata: {
+                      name: secretName,
+                    },
+                    type: 'Opaque',
+                    stringData: values,
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${kubernetesConnection.token}`,
+                    },
+                  },
+                );
               }
+            } else {
+              const template = await this.restModel.findOne({
+                _id: connectionItem.__template__,
+              });
 
-              if (connectionItem.__mode__ === 'Full') {
+              if (template) {
+                const renderedData = await this.v1Service.renderTemplate(
+                  template.template,
+                  template.returnType,
+                  configuration,
+                );
+                let stringData = {};
+                stringData[`${connectionItem.__variableName__}`] = renderedData;
+
                 if (isNew) {
                   await axios.post(
                     `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
@@ -837,7 +934,7 @@ export class ConnectionsService implements OnModuleInit {
                         name: secretName,
                       },
                       type: 'Opaque',
-                      stringData: values,
+                      stringData: stringData,
                     },
                     {
                       headers: {
@@ -846,7 +943,7 @@ export class ConnectionsService implements OnModuleInit {
                     },
                   );
                 } else {
-                  await axios.put(
+                  await axios.patch(
                     `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
                     {
                       apiVersion: 'v1',
@@ -855,74 +952,21 @@ export class ConnectionsService implements OnModuleInit {
                         name: secretName,
                       },
                       type: 'Opaque',
-                      stringData: values,
+                      stringData: stringData,
                     },
                     {
                       headers: {
                         Authorization: `Bearer ${kubernetesConnection.token}`,
+                        'Content-Type': 'application/merge-patch+json',
                       },
                     },
                   );
                 }
-              } else {
-                const template = await this.restModel.findOne({
-                  _id: connectionItem.__template__,
-                });
-
-                if (template) {
-                  const renderedData = await this.v1Service.renderTemplate(
-                    template.template,
-                    template.returnType,
-                    configuration,
-                  );
-                  let stringData = {};
-                  stringData[`${connectionItem.__variableName__}`] =
-                    renderedData;
-
-                  if (isNew) {
-                    await axios.post(
-                      `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
-                      {
-                        apiVersion: 'v1',
-                        kind: 'Secret',
-                        metadata: {
-                          name: secretName,
-                        },
-                        type: 'Opaque',
-                        stringData: stringData,
-                      },
-                      {
-                        headers: {
-                          Authorization: `Bearer ${kubernetesConnection.token}`,
-                        },
-                      },
-                    );
-                  } else {
-                    await axios.patch(
-                      `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
-                      {
-                        apiVersion: 'v1',
-                        kind: 'Secret',
-                        metadata: {
-                          name: secretName,
-                        },
-                        type: 'Opaque',
-                        stringData: stringData,
-                      },
-                      {
-                        headers: {
-                          Authorization: `Bearer ${kubernetesConnection.token}`,
-                          'Content-Type': 'application/merge-patch+json',
-                        },
-                      },
-                    );
-                  }
-                }
               }
             }
-          } catch (e) {
-            this.logger.error(e.message);
           }
+        } catch (e) {
+          this.logger.error(e.message);
         }
       }
     }

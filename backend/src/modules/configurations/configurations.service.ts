@@ -513,6 +513,9 @@ export class ConfigurationsService implements OnModuleInit {
         .executeHook('afterCreate', 'Configuration', retValue)
         .then(() => {
           // IGNORE
+        })
+        .catch((e) => {
+          this.logger.error(e);
         });
 
       this.connectionsService
@@ -525,7 +528,7 @@ export class ConfigurationsService implements OnModuleInit {
         });
 
       this.connectionsService
-        .executeKubernetesHook(userRoles, queryObject, retValue)
+        .executeKubernetesHook(queryObject, retValue)
         .then(() => {
           // IGNORE
         })
