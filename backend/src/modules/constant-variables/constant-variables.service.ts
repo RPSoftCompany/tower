@@ -681,6 +681,9 @@ export class ConstantVariablesService implements OnModuleInit {
         .executeHook('afterCreate', 'Configuration', configuration)
         .then(() => {
           // IGNORE
+        })
+        .catch((e) => {
+          this.logger.error(e);
         });
 
       // SCP
@@ -700,11 +703,17 @@ export class ConstantVariablesService implements OnModuleInit {
         .executeSCPHook(userRoles, bases, newConfig)
         .then(() => {
           // IGNORE
+        })
+        .catch((e) => {
+          // IGNORE
         });
 
       this.connectionsService
-        .executeKubernetesHook(userRoles, bases, newConfig)
+        .executeKubernetesHook(bases, newConfig)
         .then(() => {
+          // IGNORE
+        })
+        .catch((e) => {
           // IGNORE
         });
     }

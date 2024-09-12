@@ -97,14 +97,27 @@
 		<div>
 			<div class="tw-flex tw-flex-grow tw-justify-center tw-mb-3">
 				<q-input
+					ref="input"
 					color="secondary"
 					class="tw-w-[33.3%]"
 					dense
 					v-model="newBaseModel"
 					label="New base model"
+					:rules="[
+						(val) => {
+							return /^[a-zA-Z ]+$/.test(val) || !val
+								? undefined
+								: 'Base configuration name may contain only lower and uppercase characters and spaces';
+						},
+					]"
 				>
 					<template #after v-if="newBaseModel">
-						<q-btn flat padding="0.25rem" @click="createBaseModel">
+						<q-btn
+							:disable="inputHasErrors"
+							flat
+							padding="0.25rem"
+							@click="createBaseModel"
+						>
 							<q-icon name="sym_o_add" />
 						</q-btn>
 					</template>
@@ -181,7 +194,7 @@ import SavePanel from 'components/basic/savePanel.vue';
 import { Base } from 'components/bases/base';
 import { towerAxios } from 'boot/axios';
 import { AxiosError } from 'axios';
-import { useQuasar } from 'quasar';
+import { QSelect, useQuasar } from 'quasar';
 import { ionWarning } from '@quasar/extras/ionicons-v6';
 import { navigationStore } from 'stores/navigation';
 
@@ -196,6 +209,8 @@ const navigationSt = navigationStore();
 // Data
 //====================================================
 const currentBases: Ref<Array<Base>> = ref([]);
+
+const input: Ref<QSelect> = ref(null);
 
 const draggedId: Ref<string | undefined> = ref('');
 const canBeDruggedId: Ref<string | undefined> = ref('');
@@ -234,6 +249,17 @@ const filteredIcons = computed(() => {
 	return icons.default.filter((el) => {
 		return el.toLowerCase().includes(lowercaseFilter);
 	});
+});
+
+/**
+ * inputHasErrors
+ */
+const inputHasErrors = computed(() => {
+	if (input.value) {
+		return input.value.hasError;
+	}
+
+	return false;
 });
 
 /**
@@ -360,13 +386,15 @@ const saveBases = async () => {
 				await towerAxios.post('/baseConfigurations', base);
 			}
 		} catch (e) {
+			console.log(e.response.data);
+
 			$q.notify({
 				color: 'negative',
 				position: 'top',
 				textColor: 'secondary',
 				icon: ionWarning,
-				message: ((e as AxiosError).response?.data as any)?.error?.message
-					? ((e as AxiosError).response?.data as any)?.error?.message
+				message: ((e as AxiosError).response?.data as any)?.message
+					? ((e as AxiosError).response?.data as any)?.message
 					: (e as AxiosError).message,
 			});
 
