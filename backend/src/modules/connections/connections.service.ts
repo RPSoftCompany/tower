@@ -883,6 +883,9 @@ export class ConnectionsService implements OnModuleInit {
                     kind: 'Secret',
                     metadata: {
                       name: secretName,
+                      annotations: {
+                        'tower-update-timestamp': `${new Date().toISOString()}`,
+                      },
                     },
                     type: 'Opaque',
                     stringData: values,
@@ -901,6 +904,9 @@ export class ConnectionsService implements OnModuleInit {
                     kind: 'Secret',
                     metadata: {
                       name: secretName,
+                      annotations: {
+                        'tower-update-timestamp': `${new Date().toISOString()}`,
+                      },
                     },
                     type: 'Opaque',
                     stringData: values,
@@ -934,6 +940,9 @@ export class ConnectionsService implements OnModuleInit {
                       kind: 'Secret',
                       metadata: {
                         name: secretName,
+                        annotations: {
+                          'tower-update-timestamp': `${new Date().toISOString()}`,
+                        },
                       },
                       type: 'Opaque',
                       stringData: stringData,
@@ -952,6 +961,9 @@ export class ConnectionsService implements OnModuleInit {
                       kind: 'Secret',
                       metadata: {
                         name: secretName,
+                        annotations: {
+                          'tower-update-timestamp': `${new Date().toISOString()}`,
+                        },
                       },
                       type: 'Opaque',
                       stringData: stringData,
