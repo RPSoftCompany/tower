@@ -59,9 +59,7 @@
 						<q-icon name="sym_o_add" />
 					</q-btn>
 					<q-btn
-						v-if="
-							currentConnection && currentConnection.url !== 'New connection'
-						"
+						v-if="currentConnection && currentConnection._id"
 						flat
 						padding="sm"
 						@click="removeConnectionDialog = true"
@@ -408,7 +406,7 @@ const getAllConnections = async () => {
 					items: items,
 					namespace: el.namespace,
 					token: el.token,
-					connectionName: el.url,
+					connectionName: `${el.url} : ${el.namespace}`,
 				});
 			});
 		}
