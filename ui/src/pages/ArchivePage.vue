@@ -26,7 +26,7 @@
 			<div>
 				<q-btn
 					:disable="
-						allBases.length !== Object.keys(baseModelComputed).length ||
+						basesCount !== Object.keys(baseModelComputed).length ||
 						archiveConfigs.length > 3
 					"
 					flat
@@ -116,7 +116,7 @@ const onBaseModelChange = (value: Array<ConfigurationModel>) => {
  * addArchiveConfig
  */
 const addArchiveConfig = async () => {
-	if (allBases.value.length !== Object.keys(baseModelComputed.value).length) {
+	if (basesCount.value !== Object.keys(baseModelComputed.value).length) {
 		return;
 	}
 
@@ -321,6 +321,28 @@ const baseModelComputed = computed(() => {
 
 	return baseModel;
 });
+
+/**
+ * basesCount
+ */
+const basesCount = computed(() => {
+	if (currentBaseModels.value[0]) {
+		const baseModel = currentBaseModels.value[0] as ConfigurationModel;
+		if (baseModel.options.templateEnabled) {
+			const all: Array<Base> = [];
+			for (let i = 0; i < baseSt.getBases.length; i++) {
+				if (baseModel.template && baseModel.template[i]) {
+					all.push(baseSt.getBases[i]);
+				}
+			}
+
+			return all.length;
+		}
+	}
+
+	return baseSt.getBases.length;
+});
+
 /**
  * allBases
  */

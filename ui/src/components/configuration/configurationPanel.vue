@@ -542,6 +542,9 @@ const promotionCandidatesCategories = computed(() => {
 	return null;
 });
 
+/**
+ * commentNeeded
+ */
 const commentNeeded = computed(() => {
 	return props.configModel.some((el) => {
 		if (el) {
