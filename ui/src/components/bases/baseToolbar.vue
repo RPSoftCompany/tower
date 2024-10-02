@@ -235,17 +235,15 @@ const setBases = async (sequenceNumber: number) => {
 				if (!el.options.hasRestrictions) {
 					return true;
 				} else {
-					const forbidden = el.restrictions.some((restriction: any) => {
-						return Object.keys(restriction).some((restrictionKey: string) => {
-							if (restrictionKey !== '__id' && restriction[restrictionKey]) {
-								return (
-									restriction[restrictionKey] !== currentBases[restrictionKey]
-								);
+					return el.restrictions.some((restriction: any) => {
+						for (const key in restriction) {
+							if (key !== '__id' && currentBases[key] !== restriction[key]) {
+								return false;
 							}
-						});
-					});
+						}
 
-					return !forbidden;
+						return true;
+					});
 				}
 			});
 
