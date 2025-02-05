@@ -765,6 +765,8 @@ export class ConnectionsService implements OnModuleInit {
           } catch (e) {
             this.logger.error(`Error during the SCP connection: ${e.message}`);
           }
+        } catch (e) {
+          this.logger.error(e.message);
         }
       }
     }
