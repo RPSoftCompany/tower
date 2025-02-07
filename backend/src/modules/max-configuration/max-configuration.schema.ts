@@ -1,6 +1,10 @@
-import {Configuration, ConfigurationSchema, ConfigurationVariable} from '../configurations/configuration.schema';
+import {
+  Configuration,
+  ConfigurationSchema,
+  ConfigurationVariable,
+} from '../configurations/configuration.schema';
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import {decryptPassword} from "../../helpers/encryptionHelper";
+import { decryptPassword } from '../../helpers/encryptionHelper';
 
 @Schema({
   collection: 'maxConfiguration',
@@ -28,6 +32,18 @@ MaxConfigurationSchema.post('find', (docs: maxConfiguration[]) => {
   });
 
   return docs;
+});
+
+MaxConfigurationSchema.post('findOne', (doc: maxConfiguration) => {
+  doc.variables = doc.variables.map((variable: ConfigurationVariable) => {
+    if (variable.type === 'password') {
+      variable.value = decryptPassword(variable.value);
+    }
+
+    return variable;
+  });
+
+  return doc;
 });
 
 MaxConfigurationSchema.post('aggregate', (docs: maxConfiguration[]) => {
