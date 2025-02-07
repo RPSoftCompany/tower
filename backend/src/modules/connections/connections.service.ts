@@ -922,6 +922,14 @@ export class ConnectionsService implements OnModuleInit {
               });
 
               if (template) {
+                configuration.variables.map(variable => {
+                  if (variable.type === 'password') {
+                    variable.value = decryptPassword(variable.value);
+                  }
+
+                  return variable;
+                })
+
                 const renderedData = await this.v1Service.renderTemplate(
                   template.template,
                   template.returnType,
