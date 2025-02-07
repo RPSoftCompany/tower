@@ -1,8 +1,14 @@
 import { Schema, SchemaFactory } from '@nestjs/mongoose';
-import {ConstantVariable, ConstantVariableObject} from '../constant-variables/constant-variables.schema';
-import {ConfigurationVariable} from "../configurations/configuration.schema";
-import {decryptPassword} from "../../helpers/encryptionHelper";
-import {maxConfiguration, MaxConfigurationSchema} from "../max-configuration/max-configuration.schema";
+import {
+  ConstantVariable,
+  ConstantVariableObject,
+} from '../constant-variables/constant-variables.schema';
+import { ConfigurationVariable } from '../configurations/configuration.schema';
+import { decryptPassword } from '../../helpers/encryptionHelper';
+import {
+  maxConfiguration,
+  MaxConfigurationSchema,
+} from '../max-configuration/max-configuration.schema';
 
 @Schema({
   collection: 'maxConstantVariable',
@@ -31,17 +37,31 @@ MaxConstantVariableSchema.post('find', (docs: MaxConstantVariable[]) => {
   return docs;
 });
 
+MaxConstantVariableSchema.post('findOne', (doc: MaxConstantVariable) => {
+  doc.variables = doc.variables.map((variable: ConstantVariableObject) => {
+    if (variable.type === 'password') {
+      variable.value = decryptPassword(variable.value);
+    }
+
+    return variable;
+  });
+
+  return doc;
+});
+
 MaxConstantVariableSchema.post('aggregate', (docs: MaxConstantVariable[]) => {
   if (Array.isArray(docs)) {
     for (const doc of docs) {
       if (doc.variables) {
-        doc.variables = doc.variables.map((variable: ConstantVariableObject) => {
-          if (variable.type === 'password') {
-            variable.value = decryptPassword(variable.value);
-          }
+        doc.variables = doc.variables.map(
+          (variable: ConstantVariableObject) => {
+            if (variable.type === 'password') {
+              variable.value = decryptPassword(variable.value);
+            }
 
-          return variable;
-        });
+            return variable;
+          },
+        );
       }
     }
   }

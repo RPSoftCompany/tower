@@ -35,6 +35,7 @@ export class ConfigurationVariable {
 }
 
 export type ConfigurationDocument = HydratedDocument<Configuration>;
+
 @Schema({
   collection: 'configuration',
   strict: false,
@@ -85,6 +86,18 @@ ConfigurationSchema.post('find', (docs: Configuration[]) => {
   });
 
   return docs;
+});
+
+ConfigurationSchema.post('findOne', (doc: Configuration) => {
+  doc.variables = doc.variables.map((variable: ConfigurationVariable) => {
+    if (variable.type === 'password') {
+      variable.value = decryptPassword(variable.value);
+    }
+
+    return variable;
+  });
+
+  return doc;
 });
 
 ConfigurationSchema.post('aggregate', (docs: Configuration[]) => {
