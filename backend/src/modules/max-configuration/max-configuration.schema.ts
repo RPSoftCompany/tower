@@ -35,13 +35,15 @@ MaxConfigurationSchema.post('find', (docs: maxConfiguration[]) => {
 });
 
 MaxConfigurationSchema.post('findOne', (doc: maxConfiguration) => {
-  doc.variables = doc.variables.map((variable: ConfigurationVariable) => {
-    if (variable.type === 'password') {
-      variable.value = decryptPassword(variable.value);
-    }
+  if (doc.variables) {
+    doc.variables = doc.variables.map((variable: ConfigurationVariable) => {
+      if (variable.type === 'password') {
+        variable.value = decryptPassword(variable.value);
+      }
 
-    return variable;
-  });
+      return variable;
+    });
+  }
 
   return doc;
 });
