@@ -38,13 +38,15 @@ MaxConstantVariableSchema.post('find', (docs: MaxConstantVariable[]) => {
 });
 
 MaxConstantVariableSchema.post('findOne', (doc: MaxConstantVariable) => {
-  doc.variables = doc.variables.map((variable: ConstantVariableObject) => {
-    if (variable.type === 'password') {
-      variable.value = decryptPassword(variable.value);
-    }
+  if (doc.variables) {
+    doc.variables = doc.variables.map((variable: ConstantVariableObject) => {
+      if (variable.type === 'password') {
+        variable.value = decryptPassword(variable.value);
+      }
 
-    return variable;
-  });
+      return variable;
+    });
+  }
 
   return doc;
 });
