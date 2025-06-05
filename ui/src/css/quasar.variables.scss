@@ -23,14 +23,16 @@ $positive: #21BA45;
 $negative: #ba2222;
 $info: #31CCEC;
 $warning: #F2C037;
-$disabled: #6B7280FF;
+$disabled: #6B7280;
 
 // Quasar variables
-$input-font-size: 12px;
-$body-font-size: 12px;
+$input-font-size: 13px;
+$body-font-size: 13px;
 $body-line-height: 16px;
 
 $breakpoint-xs: 640px;
 $breakpoint-sm: 768px;
 $breakpoint-md: 1024px;
 $breakpoint-lg: 1535px;
+
+$typography-font-family: 'Atkinson Hyperlegible', 'Roboto', '-apple-system', 'Helvetica Neue', Helvetica, Arial, sans-serif !default

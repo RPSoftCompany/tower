@@ -4,10 +4,12 @@ import { LDAP } from './ldapConnection.schema';
 import { Vault } from './VaultConnection.schema';
 import { SCP } from './ScpConnection.schema';
 import { AWSConnection } from './AWSConnection.schema';
+import { AzureConnection } from './AzureConnection.schema';
 import {
   decryptPassword,
   encryptPassword,
 } from '../../helpers/encryptionHelper';
+import { KubernetesConnection } from './KubernetesConnection.schema';
 
 export type ConnectionDocument = HydratedDocument<Connection>;
 @Schema({ collection: 'connection', discriminatorKey: 'system' })
@@ -15,13 +17,20 @@ export class Connection {
   @Prop({
     required: true,
     type: String,
-    enum: [LDAP.name, Vault.name, SCP.name, AWSConnection.name],
+    enum: [
+      LDAP.name,
+      Vault.name,
+      SCP.name,
+      AWSConnection.name,
+      AzureConnection.name,
+      KubernetesConnection.name,
+    ],
   })
   system: string;
 }
 
 const ConnectionSchema = SchemaFactory.createForClass(Connection);
-ConnectionSchema.pre('save', function () {
+const onSave = async function () {
   if (this.system === 'LDAP' && (this as any).bindCredentials) {
     const isEncrypted = decryptPassword((this as any).bindCredentials);
     if (!isEncrypted) {
@@ -62,8 +71,42 @@ ConnectionSchema.pre('save', function () {
         (this as any).password = encryptPassword((this as any).password);
       }
     }
+  } else if (
+    this.system === AWSConnection.name &&
+    (this as any).secretAccessKey
+  ) {
+    if ((this as any).secretAccessKey) {
+      const isEncrypted = decryptPassword((this as any).secretAccessKey);
+      if (!isEncrypted) {
+        (this as any).secretAccessKey = encryptPassword(
+          (this as any).secretAccessKey,
+        );
+      }
+    }
+  } else if (
+    this.system === AzureConnection.name &&
+    (this as any).clientSecret
+  ) {
+    if ((this as any).clientSecret) {
+      const isEncrypted = decryptPassword((this as any).clientSecret);
+      if (!isEncrypted) {
+        (this as any).clientSecret = encryptPassword(
+          (this as any).clientSecret,
+        );
+      }
+    }
+  } else if (this.system === KubernetesConnection.name && (this as any).token) {
+    if ((this as any).token) {
+      const isEncrypted = decryptPassword((this as any).token);
+      if (!isEncrypted) {
+        (this as any).token = encryptPassword((this as any).token);
+      }
+    }
   }
-});
+};
+
+ConnectionSchema.pre('save', onSave);
+ConnectionSchema.pre('createCollection', onSave);
 
 ConnectionSchema.post('find', function (docs) {
   return (docs as Array<any>).map((el) => {
@@ -87,6 +130,12 @@ ConnectionSchema.post('find', function (docs) {
       if (el.password) {
         el.password = decryptPassword(el.password);
       }
+    } else if (el.system === 'AWSConnection' && el.secretAccessKey) {
+      el.secretAccessKey = decryptPassword(el.secretAccessKey);
+    } else if (el.system === 'AzureConnection' && el.clientSecret) {
+      el.clientSecret = decryptPassword(el.clientSecret);
+    } else if (el.system === 'KubernetesConnection' && el.token) {
+      el.token = decryptPassword(el.token);
     }
   });
 });

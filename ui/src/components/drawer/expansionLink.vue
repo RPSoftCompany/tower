@@ -21,7 +21,7 @@
 		:class="{
 			'tw-bg-secondary': hasCurrentRoute,
 			'tw-text-darkPage': hasCurrentRoute,
-			'tw-bg-dark': !hasCurrentRoute
+			'tw-bg-dark': !hasCurrentRoute,
 		}"
 		class="tw-px-2 2xl:tw-py-1 tw-py-0 tw-mb-1 2xl:tw-mx-2 tw-mx-3 tw-rounded 2xl:tw-min-h-[2.25rem] tw-min-h-[2rem]"
 		clickable
@@ -29,13 +29,13 @@
 	>
 		<div class="tw-w-full tw-flex tw-items-stretch" @click="opened = !opened">
 			<q-icon
-				:color="hasCurrentRoute ? 'dark' : undefined"
+				:color="hasCurrentRoute ? 'primary' : undefined"
 				:name="icon"
 				class="tw-self-center"
 				size="xs"
 			/>
 			<div
-				class="tw-text-xs tw-ml-2 tw-basis-auto tw-grow tw-self-center 2xl:tw-block tw-hidden"
+				class="tw-ml-2 tw-basis-auto tw-grow tw-self-center 2xl:tw-block tw-hidden"
 			>
 				{{ label }}
 			</div>
@@ -85,7 +85,7 @@ const props = defineProps({
 	label: { type: String },
 	icon: { type: String },
 	transitionIn: { type: String, default: 'slideInLeft' },
-	transitionOut: { type: String, default: 'slideOutLeft' }
+	transitionOut: { type: String, default: 'slideOutLeft' },
 });
 
 /**

@@ -45,8 +45,8 @@ export default route(function (/* { store, ssrContext } */) {
 	const createHistory = process.env.SERVER
 		? createMemoryHistory
 		: process.env.VUE_ROUTER_MODE === 'history'
-		? createWebHistory
-		: createWebHashHistory;
+			? createWebHistory
+			: createWebHashHistory;
 
 	const Router = createRouter({
 		scrollBehavior: () => ({ left: 0, top: 0 }),
@@ -65,6 +65,10 @@ export default route(function (/* { store, ssrContext } */) {
 			return true;
 		}
 
+		if (to.fullPath === '/sso/login') {
+			return true;
+		}
+
 		if (navigationSt && !navigationSt.initialized) {
 			await navigationSt.getInitialization(towerAxios);
 			if (!navigationSt.initialized) {
@@ -78,7 +82,7 @@ export default route(function (/* { store, ssrContext } */) {
 			return false;
 		}
 
-		if (to.name === 'Login') {
+		if (to.name === 'Login' || to.name === 'SsoLogin') {
 			return true;
 		}
 
@@ -93,7 +97,7 @@ export default route(function (/* { store, ssrContext } */) {
 			return { name: 'Login' };
 		}
 
-		if (to.name === 'ChangePassword' && store.isLdapUser) {
+		if (to.name === 'ChangePassword' && store.isNonLocalUser) {
 			return { name: 'Login' };
 		}
 

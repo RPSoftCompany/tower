@@ -16,9 +16,10 @@
  * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
  */
 
-import {AxiosError, AxiosInstance, AxiosRequestConfig} from 'axios';
-import {Store} from 'pinia';
-import {Router} from 'vue-router';
+import { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import { Store } from 'pinia';
+import { Router } from 'vue-router';
+import { QVueGlobals } from 'quasar';
 
 export class TowerAxios {
 	axios: AxiosInstance;
@@ -38,13 +39,20 @@ export class TowerAxios {
 			reset(): void;
 		}
 	>;
+	$q: QVueGlobals;
 
 	router: Router;
 
-	constructor(axiosInstance: AxiosInstance, userSt: any, router: Router) {
+	constructor(
+		axiosInstance: AxiosInstance,
+		userSt: any,
+		router: Router,
+		q: QVueGlobals,
+	) {
 		this.axios = axiosInstance;
 		this.store = userSt;
 		this.router = router;
+		this.$q = q;
 
 		this.addInterceptors();
 	}
@@ -61,8 +69,8 @@ export class TowerAxios {
 			} else {
 				config = {
 					headers: {
-						Authorization: this.store.getTokenId
-					}
+						Authorization: this.store.getTokenId,
+					},
 				};
 			}
 		}
@@ -72,7 +80,7 @@ export class TowerAxios {
 
 	addInterceptors() {
 		//onError
-		this.axios.interceptors.response.use(undefined, async error => {
+		this.axios.interceptors.response.use(undefined, async (error) => {
 			await this.onError(error);
 		});
 	}

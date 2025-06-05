@@ -8,7 +8,7 @@ import {
 import { BadRequestException } from '@nestjs/common';
 
 export class ConfigurationVariable {
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   name: string;
 
   @Prop({ required: true, type: Object })
@@ -25,6 +25,7 @@ export class ConfigurationVariable {
       'password',
       'Vault',
       'AWS SM',
+      'AZURE keyVault',
     ],
   })
   type: string;
@@ -34,9 +35,13 @@ export class ConfigurationVariable {
 }
 
 export type ConfigurationDocument = HydratedDocument<Configuration>;
-@Schema({ collection: 'configuration', strict: false })
+
+@Schema({
+  collection: 'configuration',
+  strict: false,
+})
 export class Configuration {
-  @Prop({ default: () => new Date() })
+  @Prop({ default: () => new Date(), index: -1 })
   effectiveDate: Date;
 
   @Prop({ required: true, type: [Object] })
@@ -58,12 +63,12 @@ export class Configuration {
 
   @Prop({ required: false })
   comment: string;
+
+  @Prop({ required: false, type: Object })
+  __metadata: unknown;
 }
 
 const ConfigurationSchema = SchemaFactory.createForClass(Configuration);
-
-ConfigurationSchema.index({ 'variables.name': 1 });
-ConfigurationSchema.index({ 'variables.value': 1 });
 
 ConfigurationSchema.post('find', (docs: Configuration[]) => {
   docs = docs.map((doc: Configuration) => {
@@ -81,6 +86,20 @@ ConfigurationSchema.post('find', (docs: Configuration[]) => {
   });
 
   return docs;
+});
+
+ConfigurationSchema.post('findOne', (doc: Configuration) => {
+  if (doc.variables) {
+    doc.variables = doc.variables.map((variable: ConfigurationVariable) => {
+      if (variable.type === 'password') {
+        variable.value = decryptPassword(variable.value);
+      }
+
+      return variable;
+    });
+  }
+
+  return doc;
 });
 
 ConfigurationSchema.post('aggregate', (docs: Configuration[]) => {
@@ -109,11 +128,31 @@ ConfigurationSchema.pre('validate', async function () {
     'password',
     'Vault',
     'AWS SM',
+    'AZURE keyVault',
   ];
 
   this.variables = this.variables.map((variable: ConfigurationVariable) => {
     if (variable.type === 'password') {
       variable.value = encryptPassword(variable.value);
+    }
+
+    if (typeof variable.name !== 'string') {
+      throw new BadRequestException(`Invalid variable type: ${variable.type}`);
+    }
+
+    if (variable.type === 'list') {
+      try {
+        if (
+          typeof variable.value === 'object' &&
+          (variable.value as Array<any>).length >= 0
+        ) {
+          // IGNORE
+        } else {
+          throw new BadRequestException(`Invalid value for type list`);
+        }
+      } catch (e) {
+        throw new BadRequestException(`Invalid value for type list`);
+      }
     }
 
     if (!allTypes.includes(variable.type)) {

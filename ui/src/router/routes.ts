@@ -29,6 +29,11 @@ const routes: RouteRecordRaw[] = [
 				component: () => import('pages/LoginPage.vue'),
 			},
 			{
+				name: 'SsoLogin',
+				path: 'sso/callback',
+				component: () => import('pages/SsoLogin.vue'),
+			},
+			{
 				name: 'ChangePassword',
 				path: 'changePassword',
 				component: () => import('pages/ChangePasswordPage.vue'),
@@ -116,6 +121,16 @@ const routes: RouteRecordRaw[] = [
 						name: 'AWS',
 						path: 'connections/aws',
 						component: () => import('pages/settings/AWSPage.vue'),
+					},
+					{
+						name: 'Azure',
+						path: 'connections/azure',
+						component: () => import('pages/settings/AzurePage.vue'),
+					},
+					{
+						name: 'Kubernetes',
+						path: 'connections/kubernetes',
+						component: () => import('pages/settings/KubernetesPage.vue'),
 					},
 					{
 						name: 'BaseModels',

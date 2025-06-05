@@ -19,7 +19,7 @@
 <template>
 	<q-dialog v-model="commentsDialog" persistent>
 		<q-card class="tw-min-w-[30%]">
-			<q-card-section class="tw-bg-darkPage">
+			<q-card-section class="tw-bg-dark">
 				<div class="text-h6">Comment your changes</div>
 			</q-card-section>
 			<q-card-section class="tw-max-h-[70vh] tw-overflow-auto">
@@ -158,7 +158,7 @@
 		</q-card>
 	</q-dialog>
 	<q-card
-		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tw-flex-1 tower-min-height"
+		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tw-flex-1 tw-grow"
 		flat
 	>
 		<q-inner-loading :showing="loading">
@@ -166,16 +166,21 @@
 			<div class="tw-mt-3">Please wait, loading...</div>
 		</q-inner-loading>
 		<div
-			v-if="configurationWithCurrentArchive.length === 0 && !loading && !filter"
+			v-if="
+				configurationWithCurrentArchive.length === 0 &&
+				configurationVariablesArchive.length === 0 &&
+				!loading &&
+				!filter
+			"
 			class="tw-w-full tw-flex tw-justify-center tw-items-center"
 		>
 			<div class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400">
-				There aren't any variables in this configuration
+				There are no variables in this configuration
 				<div
 					class="tw-text-center tw-text-xs tw-text-gray-500"
 					v-if="userCanModify"
 				>
-					You can create one using panel below
+					You can create one using the panel below
 				</div>
 			</div>
 		</div>
@@ -191,7 +196,11 @@
 			</div>
 		</div>
 		<div
-			v-if="!loading && configurationWithCurrentArchive.length > 0"
+			v-if="
+				!loading &&
+				(configurationWithCurrentArchive.length > 0 ||
+					configurationVariablesArchive.length > 0)
+			"
 			class="tw-w-full"
 		>
 			<div
@@ -206,14 +215,32 @@
 					v-if="configurationVariablesArchive.length > 0"
 					class="tw-flex tw-col-span-2"
 				>
-					<q-btn
-						:disable="version <= 0"
-						class="tw-flex-none"
-						flat
-						icon="sym_o_chevron_left"
-						padding="sm"
-						@click="version--"
-					/>
+					<div class="tw-place-content-center tw-min-w-max">
+						<q-btn
+							:disable="version <= 0 || loading"
+							class="tw-flex-none"
+							flat
+							icon="sym_o_first_page"
+							padding="sm"
+							@click="version = 0"
+						>
+							<q-tooltip :delay="1000" v-if="version > 0"
+								>Go to the first version</q-tooltip
+							>
+						</q-btn>
+						<q-btn
+							:disable="version <= 0 || loading"
+							class="tw-flex-none"
+							flat
+							icon="sym_o_chevron_left"
+							padding="sm"
+							@click="version--"
+						>
+							<q-tooltip :delay="1000" v-if="version > 0">
+								Go to the {{ toOrdinal(version) }} version
+							</q-tooltip>
+						</q-btn>
+					</div>
 					<div class="tw-grow tw-self-center tw-flex tw-justify-center">
 						<div class="tw-self-center tw-flex tw-mr-3">
 							<q-btn
@@ -227,13 +254,11 @@
 									:color="promoted ? 'accent' : undefined"
 									name="sym_o_star"
 								/>
-								<q-tooltip v-if="differentThanShownVersion && !promoted"
-									>Promote</q-tooltip
-								>
+								<q-tooltip v-if="!promoted" :delay="1000">Promote</q-tooltip>
 							</q-btn>
 							<q-separator inset vertical />
 						</div>
-						<div class="tw-mr-3 tw-self-center">
+						<div class="tw-mr-3 tw-self-center text-center">
 							<div>
 								Version #{{ version + 1 }}, created
 								{{ currentVersionDate }}
@@ -242,7 +267,9 @@
 								class="tw-text-center tw-text-gray-600 tw-font-light tw-text-xs"
 							>
 								created by
-								<span class="tw-font-medium">{{ currentVersionAuthor }}</span>
+								<div class="tw-font-medium tw-min-w-fit tw-break-all">
+									{{ currentVersionAuthor }}
+								</div>
 							</div>
 						</div>
 						<div v-if="userCanModify" class="tw-flex tw-self-center">
@@ -254,20 +281,41 @@
 								padding="sm"
 								@click="fullRevert"
 							>
-								<q-tooltip v-if="differentThanShownVersion"
+								<q-tooltip v-if="differentThanShownVersion" :delay="1000"
 									>Revert to this version
 								</q-tooltip>
 							</q-btn>
 						</div>
 					</div>
-					<q-btn
-						:disable="version >= configurationVariablesArchive.length - 1"
-						class="tw-flex-none"
-						flat
-						icon="sym_o_chevron_right"
-						padding="sm"
-						@click="version++"
-					/>
+					<div class="tw-place-content-center tw-min-w-max">
+						<q-btn
+							:disable="version >= configurationVariablesArchive.length - 1"
+							class="tw-flex-none"
+							flat
+							icon="sym_o_chevron_right"
+							padding="sm"
+							@click="version++"
+						>
+							<q-tooltip
+								:delay="1000"
+								v-if="version !== configurationVariablesArchive.length - 1"
+								>Go to the {{ toOrdinal(version + 2) }} version</q-tooltip
+							>
+						</q-btn>
+						<q-btn
+							:disable="version >= configurationVariablesArchive.length - 1"
+							flat
+							icon="sym_o_last_page"
+							padding="sm"
+							@click="version = configurationVariablesArchive.length - 1"
+						>
+							<q-tooltip
+								:delay="1000"
+								v-if="version !== configurationVariablesArchive.length - 1"
+								>Go to the latest version</q-tooltip
+							>
+						</q-btn>
+					</div>
 				</div>
 				<div
 					:class="{ 'tw-col-span-2': configurationVariablesArchive.length > 0 }"
@@ -276,67 +324,63 @@
 					Value
 				</div>
 			</div>
-			<div
+			<q-intersection
+				v-if="
+					configurationWithCurrentArchive.length === 0 &&
+					configurationVariablesArchive.length > 0 &&
+					!loading &&
+					!filter
+				"
+				transition="fade"
+				class="tw-w-full tw-h-full tw-my-auto tw-flex tw-justify-center tw-items-center"
+			>
+				<div class="tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400">
+					There are no configuration variables in this version or the latest
+					configuration
+					<div
+						class="tw-text-center tw-text-xs tw-text-gray-500"
+						v-if="userCanModify"
+					>
+						There is no existing data set that can be used for comparison.
+					</div>
+				</div>
+			</q-intersection>
+			<q-intersection
 				:class="{
 					'tw-col-span-2': configurationVariablesArchive.length > 0,
 					'tower-max-height': userCanModify,
 					'tower-max-height-readOnly': !userCanModify,
 				}"
+				transition="fade"
+				v-else
 			>
-				<template v-if="configurationWithCurrentArchive.length >= 100">
-					<q-intersection
-						once
-						v-for="row of configurationWithCurrentArchive"
-						:key="row.name"
-						class="tower-configuration-row"
-						ssr-prerender
-					>
-						<configuration-variable-row
-							v-model:type="row.type"
-							v-model:value="row.value"
-							v-model:value-key="row.valueKey"
-							:allow-delete="!row.addIfAbsent && userCanModify"
-							:current-archive="configurationArchiveVersion(row.name)"
-							:deleted="row.deleted"
-							:error="row.error"
-							:forced="row.forced || !userCanModify"
-							:grid="configurationVariablesArchive.length > 0 ? 3 : 2"
-							:is-constant-variable="row.constantVariable"
-							:name="row.name"
-							:source-base="row.sourceBase"
-							:source-model="row.sourceModel"
-							:showDiff="showDiff"
-							@addVariable="addNewVariable"
-							@removeVariable="removeVariable"
-						/>
-					</q-intersection>
-				</template>
-				<template v-else>
-					<transition-group
-						enter-active-class="animated fadeIn"
-						leave-active-class="animated fadeOut"
-					>
-						<configuration-variable-row
-							v-for="row of configurationWithCurrentArchive"
-							:key="row.name"
-							v-model:type="row.type"
-							v-model:value="row.value"
-							v-model:value-key="row.valueKey"
-							:allow-delete="!row.addIfAbsent && userCanModify"
-							:current-archive="configurationArchiveVersion(row.name)"
-							:deleted="row.deleted"
-							:error="row.error"
-							:forced="row.forced || !userCanModify"
-							:grid="configurationVariablesArchive.length > 0 ? 3 : 2"
-							:is-constant-variable="row.constantVariable"
-							:name="row.name"
-							:showDiff="showDiff"
-							@addVariable="addNewVariable"
-							@removeVariable="removeVariable"
-						/>
-					</transition-group>
-				</template>
-			</div>
+				<q-intersection
+					once
+					v-for="row of configurationWithCurrentArchive"
+					:key="row.name"
+					class="tower-configuration-row"
+					ssr-prerender
+				>
+					<configuration-variable-row
+						v-model:type="row.type"
+						v-model:value="row.value"
+						v-model:value-key="row.valueKey"
+						:allow-delete="!row.addIfAbsent && userCanModify"
+						:current-archive="configurationArchiveVersion(row.name)"
+						:deleted="row.deleted"
+						:error="row.error"
+						:forced="row.forced || !userCanModify"
+						:grid="configurationVariablesArchive.length > 0 ? 3 : 2"
+						:is-constant-variable="row.constantVariable"
+						:name="row.name"
+						:source-base="row.sourceBase"
+						:source-model="row.sourceModel"
+						:showDiff="showDiff"
+						@addVariable="addNewVariable"
+						@removeVariable="removeVariable"
+					/>
+				</q-intersection>
+			</q-intersection>
 		</div>
 	</q-card>
 	<div v-if="userCanModify">
@@ -355,7 +399,7 @@
 			leave-active-class="animated fadeOut"
 		>
 			<save-panel
-				v-if="configurationVariables?.variables"
+				v-if="!loading"
 				:has-errors="hasErrors"
 				:save-enabled="isDifferent && !loading"
 				@saveClicked="
@@ -394,7 +438,7 @@ import { userStore } from 'stores/user';
 import { navigationStore } from 'stores/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosError } from 'axios';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isNil } from 'lodash';
 //====================================================
 // Const
 //====================================================
@@ -441,6 +485,8 @@ const promotionCandidatePreviewConfig: Ref<Configuration | null> = ref(null);
 
 const commentsDialog = ref(false);
 const comment = ref('');
+
+let currentConfigurationFilter: any = {};
 
 //====================================================
 // beforeMounted
@@ -496,9 +542,14 @@ const promotionCandidatesCategories = computed(() => {
 	return null;
 });
 
+/**
+ * commentNeeded
+ */
 const commentNeeded = computed(() => {
 	return props.configModel.some((el) => {
-		return el.options.forceComment === true;
+		if (el) {
+			return el.options.forceComment === true;
+		}
 	});
 });
 
@@ -508,7 +559,7 @@ const commentNeeded = computed(() => {
 const currentVersionDate = computed(() => {
 	if (version.value >= 0) {
 		const date = new Date(
-			configurationVariablesArchive.value[version.value].effectiveDate,
+			configurationVariablesArchive.value[version.value]?.effectiveDate,
 		);
 		return date.toLocaleString();
 	}
@@ -521,8 +572,12 @@ const currentVersionDate = computed(() => {
  */
 const currentVersionAuthor = computed(() => {
 	if (version.value >= 0) {
-		return configurationVariablesArchive.value[version.value].createdBy
-			?.username;
+		const createdBy =
+			configurationVariablesArchive.value[version.value]?.createdBy;
+
+		if (createdBy) {
+			return createdBy.type === 'ldap' ? createdBy.display : createdBy.username;
+		}
 	}
 
 	return '';
@@ -533,7 +588,7 @@ const currentVersionAuthor = computed(() => {
  */
 const promoted = computed(() => {
 	if (version.value >= 0) {
-		return configurationVariablesArchive.value[version.value].promoted;
+		return configurationVariablesArchive.value[version.value]?.promoted;
 	}
 
 	return false;
@@ -617,7 +672,10 @@ const configurationWithCurrentArchive = computed(() => {
 		});
 	}
 
-	if (configurationVariablesArchive.value.length > 0) {
+	if (
+		configurationVariablesArchive.value.length > 0 &&
+		configurationVariablesArchive.value[version.value]?.variables
+	) {
 		configurationVariablesArchive.value[version.value].variables.forEach(
 			(archiveEl) => {
 				const exists = array.some((currentEl) => {
@@ -749,6 +807,9 @@ const getConfiguration = async () => {
 	configurationVariablesArchive.value = [];
 	localPromotionCandidates.value = [];
 	version.value = -1;
+	currentConfigurationFilter = {};
+
+	const rowsLimit = 20;
 
 	if (!props.configModel) {
 		return;
@@ -770,18 +831,24 @@ const getConfiguration = async () => {
 
 	const filter: any = {
 		order: 'effectiveDate DESC',
+		limit: rowsLimit,
 		include: ['member'],
 		where: {},
 	};
 
+	const constVariablesWhere: any = {};
+
 	baseSt.getBases.forEach((el) => {
-		filter.where[el.name] = { $eq: null };
+		filter.where[`__metadata.${el.name}`] = { $eq: null };
 	});
+
+	currentConfigurationFilter = filter;
 
 	props.configModel.forEach((el) => {
 		if (el && el.name !== '__NONE__') {
-			filter.where[el.base] = el.name;
+			filter.where[`__metadata.${el.base}`] = el.name;
 			rulesFilter.where.or.push({ name: el.name });
+			constVariablesWhere[`${el.base}`] = el.name;
 		}
 	});
 
@@ -790,9 +857,17 @@ const getConfiguration = async () => {
 			`configurations?filter=${JSON.stringify(filter, null, '')}`,
 		);
 
+		const countFilter = cloneDeep(filter);
+		countFilter.limit = undefined;
+		countFilter.order = undefined;
+
+		const countRequest = towerAxios.get(
+			`configurations/count?filter=${JSON.stringify(countFilter, null, '')}`,
+		);
+
 		const constVariablesRequest = towerAxios.get(
 			`constantVariables/findLatest?filter=${JSON.stringify(
-				filter.where,
+				constVariablesWhere,
 				null,
 				'',
 			)}`,
@@ -808,10 +883,13 @@ const getConfiguration = async () => {
 			request,
 			constVariablesRequest,
 			configurationModelRequest,
+			countRequest,
 		]);
 		response = fullResponse[0];
 		constVariablesResponse = fullResponse[1];
 		configurationModelResponse = fullResponse[2];
+
+		const count = fullResponse[3];
 
 		if (response.status === 200) {
 			configurationVariables.value = null;
@@ -819,10 +897,19 @@ const getConfiguration = async () => {
 			if (response.data.length > 0) {
 				// Deep copy
 				configurationVariables.value = structuredClone(response.data[0]);
-				configurationVariablesArchive.value = response.data.reverse();
+				if (count.data > rowsLimit) {
+					configurationVariablesArchive.value = [
+						...[...Array(count.data - rowsLimit).keys()].map(() => {
+							return {} as Configuration;
+						}),
+						...response.data.reverse(),
+					];
+				} else {
+					configurationVariablesArchive.value = [...response.data.reverse()];
+				}
 
 				if (configurationVariablesArchive.value.length > 0) {
-					version.value = configurationVariablesArchive.value.length - 1;
+					version.value = count.data - 1;
 
 					if (userCanModify.value) {
 						getPromotionCandidates()
@@ -1001,6 +1088,42 @@ const showCommentsDialog = () => {
  * saveConfiguration
  */
 const saveConfiguration = async () => {
+	// Check if configuration with higher version exists already
+	currentConfigurationFilter.limit = 1;
+	const currentConfigurationRequest = await towerAxios.get(
+		`configurations?filter=${JSON.stringify(currentConfigurationFilter, null, '')}`,
+	);
+
+	if (
+		currentConfigurationRequest.status === 200 &&
+		currentConfigurationRequest.data[0]
+	) {
+		let currentVersion = 0;
+		if (
+			configurationVariablesArchive.value &&
+			configurationVariablesArchive.value.length > 0
+		) {
+			currentVersion =
+				configurationVariablesArchive.value[
+					configurationVariablesArchive.value.length - 1
+				].version;
+		}
+
+		if (currentVersion !== currentConfigurationRequest.data[0].version) {
+			$q.notify({
+				color: 'negative',
+				position: 'top',
+				textColor: 'secondary',
+				icon: 'sym_o_error',
+				message: 'Trying to update old configuration version, save aborted',
+			});
+
+			await getConfiguration();
+
+			return;
+		}
+	}
+
 	if (configurationVariables.value?.variables) {
 		loading.value = true;
 
@@ -1176,15 +1299,16 @@ const isDifferentThan = (versionToCheck?: number) => {
 		return true;
 	}
 
-	versionToCheck =
-		versionToCheck || configurationVariablesArchive.value.length - 1;
+	versionToCheck = !isNil(versionToCheck)
+		? versionToCheck
+		: configurationVariablesArchive.value.length - 1;
 
 	if (configurationVariablesArchive.value.length > 0) {
 		const currentVariables =
 			configurationVariablesArchive.value[versionToCheck];
 
 		if (
-			currentVariables.variables.length !==
+			currentVariables.variables?.length !==
 			configurationVariables.value?.variables.length
 		) {
 			return true;
@@ -1274,7 +1398,16 @@ const promoteConfiguration = async () => {
 				icon: 'sym_o_error',
 				message: 'Error promoting configuration',
 			});
+
+			return;
 		}
+
+		$q.notify({
+			color: 'positive',
+			position: 'top',
+			textColor: 'secondary',
+			message: 'Configuration has been promoted successfully',
+		});
 	}
 };
 
@@ -1394,6 +1527,57 @@ watch(localPromotionCandidates, (current) => {
 	emit('update:promotionCandidates', current);
 });
 
+watch(version, async (current) => {
+	if (
+		configurationVariablesArchive.value[current] &&
+		!configurationVariablesArchive.value[current].variables
+	) {
+		loading.value = true;
+
+		const rulesFilter: any = {
+			where: { or: [], rules: { $gt: { $size: 0 } } },
+		};
+
+		const filter: any = {
+			include: ['member'],
+			where: {
+				version: current + 1,
+			},
+		};
+
+		baseSt.getBases.forEach((el) => {
+			filter.where[el.name] = { $eq: null };
+		});
+
+		props.configModel.forEach((el) => {
+			if (el && el.name !== '__NONE__') {
+				filter.where[el.base] = el.name;
+				rulesFilter.where.or.push({ name: el.name });
+			}
+		});
+
+		try {
+			const request = await towerAxios.get(
+				`configurations?filter=${JSON.stringify(filter, null, '')}`,
+			);
+
+			if (request.status === 200) {
+				configurationVariablesArchive.value[current] = request.data[0];
+			}
+		} catch (e) {
+			$q.notify({
+				color: 'negative',
+				position: 'top',
+				textColor: 'secondary',
+				icon: 'sym_o_error',
+				message: 'Error collecting configuration data',
+			});
+		}
+
+		loading.value = false;
+	}
+});
+
 //====================================================
 // Expose
 //====================================================
@@ -1415,9 +1599,5 @@ defineExpose({
 .tower-max-height-readOnly {
 	overflow: auto;
 	max-height: calc(100vh - 14rem);
-}
-
-.tower-min-height {
-	min-height: calc(100vh - 18rem);
 }
 </style>

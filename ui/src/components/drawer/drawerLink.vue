@@ -22,7 +22,7 @@
 			:class="{
 				'tw-bg-secondary': checkRegEx.test(currentRoute),
 				'tw-bg-dark': !checkRegEx.test(currentRoute),
-				'tw-text-darkPage': checkRegEx.test(currentRoute)
+				'tw-text-darkPage': checkRegEx.test(currentRoute),
 			}"
 			class="tw-px-2 2xl:tw-py-1 tw-py-0 tw-mb-1 2xl:tw-mx-2 tw-mx-3 tw-rounded 2xl:tw-min-h-[2.25rem] tw-min-h-[2rem]"
 			clickable
@@ -38,7 +38,7 @@
 			<div class="tw-flex tw-w-full tw-justify-center 2xl:tw-justify-start">
 				<q-icon
 					v-if="icon"
-					:color="checkRegEx.test(currentRoute) ? 'dark' : undefined"
+					:color="checkRegEx.test(currentRoute) ? 'primary' : undefined"
 					:name="icon"
 					:size="$q.screen.gt.lg ? 'xs' : 'sm'"
 					class="tw-self-center 2xl:tw-mr-2 tw-grow 2xl:tw-grow-0"
@@ -46,7 +46,7 @@
 				</q-icon>
 				<div
 					:class="{ 'tw-text-center': !icon }"
-					class="tw-text-xs tw-self-center tw-grow tw-justify-self-center 2xl:tw-block tw-hidden"
+					class="tw-self-center tw-grow tw-justify-self-center 2xl:tw-block tw-hidden"
 				>
 					{{ title }}
 				</div>
@@ -79,7 +79,7 @@ const route = useRoute();
  */
 withDefaults(defineProps<LinkProps>(), {
 	link: '#',
-	icon: ''
+	icon: '',
 });
 
 /**

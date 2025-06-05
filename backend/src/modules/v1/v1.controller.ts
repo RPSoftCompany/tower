@@ -35,8 +35,14 @@ export class V1Controller {
   async v1(@Res() response: Response) {
     return CRUDExceptionWrapper(async () => {
       const url = (this.request as any)._parsedUrl.pathname;
+      const params = this.request.query;
       const userRoles = (this.request as any).__userData.__roles;
-      const rendered = await this.v1Service.matchUrl(userRoles, url);
+      const rendered = await this.v1Service.matchUrl(
+        userRoles,
+        url,
+        undefined,
+        params,
+      );
 
       response
         .setHeader('Content-Type', rendered.contentType)

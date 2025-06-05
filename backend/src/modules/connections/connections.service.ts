@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import {
   CreateAWSConnectionDto,
+  CreateAzureConnectionDto,
+  CreateKubernetesConnectionDto,
   CreateLDAPConnectionDto,
   CreateSCPConnectionDto,
   CreateVaultConnectionDto,
@@ -41,7 +43,11 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from '@aws-sdk/client-secrets-manager';
-import { isNil } from '@nestjs/common/utils/shared.utils';
+import { AzureConnection } from './AzureConnection.schema';
+import { ClientSecretCredential } from '@azure/identity';
+import { SecretClient } from '@azure/keyvault-secrets';
+import { KubernetesConnection } from './KubernetesConnection.schema';
+import { isEmpty } from 'lodash';
 
 @Injectable()
 export class ConnectionsService implements OnModuleInit {
@@ -114,7 +120,9 @@ export class ConnectionsService implements OnModuleInit {
       | CreateLDAPConnectionDto
       | CreateSCPConnectionDto
       | CreateVaultConnectionDto
-      | CreateAWSConnectionDto,
+      | CreateAWSConnectionDto
+      | CreateAzureConnectionDto
+      | CreateKubernetesConnectionDto,
   ) {
     if (!!createConnectionDto._id) {
       if (createConnectionDto.system === 'LDAP') {
@@ -125,7 +133,7 @@ export class ConnectionsService implements OnModuleInit {
         });
 
         for (const key in existingConnection) {
-          if (key !== '_id' && ldapConnection[key]) {
+          if (key !== '_id' && !isEmpty(ldapConnection[key])) {
             existingConnection[key] = ldapConnection[key];
           }
         }
@@ -154,7 +162,7 @@ export class ConnectionsService implements OnModuleInit {
 
         if (existingConnection && existingConnection.system === SCP.name) {
           for (const key in existingConnection) {
-            if (key !== 'id' && SCPConnection[key]) {
+            if (key !== 'id' && !isEmpty(SCPConnection[key])) {
               existingConnection[key] = SCPConnection[key];
             }
           }
@@ -175,7 +183,7 @@ export class ConnectionsService implements OnModuleInit {
           existingConnection.system === AWSConnection.name
         ) {
           for (const key in existingConnection) {
-            if (key !== 'id' && AWSConn[key]) {
+            if (key !== 'id' && !isEmpty(AWSConn[key])) {
               existingConnection[key] = AWSConn[key];
             }
           }
@@ -183,6 +191,45 @@ export class ConnectionsService implements OnModuleInit {
           return await existingConnection.save();
         } else {
           throw new BadRequestException('Invalid system id');
+        }
+      } else if (createConnectionDto.system === AzureConnection.name) {
+        const AzureConn = createConnectionDto as CreateAzureConnectionDto;
+
+        const existingConnection = await this.connectionModel.findById(
+          AzureConn._id,
+        );
+
+        if (
+          existingConnection &&
+          existingConnection.system === AzureConnection.name
+        ) {
+          for (const key in existingConnection) {
+            if (key !== 'id' && !isEmpty(AzureConn[key])) {
+              existingConnection[key] = AzureConn[key];
+            }
+          }
+
+          return await existingConnection.save();
+        }
+      } else if (KubernetesConnection.name) {
+        const KubernetesConn =
+          createConnectionDto as CreateKubernetesConnectionDto;
+
+        const existingConnection = await this.connectionModel.findById(
+          KubernetesConn._id,
+        );
+
+        if (
+          existingConnection &&
+          existingConnection.system === KubernetesConnection.name
+        ) {
+          for (const key in existingConnection) {
+            if (key !== 'id' && !isEmpty(KubernetesConn[key])) {
+              existingConnection[key] = KubernetesConn[key];
+            }
+          }
+
+          return await existingConnection.save();
         }
       } else {
         throw new BadRequestException('Invalid system name');
@@ -193,6 +240,13 @@ export class ConnectionsService implements OnModuleInit {
     } else if (createConnectionDto.system === AWSConnection.name) {
       const AWSConnection = createConnectionDto as CreateAWSConnectionDto;
       return await this.connectionModel.create(AWSConnection);
+    } else if (createConnectionDto.system === AzureConnection.name) {
+      const AzureConnection = createConnectionDto as CreateAzureConnectionDto;
+      return await this.connectionModel.create(AzureConnection);
+    } else if (createConnectionDto.system === KubernetesConnection.name) {
+      const kubernetesConnection =
+        createConnectionDto as CreateKubernetesConnectionDto;
+      return await this.connectionModel.create(kubernetesConnection);
     }
 
     throw new BadRequestException('Invalid connection details');
@@ -242,7 +296,12 @@ export class ConnectionsService implements OnModuleInit {
 
     if (connection.length > 0) {
       if (
-        ![SCP.name, AWSConnection.name].includes((connection[0] as any).system)
+        ![
+          SCP.name,
+          AWSConnection.name,
+          AzureConnection.name,
+          KubernetesConnection.name,
+        ].includes((connection[0] as any).system)
       ) {
         throw new BadRequestException("Can't delete this connection");
       }
@@ -259,13 +318,19 @@ export class ConnectionsService implements OnModuleInit {
    */
   async testConnection(
     type: string,
-    body?: LDAP | Vault | SCP | AWSConnection,
+    body?:
+      | LDAP
+      | Vault
+      | SCP
+      | AWSConnection
+      | AzureConnection
+      | KubernetesConnection,
   ) {
     if (type === SCP.name) {
       //====================================================
       // SCP
       //====================================================
-      let scpConnection;
+      let scpConnection: SCP;
       if (body) {
         scpConnection = body as SCP;
       } else {
@@ -296,7 +361,7 @@ export class ConnectionsService implements OnModuleInit {
         throw new ServiceUnavailableException(e.message);
       }
     } else if (type === Vault.name) {
-      let vaultConnection;
+      let vaultConnection: Vault;
       if (body) {
         vaultConnection = body as Vault;
       } else {
@@ -312,7 +377,7 @@ export class ConnectionsService implements OnModuleInit {
         throw new ServiceUnavailableException(e.message);
       }
     } else if (type === LDAP.name) {
-      let ldapConnection;
+      let ldapConnection: LDAP;
       if (body) {
         ldapConnection = body as LDAP;
       } else {
@@ -329,7 +394,7 @@ export class ConnectionsService implements OnModuleInit {
         throw new ServiceUnavailableException(e.message);
       }
     } else if (type === AWSConnection.name) {
-      let awsConnection;
+      let awsConnection: AWSConnection;
       if (body) {
         awsConnection = body as AWSConnection;
       } else {
@@ -356,6 +421,53 @@ export class ConnectionsService implements OnModuleInit {
         if (e.message !== "Secrets Manager can't find the specified secret.") {
           throw new ServiceUnavailableException(e.message);
         }
+      }
+    } else if (type === AzureConnection.name) {
+      let connection: AzureConnection;
+      if (body) {
+        connection = body as AzureConnection;
+      } else {
+        throw new BadRequestException('Connection not provided');
+      }
+
+      try {
+        const credentials = new ClientSecretCredential(
+          connection.tenantId,
+          connection.clientId,
+          connection.clientSecret,
+        );
+
+        const vaultName = connection.vaultName;
+        const url = connection.url;
+
+        const client = new SecretClient(url, credentials);
+
+        // Try random secret
+        await client.getSecret(`${(Math.random() * 1e32).toString(36)}`);
+      } catch (e) {
+        if (e.details?.error?.code !== 'SecretNotFound') {
+          throw new ServiceUnavailableException(e.message);
+        }
+      }
+    } else if (type === KubernetesConnection.name) {
+      let connection: KubernetesConnection;
+      if (body) {
+        connection = body as KubernetesConnection;
+      } else {
+        throw new BadRequestException('Connection not provided');
+      }
+
+      try {
+        await axios.get(
+          `${connection.url}/api/v1/namespaces/${connection.namespace}/secrets`,
+          {
+            headers: {
+              Authorization: `Bearer ${connection.token}`,
+            },
+          },
+        );
+      } catch (e) {
+        throw new ServiceUnavailableException(e.message);
       }
     }
   }
@@ -413,6 +525,9 @@ export class ConnectionsService implements OnModuleInit {
     return '';
   }
 
+  /**
+   * getAWSConnections
+   */
   async getAWSConnections() {
     return this.connectionModel.find({
       system: AWSConnection.name,
@@ -425,6 +540,7 @@ export class ConnectionsService implements OnModuleInit {
    * @param connections
    * @param configurationBases
    * @param variableName
+   * @param valueKey
    */
   async getAWSSMVariable(
     connections: AWSConnection[],
@@ -456,13 +572,7 @@ export class ConnectionsService implements OnModuleInit {
               VersionStage: 'AWSCURRENT',
             });
 
-            const response = await client.send(command);
-
-            if (!isNil(response.SecretString)) {
-              const tempJson = JSON.parse(response.SecretString);
-              return tempJson[valueKey];
-              // return JSON.stringify(response.SecretString).slice(1, -1);
-            }
+            return client.send(command);
           } catch (e) {
             throw new BadRequestException(e.message);
           }
@@ -470,7 +580,60 @@ export class ConnectionsService implements OnModuleInit {
       }
     }
 
-    return '';
+    return null;
+  }
+
+  /**
+   * getAzureConnections
+   */
+  async getAzureConnections() {
+    return this.connectionModel.find({
+      system: AzureConnection.name,
+    });
+  }
+
+  /**
+   * getAzureKeyVaultVariable
+   * @param connections
+   * @param configurationBases
+   * @param variableName
+   */
+  async getAzureKeyVaultVariable(
+    connections: AzureConnection[],
+    configurationBases: any,
+    variableName: string,
+  ) {
+    for (const connection of connections) {
+      for (const item of connection.items) {
+        let valid = true;
+        for (const key in configurationBases) {
+          if (item[key] && item[key] !== configurationBases[key]) {
+            valid = false;
+          }
+        }
+
+        if (valid) {
+          try {
+            const credentials = new ClientSecretCredential(
+              connection.tenantId,
+              connection.clientId,
+              connection.clientSecret,
+            );
+
+            const vaultName = connection.vaultName;
+            const url = connection.url;
+
+            const client = new SecretClient(url, credentials);
+
+            return client.getSecret(variableName);
+          } catch (e) {
+            throw new BadRequestException(e.message);
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -521,67 +684,309 @@ export class ConnectionsService implements OnModuleInit {
       },
     ];
 
-    const connections: SCP[] = await this.connectionModel.aggregate(
-      aggregation,
-    );
+    const connections: SCP[] =
+      await this.connectionModel.aggregate(aggregation);
 
     const allBases = await this.baseConfigurationModel.find();
 
     for (const connection of connections) {
-      for (const connectionItem of connection.items) {
-        if (connectionItem.template.id) {
-          const template: RestConfiguration = await this.restModel.findById(
-            connectionItem.template.id,
-          );
+      const allPromises = [];
+      allPromises.push(
+        this.requestSCP(connection, userRoles, allBases, configuration),
+      );
 
-          if (template) {
-            const sftpConnection = new sftp();
+      await Promise.all(allPromises);
+    }
+  }
 
-            try {
-              if (connection.authType === 'userpass') {
-                await sftpConnection.connect({
-                  port: connection.port,
-                  host: connection.host,
-                  username: connection.username,
-                  password: decryptPassword(connection.password),
-                  readyTimeout: 3000,
-                });
-              } else {
-                await sftpConnection.connect({
-                  port: connection.port,
-                  host: connection.host,
-                  username: connection.username,
-                  privateKey: decryptPassword(connection.key),
-                  readyTimeout: 3000,
-                });
+  /**
+   * requestSCP
+   *
+   * @param connection
+   * @param userRoles
+   * @param allBases
+   * @param configuration
+   * @private
+   */
+  private async requestSCP(
+    connection: SCP,
+    userRoles: string[],
+    allBases: any,
+    configuration: Configuration,
+  ) {
+    for (const connectionItem of connection.items) {
+      if (connectionItem.template.id) {
+        const template: RestConfiguration = await this.restModel.findById(
+          connectionItem.template.id,
+        );
+
+        if (template) {
+          const sftpConnection = new sftp();
+
+          try {
+            if (connection.authType === 'userpass') {
+              await sftpConnection.connect({
+                port: connection.port,
+                host: connection.host,
+                username: connection.username,
+                password: decryptPassword(connection.password),
+                readyTimeout: 3000,
+              });
+            } else {
+              await sftpConnection.connect({
+                port: connection.port,
+                host: connection.host,
+                username: connection.username,
+                privateKey: decryptPassword(connection.key),
+                readyTimeout: 3000,
+              });
+            }
+
+            configuration.variables = configuration.variables.map((el) => {
+              if (el.type === 'password') {
+                el.value = decryptPassword(el.value);
               }
 
-              configuration.variables = configuration.variables.map((el) => {
-                if (el.type === 'password') {
-                  el.value = decryptPassword(el.value);
-                }
+              return el;
+            });
 
-                return el;
-              });
+            const all = await this.v1Service.compileConfiguration(
+              userRoles,
+              configuration,
+              allBases,
+              template,
+            );
 
-              const all = await this.v1Service.compileConfiguration(
-                userRoles,
-                configuration,
-                allBases,
-                template,
-              );
+            const stream = new Readable();
+            stream.push(all.template);
+            stream.push(null);
 
-              const stream = new Readable();
-              stream.push(all.template);
-              stream.push(null);
+            await sftpConnection.put(stream, connectionItem.path);
+          } catch (e) {
+            this.logger.error(`Error during the SCP connection: ${e.message}`);
+          }
+        }
+      }
+    }
+  }
 
-              await sftpConnection.put(stream, connectionItem.path);
-            } catch (e) {
-              this.logger.error(
-                `Error during the SCP connection: ${e.message}`,
+  /**
+   * executeKubernetesHook
+   *
+   * @param configurationBases
+   * @param configuration
+   */
+  async executeKubernetesHook(
+    configurationBases: any,
+    configuration: Configuration,
+  ) {
+    const allConnections = await this.connectionModel.find({
+      system: KubernetesConnection.name,
+    });
+
+    for (const connection of allConnections) {
+      const kubernetesConnection =
+        connection as unknown as KubernetesConnection;
+      const promises = [];
+      promises.push(
+        this.requestKubernetes(
+          kubernetesConnection,
+          configurationBases,
+          configuration,
+        ),
+      );
+
+      await Promise.all(promises);
+    }
+  }
+
+  /**
+   * requestKubernetes
+   *
+   * @param kubernetesConnection
+   * @param configurationBases
+   * @param configuration
+   * @private
+   */
+  private async requestKubernetes(
+    kubernetesConnection: KubernetesConnection,
+    configurationBases: any,
+    configuration: Configuration,
+  ) {
+    for (const connectionItem of kubernetesConnection.items) {
+      let valid = true;
+
+      for (const base in configurationBases) {
+        if (
+          connectionItem[base] !== null &&
+          connectionItem[base] !== configurationBases[base]
+        ) {
+          valid = false;
+        }
+      }
+
+      if (valid) {
+        const values = {};
+        configuration.variables.forEach((variable) => {
+          if (variable.type === 'password') {
+            values[variable.name] = `${decryptPassword(variable.value)}`;
+          } else {
+            values[variable.name] = `${variable.value}`;
+          }
+        });
+
+        try {
+          let secretName: string = connectionItem.__secretName__ as string;
+          let i = Object.keys(configurationBases).length - 1;
+          while (!secretName && i >= 0) {
+            const baseName = Object.keys(configurationBases)[i];
+            secretName = configurationBases[`${baseName}`];
+            i--;
+          }
+
+          if (!secretName) {
+            this.logger.error(`Can't establish secretName`);
+          } else {
+            let isNew = false;
+
+            for (const base of Object.keys(configurationBases)) {
+              secretName = secretName.replace(
+                `{${base}}`,
+                configurationBases[base],
               );
             }
+            secretName = secretName.toLowerCase();
+
+            try {
+              await axios.get(
+                `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${kubernetesConnection.token}`,
+                  },
+                },
+              );
+            } catch (e) {
+              if (e.response?.status === 404) {
+                isNew = true;
+              }
+            }
+
+            if (connectionItem.__mode__ === 'Full') {
+              if (isNew) {
+                await axios.post(
+                  `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
+                  {
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    metadata: {
+                      name: secretName,
+                      annotations: {
+                        'tower-update-timestamp': `${new Date().toISOString()}`,
+                      },
+                    },
+                    type: 'Opaque',
+                    stringData: values,
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${kubernetesConnection.token}`,
+                    },
+                  },
+                );
+              } else {
+                await axios.put(
+                  `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                  {
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    metadata: {
+                      name: secretName,
+                      annotations: {
+                        'tower-update-timestamp': `${new Date().toISOString()}`,
+                      },
+                    },
+                    type: 'Opaque',
+                    stringData: values,
+                  },
+                  {
+                    headers: {
+                      Authorization: `Bearer ${kubernetesConnection.token}`,
+                    },
+                  },
+                );
+              }
+            } else {
+              const template = await this.restModel.findOne({
+                _id: connectionItem.__template__,
+              });
+
+              if (template) {
+                configuration.variables.map(variable => {
+                  if (variable.type === 'password') {
+                    variable.value = decryptPassword(variable.value);
+                  }
+
+                  return variable;
+                })
+
+                const renderedData = await this.v1Service.renderTemplate(
+                  template.template,
+                  template.returnType,
+                  configuration,
+                );
+                let stringData = {};
+                stringData[`${connectionItem.__variableName__}`] = renderedData;
+
+                if (isNew) {
+                  await axios.post(
+                    `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets`,
+                    {
+                      apiVersion: 'v1',
+                      kind: 'Secret',
+                      metadata: {
+                        name: secretName,
+                        annotations: {
+                          'tower-update-timestamp': `${new Date().toISOString()}`,
+                        },
+                      },
+                      type: 'Opaque',
+                      stringData: stringData,
+                    },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${kubernetesConnection.token}`,
+                      },
+                    },
+                  );
+                } else {
+                  await axios.patch(
+                    `${kubernetesConnection.url}/api/v1/namespaces/${kubernetesConnection.namespace}/secrets/${secretName}`,
+                    {
+                      apiVersion: 'v1',
+                      kind: 'Secret',
+                      metadata: {
+                        name: secretName,
+                        annotations: {
+                          'tower-update-timestamp': `${new Date().toISOString()}`,
+                        },
+                      },
+                      type: 'Opaque',
+                      stringData: stringData,
+                    },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${kubernetesConnection.token}`,
+                        'Content-Type': 'application/merge-patch+json',
+                      },
+                    },
+                  );
+                }
+              }
+            }
           }
+        } catch (e) {
+          this.logger.error(e.message);
         }
       }
     }

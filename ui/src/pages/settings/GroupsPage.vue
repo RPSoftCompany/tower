@@ -66,30 +66,36 @@
 			</tower-select>
 		</div>
 		<div class="tw-mt-6 tower-min-height" v-if="currentGroup">
-			<q-list>
-				<q-item
-					clickable
-					v-for="role of allRoles"
-					:key="role.name"
-					@click="addOrRemoveRole(role.name)"
-				>
+			<search-toolbar
+				class="tw-mb-3"
+				:export-enabled="false"
+				:showDiffEnabled="false"
+				v-model:filter="filter"
+				title=""
+			/>
+			<q-virtual-scroll
+				:items="filteredRoles"
+				v-slot="{ item }"
+				style="max-height: calc(100vh - 22rem)"
+			>
+				<q-item clickable @click="addOrRemoveRole(item.name)">
 					<q-item-section avatar>
 						<q-icon
 							:name="
-								currentRoles.includes(role.name)
+								currentRoles.includes(item.name)
 									? 'sym_o_check'
 									: 'sym_o_check_box_outline_blank'
 							"
-							:color="currentRoles.includes(role.name) ? 'positive' : 'grey-7'"
+							:color="currentRoles.includes(item.name) ? 'positive' : 'grey-7'"
 							class="heavy"
 							size="sm"
 						/>
 					</q-item-section>
 					<q-item-section>
-						<q-item-label>{{ role.name }}</q-item-label>
+						<q-item-label>{{ item.name }}</q-item-label>
 					</q-item-section>
 				</q-item>
-			</q-list>
+			</q-virtual-scroll>
 		</div>
 		<div v-if="currentGroup" class="tw-justify-self-end">
 			<save-panel
@@ -110,6 +116,7 @@ import { Role } from 'pages/settings/types/Role';
 import SavePanel from 'components/basic/savePanel.vue';
 import { useQuasar } from 'quasar';
 import { navigationStore } from 'stores/navigation';
+import SearchToolbar from 'components/configuration/searchToolbar.vue';
 
 //====================================================
 // Const
@@ -133,6 +140,8 @@ const inputValue = ref('');
 
 const deleteGroupDialog = ref(false);
 
+const filter = ref('');
+
 //====================================================
 // onMounted
 //====================================================
@@ -141,7 +150,7 @@ onMounted(async () => {
 });
 
 //====================================================
-// Mounted
+// Methods
 //====================================================
 /**
  * getAllGroups
@@ -152,7 +161,7 @@ const getAllGroups = async () => {
 	};
 
 	let response = await towerAxios.get(
-		`groups?filter=${JSON.stringify(filter, undefined, '')}`
+		`groups?filter=${JSON.stringify(filter, undefined, '')}`,
 	);
 
 	if (response.status === 200) {
@@ -160,7 +169,7 @@ const getAllGroups = async () => {
 	}
 
 	response = await towerAxios.get(
-		`Roles?filter=${JSON.stringify(filter, undefined, '')}`
+		`Roles?filter=${JSON.stringify(filter, undefined, '')}`,
 	);
 
 	if (response.status === 200) {
@@ -210,7 +219,7 @@ const saveChanges = async () => {
 
 			if (!found) {
 				await towerAxios.post(
-					`/groups/${currentGroup.value._id}/role?role=${role}`
+					`/groups/${currentGroup.value._id}/role?role=${role}`,
 				);
 			}
 		}
@@ -222,7 +231,7 @@ const saveChanges = async () => {
 
 			if (!found) {
 				await towerAxios.delete(
-					`/groups/${currentGroup.value._id}/role?role=${role}`
+					`/groups/${currentGroup.value._id}/role?role=${role}`,
 				);
 			}
 		}
@@ -351,6 +360,21 @@ const isDifferent = computed(() => {
 	});
 });
 
+/**
+ * filteredRoles
+ */
+const filteredRoles = computed(() => {
+	if (allRoles.value && allRoles.value.length > 0 && filter.value) {
+		const localFilter = filter.value.toLowerCase();
+
+		return allRoles.value.filter((el) => {
+			return el.name.toLowerCase().includes(localFilter);
+		});
+	}
+
+	return allRoles.value;
+});
+
 //====================================================
 // Watch
 //====================================================
@@ -364,7 +388,7 @@ watch(
 		if (current) {
 			currentRoles.value = [...current.roles];
 		}
-	}
+	},
 );
 
 watch(
@@ -375,7 +399,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 

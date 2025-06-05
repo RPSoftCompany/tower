@@ -73,6 +73,22 @@ class AWSConnectionItemDto {
   [x: string]: unknown;
 }
 
+export class CreateAzureConnectionDto {
+  _id?: string;
+  system: string;
+  enabled: boolean;
+  tenantId: string;
+  clientId: string;
+  clientSecret: string;
+  vaultName: string;
+  url: string;
+  connections: AzureConnectionItemDto[];
+}
+
+class AzureConnectionItemDto {
+  [x: string]: unknown;
+}
+
 export class CreateVaultConnectionDto {
   _id: string;
   system: string;
@@ -87,4 +103,18 @@ class VaultConnectionTokenDto {
   name: string;
   base: string;
   token?: string;
+}
+
+export class CreateKubernetesConnectionDto {
+  _id: string;
+  system: string;
+  enabled: boolean;
+  token: string;
+  url: string;
+  namespace: string;
+  tokens: KubernetesConnectionItemDto[];
+}
+
+class KubernetesConnectionItemDto {
+  [x: string]: unknown;
 }

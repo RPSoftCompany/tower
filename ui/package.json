@@ -1,6 +1,6 @@
 {
 	"name": "tower-ui",
-	"version": "3.2.0",
+	"version": "3.3.1",
 	"description": "Tower configuration server",
 	"productName": "tower",
 	"author": "RPSoft <radekprzewuski@gmail.com>",
@@ -13,20 +13,23 @@
 		"build": "quasar build"
 	},
 	"dependencies": {
+		"@fontsource/atkinson-hyperlegible": "^5.0.20",
 		"@quasar/extras": "^1.16.11",
 		"ace-builds": "^1.31.2",
 		"axios": "^1.6.2",
 		"diff": "^5.1.0",
 		"js-file-download": "^0.4.12",
 		"lodash": "^4.17.21",
-		"material-symbols": "^0.14.1",
+		"material-symbols": "^0.22.1",
+		"number-to-words": "^1.2.4",
 		"papaparse": "^5.4.1",
 		"pinia": "^2.1.7",
-		"pinia-plugin-persistedstate-2": "^2.0.15",
-		"quasar": "^2.15.2",
+		"pinia-plugin-persistedstate-2": "^2.0.24",
+		"quasar": "^2.16.9",
 		"uuid": "^9.0.1",
+		"vite-plugin-rewrite-all": "^1.0.2",
 		"vue": "^3.4.21",
-		"vue-router": "^4.3.0",
+		"vue-router": "^4.4.3",
 		"vue3-ace-editor": "^2.2.4"
 	},
 	"devDependencies": {
@@ -34,6 +37,7 @@
 		"@types/diff": "^5.0.9",
 		"@types/lodash": "^4.17.0",
 		"@types/node": "^20.12.2",
+		"@types/number-to-words": "^1.2.3",
 		"@types/papaparse": "^5.3.14",
 		"@types/uuid": "^9.0.8",
 		"@typescript-eslint/eslint-plugin": "^7.4.0",

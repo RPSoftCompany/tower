@@ -17,6 +17,8 @@ import { AuditsModule } from './modules/audits/audits.module';
 import { HooksModule } from './modules/hooks/hooks.module';
 import { RestConfigurationsModule } from './modules/rest-configurations/rest-configurations.module';
 import { BaseConfigurationsModule } from './modules/base-configurations/base-configurations.module';
+import { MaxConfigurationModule } from './modules/max-configuration/max-configuration.module';
+import { SsoModule } from './modules/sso/sso.module';
 
 @Module({
   imports: [
@@ -25,6 +27,7 @@ import { BaseConfigurationsModule } from './modules/base-configurations/base-con
     }),
     MongooseModule.forRoot(process.env.DATABASE_URL),
     ScheduleModule.forRoot(),
+    MaxConfigurationModule,
     V1Module,
     ConnectionsModule,
     MembersModule,
@@ -40,7 +43,9 @@ import { BaseConfigurationsModule } from './modules/base-configurations/base-con
     PromotionsModule,
     RestConfigurationsModule,
     RolesModule,
+    SsoModule,
   ],
   providers: [],
+  controllers: [],
 })
 export class AppModule {}

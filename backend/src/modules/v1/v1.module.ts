@@ -17,6 +17,14 @@ import { ConstantVariablesModule } from '../constant-variables/constant-variable
 import { ConnectionsModule } from '../connections/connections.module';
 import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
 import { ConfigurationModelSchema } from '../configuration-models/configuration-models.schema';
+import {
+  maxConfiguration,
+  MaxConfigurationSchema,
+} from '../max-configuration/max-configuration.schema';
+import {
+  MaxConstantVariable,
+  MaxConstantVariableSchema,
+} from '../max-constant-variable/max-constant-variable.schema';
 
 @Module({
   imports: [
@@ -29,6 +37,8 @@ import { ConfigurationModelSchema } from '../configuration-models/configuration-
         name: ConfigurationModelsModule.name,
         schema: ConfigurationModelSchema,
       },
+      { name: maxConfiguration.name, schema: MaxConfigurationSchema },
+      { name: MaxConstantVariable.name, schema: MaxConstantVariableSchema },
     ]),
     ConfigurationsModule,
     ConstantVariablesModule,

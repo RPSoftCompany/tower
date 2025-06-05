@@ -18,20 +18,16 @@
 
 <template>
 	<div
-		class="fullscreen bg-darkPage text-white text-center q-pa-md flex flex-center"
+		class="fullscreen bg-darkPage text-secondary text-center q-pa-md flex flex-center"
 	>
 		<div>
-			<div style="font-size: 30vh">
-				404
-			</div>
+			<div style="font-size: 30vh">404</div>
 
-			<div class="text-h2" style="opacity:.4">
-				Oops. Nothing here...
-			</div>
+			<div style="opacity: 0.4; font-size: 10vh">Oops. Nothing here...</div>
 
 			<q-btn
 				class="q-mt-xl"
-				color="white"
+				color="secondary"
 				label="Go Home"
 				no-caps
 				text-color="dark"

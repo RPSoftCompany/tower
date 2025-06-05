@@ -32,15 +32,18 @@ import { ConfigurationModel } from '../configuration-models/configuration-models
 import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
 import { PromotionsModule } from '../promotions/promotions.module';
 import { Promotion } from '../promotions/promotions.schema';
-import { ConstantVariable } from '../constant-variables/constant-variables.schema';
-import { ConstantVariablesModule } from '../constant-variables/constant-variables.module';
 import { HooksService } from '../hooks/hooks.service';
 import { ConnectionsService } from '../connections/connections.service';
 import { V1Service } from '../v1/v1.service';
+import { maxConfiguration } from '../max-configuration/max-configuration.schema';
+import { MaxConfigurationModule } from '../max-configuration/max-configuration.module';
+import { MaxConstantVariableModule } from '../max-constant-variable/max-constant-variable.module';
+import { MaxConstantVariable } from '../max-constant-variable/max-constant-variable.schema';
 
 @Injectable()
 export class ConfigurationsService implements OnModuleInit {
   private readonly logger = new Logger(ConfigurationsService.name);
+
   constructor(
     @InjectModel(V1.name) private v1Model: Model<V1Module>,
     @InjectModel(Role.name) private rolesModel: Model<RolesModule>,
@@ -52,8 +55,10 @@ export class ConfigurationsService implements OnModuleInit {
     private promotionModel: Model<PromotionsModule>,
     @InjectModel(ConfigurationModel.name)
     private configurationModelModel: Model<ConfigurationModelsModule>,
-    @InjectModel(ConstantVariable.name)
-    private constantVariablesModel: Model<ConstantVariablesModule>,
+    @InjectModel(maxConfiguration.name)
+    private maxConfiguration: Model<MaxConfigurationModule>,
+    @InjectModel(MaxConstantVariable.name)
+    private maxConstantVariable: Model<MaxConstantVariableModule>,
     @Inject(HooksService)
     private readonly hooksService: HooksService,
     @Inject(forwardRef(() => ConnectionsService))
@@ -97,7 +102,139 @@ export class ConfigurationsService implements OnModuleInit {
 
     this.logger.debug('Encryption key check finished');
 
+    await this.createMaxConfigurationsCollection();
+
     await this.createIndexes();
+  }
+
+  /**
+   *
+   * @param length
+   * @param chars
+   */
+  randomString(length: number, chars: string) {
+    let mask = '';
+    if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+    if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (chars.indexOf('#') > -1) mask += '0123456789';
+    if (chars.indexOf('!') > -1) mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
+    let result = '';
+    for (let i = length; i > 0; --i)
+      result += mask[Math.floor(Math.random() * mask.length)];
+    return result;
+  }
+
+  async updateMetadata() {}
+
+  /**
+   * createMaxConnectionsCollection
+   */
+  async createMaxConfigurationsCollection() {
+    const collections = await this.maxConfiguration.db.listCollections();
+    let exists = collections.some((collection) => {
+      return collection.name === 'maxConfiguration';
+    });
+
+    if (exists) {
+      const count = await this.maxConfiguration.countDocuments();
+      if (count === 0) {
+        exists = false;
+      }
+    }
+
+    if (!exists) {
+      const allBases: BaseConfiguration[] =
+        await this.baseConfigurationModel.find();
+
+      await this.maxConfiguration.db.createCollection('maxConfiguration');
+
+      if (allBases.length === 0) {
+        return;
+      }
+
+      const groupId = {};
+      const lookupLet = {
+        maxVersion: '$maxVersion',
+      };
+      const lookupExp = [
+        {
+          $eq: ['$version', '$$maxVersion'],
+        },
+      ];
+      for (const base of allBases) {
+        groupId[base.name] = `$${base.name}`;
+        const tempRandom = this.randomString(12, 'a');
+        lookupLet[tempRandom] = `$_id.${base.name}`;
+        lookupExp.push({
+          $eq: [`$${base.name}`, `$$${tempRandom}`],
+        });
+      }
+
+      await this.configurationModel.updateMany({ __metadata: null }, [
+        {
+          $set: {
+            __metadata: groupId,
+          },
+        },
+      ]);
+
+      const aggregation = [
+        {
+          $group: {
+            _id: groupId,
+            maxVersion: {
+              $max: '$version',
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'configuration',
+            let: lookupLet,
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: lookupExp,
+                  },
+                },
+              },
+            ],
+            as: 'maxDoc',
+          },
+        },
+        {
+          $unwind: {
+            path: '$maxDoc',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $replaceRoot: {
+            newRoot: '$maxDoc',
+          },
+        },
+        {
+          $out: {
+            db: this.configurationModel.db.name,
+            coll: 'maxConfiguration',
+          },
+        },
+      ];
+
+      await this.configurationModel.aggregate(aggregation).exec();
+
+      await this.configurationModel.updateMany(
+        { $expr: { __metadata: null } },
+        [
+          {
+            $set: {
+              __metadata: groupId,
+            },
+          },
+        ],
+      );
+    }
   }
 
   /**
@@ -111,14 +248,28 @@ export class ConfigurationsService implements OnModuleInit {
 
     for (const base of allBases) {
       const index: any = {};
-      index[base.name] = 1;
+      index[`__metadata.${base.name}`] = 'ascending';
       fullIndex[base.name] = 1;
-      await this.configurationModel.schema.index(index);
+      this.configurationModel.schema.index(index);
+      this.maxConstantVariable.schema.index(index);
+      await this.maxConstantVariable.ensureIndexes(index);
+      this.maxConfiguration.schema.index(index);
+      await this.maxConfiguration.ensureIndexes(index);
     }
 
     if (allBases.length > 0) {
-      await this.configurationModel.schema.index(fullIndex);
+      this.configurationModel.schema.index(fullIndex);
     }
+
+    this.configurationModel.schema.index(
+      {
+        __metadata: 1,
+        version: 1,
+      },
+      {
+        unique: true,
+      },
+    );
 
     await this.configurationModel.syncIndexes();
   }
@@ -205,6 +356,7 @@ export class ConfigurationsService implements OnModuleInit {
 
     let numberOfModelsUsed = 0;
 
+    let metaData = {};
     const queryObject = {};
 
     for (const base of allBases) {
@@ -214,6 +366,16 @@ export class ConfigurationsService implements OnModuleInit {
             base: `${base.name}`,
             name: `${createConfigurationDto[base.name]}`,
           });
+
+        if (modelExists.options.forceComment === true) {
+          if (!createConfigurationDto.comment) {
+            throw new BadRequestException(
+              `Configuration validation failed. No comment provided`,
+            );
+          }
+        }
+
+        metaData[`${base.name}`] = `${createConfigurationDto[base.name]}`;
 
         if (modelExists) {
           // Validate roles
@@ -332,9 +494,18 @@ export class ConfigurationsService implements OnModuleInit {
 
     newConfigurationObject.createdBy = userId;
     newConfigurationObject.comment = createConfigurationDto.comment;
+    newConfigurationObject.__metadata = metaData;
 
     const retValue: Configuration = await this.configurationModel.create(
       newConfigurationObject,
+    );
+
+    newConfigurationObject.effectiveDate = retValue.effectiveDate;
+
+    await this.maxConfiguration.updateOne(
+      queryObject,
+      { $set: newConfigurationObject },
+      { upsert: true },
     );
 
     setTimeout(() => {
@@ -342,10 +513,22 @@ export class ConfigurationsService implements OnModuleInit {
         .executeHook('afterCreate', 'Configuration', retValue)
         .then(() => {
           // IGNORE
+        })
+        .catch((e) => {
+          this.logger.error(e);
         });
 
       this.connectionsService
         .executeSCPHook(userRoles, queryObject, retValue)
+        .then(() => {
+          // IGNORE
+        })
+        .catch((e) => {
+          this.logger.error(e);
+        });
+
+      this.connectionsService
+        .executeKubernetesHook(queryObject, retValue)
         .then(() => {
           // IGNORE
         })
@@ -385,7 +568,7 @@ export class ConfigurationsService implements OnModuleInit {
       );
 
       if (populate) {
-        return all.populate('createdBy', 'username');
+        return all.populate('createdBy', ['username', 'type', 'display']);
       } else {
         return all;
       }
@@ -423,7 +606,7 @@ export class ConfigurationsService implements OnModuleInit {
         if (populate) {
           return await this.configurationModel
             .find()
-            .populate('createdBy', 'username')
+            .populate('createdBy', ['username', 'type', 'display'])
             .exec();
         } else {
           return await this.configurationModel.find().exec();
@@ -436,11 +619,161 @@ export class ConfigurationsService implements OnModuleInit {
         if (populate) {
           return await this.configurationModel.populate(all, {
             path: 'createdBy',
-            select: 'username',
+            select: ['username', 'type', 'display'],
           });
         } else {
           return all;
         }
+      }
+    }
+  }
+
+  /**
+   * find
+   *
+   * @param userRoles
+   * @param filter
+   * @param populate
+   */
+  async findLatest(
+    userRoles: string[],
+    filter?: Statement,
+    populate?: boolean,
+  ) {
+    populate ??= true;
+
+    const newFilter = filterTranslator(filter);
+
+    if (userRoles.includes('admin')) {
+      const all = this.maxConfiguration.findOne(
+        newFilter.where,
+        newFilter.fields,
+        {
+          sort: newFilter.order,
+          limit: newFilter.limit,
+          skip: newFilter.skip,
+        },
+      );
+
+      if (populate) {
+        return all.populate('createdBy', ['username', 'type', 'display']);
+      } else {
+        return all;
+      }
+    } else {
+      const allRoles: Array<Role> = await this.rolesModel.find({
+        name: /^configurationModel\.[^.]+\.[^.]+\.view/,
+      });
+
+      const rolesNin = [];
+      allRoles.forEach((el) => {
+        if (!userRoles.includes(el.name)) {
+          let name = el.name.replace(/^configurationModel\.[^.]+\./, '');
+          name = name.replace(/.view$/, '');
+
+          let base = el.name.replace(/^configurationModel\./, '');
+          base = base.replace(/\.[^.]+\.view$/, '');
+
+          const obj: any = {};
+          obj[base] = name;
+
+          rolesNin.push(obj);
+        }
+      });
+
+      const match = {
+        $nor: rolesNin,
+      };
+
+      const aggregation = prepareAggregateArray(
+        match.$nor.length > 0 ? match : undefined,
+        newFilter,
+      );
+
+      if (aggregation.length === 0) {
+        if (populate) {
+          return await this.maxConfiguration
+            .findOne()
+            .populate('createdBy', ['username', 'type', 'display'])
+            .exec();
+        } else {
+          return await this.maxConfiguration.find().exec();
+        }
+      } else {
+        const all: Array<maxConfiguration> = await this.maxConfiguration
+          .aggregate(aggregation)
+          .exec();
+
+        if (!all || all.length === 0) {
+          return null;
+        }
+
+        if (populate) {
+          return await this.maxConfiguration.populate(all[0], {
+            path: 'createdBy',
+            select: ['username', 'type', 'display'],
+          });
+        } else {
+          return all[0];
+        }
+      }
+    }
+  }
+
+  /**
+   * count
+   *
+   * @param userRoles
+   * @param filter
+   */
+  async count(userRoles: string[], filter?: Statement): Promise<number> {
+    const newFilter = filterTranslator(filter);
+
+    if (userRoles.includes('admin')) {
+      return this.configurationModel.countDocuments(newFilter.where, {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      });
+    } else {
+      const allRoles: Array<Role> = await this.rolesModel.find({
+        name: /^configurationModel\.[^.]+\.[^.]+\.view/,
+      });
+
+      const rolesNin = [];
+      allRoles.forEach((el) => {
+        if (!userRoles.includes(el.name)) {
+          let name = el.name.replace(/^configurationModel\.[^.]+\./, '');
+          name = name.replace(/.view$/, '');
+
+          let base = el.name.replace(/^configurationModel\./, '');
+          base = base.replace(/\.[^.]+\.view$/, '');
+
+          const obj: any = {};
+          obj[base] = name;
+
+          rolesNin.push(obj);
+        }
+      });
+
+      const match = {
+        $nor: rolesNin,
+      };
+
+      const aggregation = prepareAggregateArray(
+        match.$nor.length > 0 ? match : undefined,
+        newFilter,
+      );
+
+      aggregation.push({
+        $count: 'count',
+      });
+
+      if (aggregation.length === 0) {
+        return await this.configurationModel.countDocuments().exec();
+      } else {
+        return (await this.configurationModel.aggregate(aggregation).exec())[0]
+          .count;
       }
     }
   }
@@ -702,22 +1035,6 @@ export class ConfigurationsService implements OnModuleInit {
 
     const filter: any[] = [
       {
-        $sort: {
-          version: -1,
-        },
-      },
-      {
-        $group: {
-          _id: groupId,
-          maxVersion: {
-            $max: '$version',
-          },
-          variables: {
-            $first: '$variables',
-          },
-        },
-      },
-      {
         $addFields: {
           variables: {
             $map: {
@@ -766,6 +1083,7 @@ export class ConfigurationsService implements OnModuleInit {
       },
       {
         $project: {
+          __metadata: '$__metadata',
           variables: {
             $filter: {
               input: '$variables',
@@ -791,30 +1109,11 @@ export class ConfigurationsService implements OnModuleInit {
       filter.push({ $match: matchRole });
     }
 
-    const configurationOut = await this.configurationModel.aggregate(filter, {
-      allowDiskUse: true,
-    });
+    const configurationOut = await this.maxConfiguration
+      .aggregate(filter)
+      .exec();
 
-    filter[0] = {
-      $sort: {
-        effectiveDate: -1,
-      },
-    };
-    filter[1] = {
-      $group: {
-        _id: groupId,
-        maxVersion: {
-          $max: '$effectiveDate',
-        },
-        variables: {
-          $first: '$variables',
-        },
-      },
-    };
-
-    const constantOut = await this.constantVariablesModel.aggregate(filter, {
-      allowDiskUse: true,
-    });
+    const constantOut = await this.maxConstantVariable.aggregate(filter);
 
     return {
       variables: configurationOut,

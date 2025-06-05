@@ -22,9 +22,9 @@
 		class="tw-bg-darkPage tw-text-secondary tw-gap-3 tw-grid tw-px-4 tw-pb-3 tw-pt-3 tw-rounded"
 	>
 		<q-dialog v-model="navigationPreventDialog" persistent>
-			<q-card style="width: 30rem">
+			<q-card class="tw-w-[30rem]">
 				<q-card-section
-					class="tw-text-sm tw-font-semibold tw-bg-accent tw-text-black"
+					class="tw-text-sm tw-font-semibold tw-bg-warning tw-text-black"
 				>
 					<div>Unsaved changes</div>
 				</q-card-section>
@@ -36,7 +36,7 @@
 					<q-btn v-close-popup flat label="Cancel" @click="cancelNavigation" />
 					<q-btn
 						v-close-popup
-						class="tw-text-accent"
+						class="tw-text-warning"
 						flat
 						label="Leave"
 						@click="leavePage"
@@ -104,7 +104,7 @@ const navigationSt = navigationStore();
 //====================================================
 // Emits
 //====================================================
-const emit = defineEmits(['update:baseModels']);
+const emit = defineEmits(['update:baseModels', 'update:basesCount']);
 
 //====================================================
 // Data
@@ -131,10 +131,26 @@ onBeforeMount(async () => {
 //====================================================
 // Computed
 //====================================================
-/**
- * allBases
- */
-const allBases = computed(() => baseSt.getBases);
+// /**
+//  * allBases
+//  */
+const allBases = computed(() => {
+	if (bases.value.values[0]) {
+		const baseModel = bases.value.values[0] as ConfigurationModel;
+		if (baseModel.options.templateEnabled) {
+			const all: Array<Base> = [];
+			for (let i = 0; i < baseSt.getBases.length; i++) {
+				if (baseModel.template && baseModel.template[i]) {
+					all.push(baseSt.getBases[i]);
+				}
+			}
+
+			return all;
+		}
+	}
+
+	return baseSt.getBases;
+});
 
 /**
  * basesClasses
@@ -219,17 +235,15 @@ const setBases = async (sequenceNumber: number) => {
 				if (!el.options.hasRestrictions) {
 					return true;
 				} else {
-					const forbidden = el.restrictions.some((restriction: any) => {
-						return Object.keys(restriction).some((restrictionKey: string) => {
-							if (restrictionKey !== '__id' && restriction[restrictionKey]) {
-								return (
-									restriction[restrictionKey] !== currentBases[restrictionKey]
-								);
+					return el.restrictions.some((restriction: any) => {
+						for (const key in restriction) {
+							if (key !== '__id' && currentBases[key] !== restriction[key]) {
+								return false;
 							}
-						});
-					});
+						}
 
-					return !forbidden;
+						return true;
+					});
 				}
 			});
 
@@ -252,37 +266,39 @@ const baseChanged = async (value: ConfigurationModel) => {
 		return;
 	}
 
-	//set current path
-	let path = '';
-	for (let el of bases.value.values) {
-		if (el && typeof el === 'object') {
-			if (el.name === '__NONE__') {
-				path += '/_';
-			} else {
-				path += `/${el.name}`;
-			}
-		} else {
-			break;
-		}
-	}
-
-	if (route.path.startsWith('/configuration')) {
-		await router.push(`/configuration${path}`);
-	}
-
 	if (value) {
 		const base = allBases.value.find((el) => {
 			return el.name === value.base;
 		});
 
 		if (base) {
-			for (let i = base.sequenceNumber + 1; i < allBases.value.length; i++) {
+			for (
+				let i = base.sequenceNumber + 1;
+				i < bases.value.values.length;
+				i++
+			) {
 				bases.value.values[i] = '';
 				bases.value.items[i] = [];
 			}
 
 			if (base.sequenceNumber + 1 <= allBases.value.length) {
 				await setBases(base.sequenceNumber + 1);
+			}
+
+			if (bases.value.values[0]) {
+				const baseModel = bases.value.values[0] as ConfigurationModel;
+				if (baseModel.options.templateEnabled) {
+					const all: Array<Base> = [];
+					for (let i = 0; i < baseSt.getBases.length; i++) {
+						if (baseModel.template && baseModel.template[i]) {
+							all.push(baseSt.getBases[i]);
+						}
+					}
+
+					emit('update:basesCount', all.length);
+				} else {
+					emit('update:basesCount', baseSt.getBases.length);
+				}
 			}
 		}
 	} else {
@@ -303,6 +319,24 @@ const baseChanged = async (value: ConfigurationModel) => {
 				}
 			}
 		}
+	}
+
+	//set current path
+	let path = '';
+	for (let el of bases.value.values) {
+		if (el && typeof el === 'object') {
+			if (el.name === '__NONE__') {
+				path += '/_';
+			} else {
+				path += `/${el.name}`;
+			}
+		} else {
+			break;
+		}
+	}
+
+	if (route.path.startsWith('/configuration')) {
+		await router.push(`/configuration${path}`);
 	}
 
 	previousBases.value = [...bases.value.values];

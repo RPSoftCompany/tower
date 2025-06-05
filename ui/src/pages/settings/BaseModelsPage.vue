@@ -71,7 +71,7 @@
 					<div
 						v-for="icon of filteredIcons"
 						:key="icon"
-						class="tw-grid tw-justify-items-center tw-rounded tw-px-3 tw-py-2 tw-w-[9rem] tw-cursor-pointer hover:tw-bg-gray-500"
+						class="tw-grid tw-justify-items-center tw-rounded tw-px-3 tw-py-2 tw-w-[9rem] tw-cursor-pointer hover:tw-bg-dark"
 						@click="chosenIcon = icon"
 						:class="{ 'tw-bg-dark': chosenIcon === icon }"
 					>
@@ -97,14 +97,27 @@
 		<div>
 			<div class="tw-flex tw-flex-grow tw-justify-center tw-mb-3">
 				<q-input
+					ref="input"
 					color="secondary"
 					class="tw-w-[33.3%]"
 					dense
 					v-model="newBaseModel"
 					label="New base model"
+					:rules="[
+						(val) => {
+							return /^[a-zA-Z ]+$/.test(val) || !val
+								? undefined
+								: 'Base configuration name may contain only lower and uppercase characters and spaces';
+						},
+					]"
 				>
 					<template #after v-if="newBaseModel">
-						<q-btn flat padding="0.25rem" @click="createBaseModel">
+						<q-btn
+							:disable="inputHasErrors"
+							flat
+							padding="0.25rem"
+							@click="createBaseModel"
+						>
 							<q-icon name="sym_o_add" />
 						</q-btn>
 					</template>
@@ -124,7 +137,9 @@
 					:class="{ 'tw-opacity-0': draggedId === base._id }"
 					class="tw-p-0"
 				>
-					<div class="tw-flex tw-justify-between tw-p-2">
+					<div
+						class="tw-flex tw-justify-between tw-p-2 tw-border tw-border-dark"
+					>
 						<div class="tw-flex tw-items-center">
 							<q-icon
 								name="sym_o_drag_indicator"
@@ -179,7 +194,7 @@ import SavePanel from 'components/basic/savePanel.vue';
 import { Base } from 'components/bases/base';
 import { towerAxios } from 'boot/axios';
 import { AxiosError } from 'axios';
-import { useQuasar } from 'quasar';
+import { QSelect, useQuasar } from 'quasar';
 import { ionWarning } from '@quasar/extras/ionicons-v6';
 import { navigationStore } from 'stores/navigation';
 
@@ -194,6 +209,8 @@ const navigationSt = navigationStore();
 // Data
 //====================================================
 const currentBases: Ref<Array<Base>> = ref([]);
+
+const input: Ref<QSelect> = ref(null);
 
 const draggedId: Ref<string | undefined> = ref('');
 const canBeDruggedId: Ref<string | undefined> = ref('');
@@ -232,6 +249,17 @@ const filteredIcons = computed(() => {
 	return icons.default.filter((el) => {
 		return el.toLowerCase().includes(lowercaseFilter);
 	});
+});
+
+/**
+ * inputHasErrors
+ */
+const inputHasErrors = computed(() => {
+	if (input.value) {
+		return input.value.hasError;
+	}
+
+	return false;
 });
 
 /**
@@ -307,9 +335,8 @@ const showChooseIconDialog = (index: number) => {
  */
 const updateIcon = () => {
 	if (currentBases.value[chooseIconIndex.value]) {
-		currentBases.value[
-			chooseIconIndex.value
-		].icon = `sym_o_${chosenIcon.value}`;
+		currentBases.value[chooseIconIndex.value].icon =
+			`sym_o_${chosenIcon.value}`;
 	}
 };
 
@@ -359,13 +386,15 @@ const saveBases = async () => {
 				await towerAxios.post('/baseConfigurations', base);
 			}
 		} catch (e) {
+			console.log(e.response.data);
+
 			$q.notify({
 				color: 'negative',
 				position: 'top',
 				textColor: 'secondary',
 				icon: ionWarning,
-				message: ((e as AxiosError).response?.data as any)?.error?.message
-					? ((e as AxiosError).response?.data as any)?.error?.message
+				message: ((e as AxiosError).response?.data as any)?.message
+					? ((e as AxiosError).response?.data as any)?.message
 					: (e as AxiosError).message,
 			});
 
@@ -440,7 +469,7 @@ watch(
 		} else {
 			navigationSt.allowNavigation();
 		}
-	}
+	},
 );
 </script>
 

@@ -26,7 +26,7 @@
 			<div>
 				<q-btn
 					:disable="
-						allBases.length !== Object.keys(baseModelComputed).length ||
+						basesCount !== Object.keys(baseModelComputed).length ||
 						archiveConfigs.length > 3
 					"
 					flat
@@ -83,6 +83,7 @@ import {
 } from 'components/basic/basics';
 import { valueExists } from 'components/constantVariables/constantVariable';
 import { useQuasar } from 'quasar';
+import { Configuration } from 'components/configuration/configuration';
 
 //====================================================
 // Const
@@ -115,14 +116,17 @@ const onBaseModelChange = (value: Array<ConfigurationModel>) => {
  * addArchiveConfig
  */
 const addArchiveConfig = async () => {
-	if (allBases.value.length !== Object.keys(baseModelComputed.value).length) {
+	if (basesCount.value !== Object.keys(baseModelComputed.value).length) {
 		return;
 	}
 
+	const rowsLimit = 20;
+
 	const filter: any = {
-		order: 'effectiveDate DESC',
+		order: 'version DESC',
 		include: ['member'],
 		where: {},
+		limit: rowsLimit,
 	};
 
 	allBases.value.forEach((el) => {
@@ -152,8 +156,22 @@ const addArchiveConfig = async () => {
 		);
 
 		if (response.status === 200 && response.data.length > 0) {
-			archiveConfigs.value[place].configuration = response.data.reverse();
-			archiveConfigs.value[place].version = response.data.length - 1;
+			const length = response.data.length;
+			const reverse = response.data.reverse();
+			const version = reverse[length - 1].version;
+			let config = reverse;
+
+			if (version > rowsLimit) {
+				config = [
+					...[...Array(version - rowsLimit).keys()].map(() => {
+						return {} as Configuration;
+					}),
+					...reverse,
+				];
+			}
+
+			archiveConfigs.value[place].configuration = config;
+			archiveConfigs.value[place].version = version - 1;
 			archiveConfigs.value[place].loading = false;
 			archiveConfigs.value[place].comment =
 				response.data[response.data.length - 1].comment;
@@ -194,14 +212,68 @@ const removeConfiguration = (configId: number) => {
  * versionChanged
  * @param data
  */
-const versionChanged = (data: VersionChangeEvent) => {
+const versionChanged = async (data: VersionChangeEvent) => {
 	const configIndex = archiveConfigs.value.findIndex((el) => {
 		return el.id === data.configId.toString();
 	});
 
 	if (configIndex >= 0) {
-		archiveConfigs.value[configIndex].version = data.version;
-		archiveConfigs.value[configIndex].comment = data.comment;
+		const config = archiveConfigs.value[configIndex].configuration;
+		if (config && config[data.version].effectiveDate) {
+			archiveConfigs.value[configIndex].version = data.version;
+			archiveConfigs.value[configIndex].comment = data.comment;
+		} else {
+			archiveConfigs.value[configIndex].loading = true;
+
+			const filter: any = {
+				include: ['member'],
+				where: {
+					version: data.version + 1,
+				},
+			};
+
+			allBases.value.forEach((el) => {
+				filter.where[el.name] = { $eq: null };
+			});
+
+			currentBaseModels.value.forEach((el) => {
+				if (el && el.name !== '__NONE__') {
+					filter.where[el.base] = el.name;
+				}
+			});
+
+			try {
+				const response = await towerAxios.get(
+					`configurations?filter=${JSON.stringify(filter, null, '')}`,
+				);
+
+				if (response.status === 200 && response.data.length > 0) {
+					if (archiveConfigs.value[configIndex].configuration !== undefined) {
+						archiveConfigs.value[configIndex].configuration[data.version] =
+							response.data[0];
+					}
+					archiveConfigs.value[configIndex].version = data.version;
+					archiveConfigs.value[configIndex].loading = false;
+					archiveConfigs.value[configIndex].comment = response.data[0].comment;
+				} else {
+					$q.notify({
+						color: 'negative',
+						position: 'top',
+						textColor: 'secondary',
+						icon: 'sym_o_error',
+						message: "Configuration doesn't exist",
+					});
+				}
+			} catch (e) {
+				$q.notify({
+					color: 'negative',
+					position: 'top',
+					textColor: 'secondary',
+					icon: 'sym_o_error',
+					message: 'Error collecting configuration data',
+				});
+			}
+		}
 	}
 };
 
@@ -249,6 +321,28 @@ const baseModelComputed = computed(() => {
 
 	return baseModel;
 });
+
+/**
+ * basesCount
+ */
+const basesCount = computed(() => {
+	if (currentBaseModels.value[0]) {
+		const baseModel = currentBaseModels.value[0] as ConfigurationModel;
+		if (baseModel.options.templateEnabled) {
+			const all: Array<Base> = [];
+			for (let i = 0; i < baseSt.getBases.length; i++) {
+				if (baseModel.template && baseModel.template[i]) {
+					all.push(baseSt.getBases[i]);
+				}
+			}
+
+			return all.length;
+		}
+	}
+
+	return baseSt.getBases.length;
+});
+
 /**
  * allBases
  */
@@ -264,7 +358,8 @@ const currentVariables = computed(() => {
 		if (
 			valueExists(el.version) &&
 			el.configuration &&
-			el.configuration[el.version as number]
+			el.configuration[el.version as number] &&
+			el.configuration[el.version as number].variables
 		) {
 			el.configuration[el.version as number].variables.forEach((variable) => {
 				all.add(variable.name);

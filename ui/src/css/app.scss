@@ -19,29 +19,138 @@
 // app global css in SCSS form
 
 @import "reset.css";
+@import "@fontsource/atkinson-hyperlegible";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html {
-	background-color: $dark-page;
-	color: $secondary;
+body.body--light {
+	--q-primary: #f2f2f2;
+	--q-secondary: #4b4b4b;
+	--q-accent: #F2A52A;
+
+	--q-dark: #e9e9e9;
+	--q-dark-page: #f7f7f7;
+
+	color-scheme: light;
+
+	background-color: var(--q-dark-page);
+	color: var(--q-secondary);
+
+	font-size: $body-font-size;
+}
+
+body.body--dark {
+	--q-primary: #1A1E21;
+	--q-secondary: #E5E1DE;
+	--q-accent: #F2A52A;
+
+	--q-dark: #272E32;
+	--q-dark-page: #1A1E21;
+
+	color-scheme: dark;
+	color: var(--q-secondary);
+	background-color: var(--q-dark-page);
+
+	font-size: $body-font-size;
+}
+
+.tw-bg-dark {
+	background-color: var(--q-dark);
+}
+
+.tw-bg-darkPage {
+	background-color: var(--q-dark-page);
+}
+
+.tw-bg-secondary {
+	background-color: var(--q-secondary);
+}
+
+.tw-bg-accent {
+	background-color: var(--q-accent);
+}
+
+.tw-bg-primary {
+	background-color: var(--q-primary);
+}
+
+.tw-text-dark {
+	color: var(--q-dark);
+}
+
+.tw-text-darkPage {
+	color: var(--q-dark-page);
+}
+
+.tw-text-secondary {
+	color: var(--q-secondary);
+}
+
+.tw-text-primary {
+	color: var(--q-primary);
+}
+
+.tw-text-accent {
+	color: var(--q-accent);
+}
+
+.tw-border-dark {
+	border-color: var(--q-dark);
+}
+
+.tw-border-primary {
+	border-color: var(--q-primary);
+}
+
+.tw-border-secondary {
+	border-color: var(--q-secondary);
 }
 
 #q-app {
 	max-height: 100vh;
 }
 
+pre {
+	font-family: $typography-font-family;
+}
+
 /**
 	Quasar overwrites
  */
 .q-menu--dark {
-	box-shadow: 0 1px 5px $dark-page, 0 2px 2px $dark-page, 0 3px 1px -2px $dark-page;
+	//box-shadow: 0 1px 5px var(--q-dark), 0 2px 2px var(--q-dark), 0 3px 1px -2px var(--q-dark);
+	box-shadow: none;
+	outline: var(--q-dark) 1px solid;
+}
+
+.q-notification__message {
+	color: $grey-1;
+}
+
+.q-notification__icon {
+	color: $grey-1 !important;
+}
+
+.q-time__header-label {
+	cursor: pointer;
+}
+
+.q-menu {
+	background-color: var(--q-dark-page);
 }
 
 .q-card--dark {
-	box-shadow: 0 1px 5px $dark-page, 0 2px 2px $dark-page, 0 3px 1px -2px $dark-page;
+	box-shadow: 0 1px 5px var(--q-dark-page), 0 2px 2px var(--q-dark-page), 0 3px 1px -2px var(--q-dark-page);
+}
+
+.q-card {
+	background-color: var(--q-dark-page);
+}
+
+.q-inner-loading {
+	background-color: var(--q-dark);
 }
 
 .q-checkbox__inner {
@@ -56,7 +165,11 @@ html {
 }
 
 .q-chip {
-	background-color: $dark;
+	background-color: var(--q-dark);
+}
+
+.q-icon {
+	color: var(--q-secondary);
 }
 
 .q-chip__content {
@@ -83,16 +196,32 @@ html {
 	max-width: 100%;
 }
 
+.q-checkbox__inner > .q-checkbox__bg {
+	background-color: var(--q-dark-page);
+
+	& > svg {
+		color: var(--q-secondary);
+	}
+}
+
+.q-checkbox__inner--truthy > .q-checkbox__bg {
+	border: none;
+}
+
 /**
 	Configuration variables
  */
 
 .configurationRowModified {
-	background-color: rgba(111, 130, 141, 0.06);
+	background-color: var(--q-dark);
 }
 
 .configurationRowError {
 	background-color: rgba(186, 34, 34, 0.1);
+}
+
+.configurationVariableSelectModified > * .q-chip {
+	background-color: var(--q-dark-page);
 }
 
 .booleanErrorField {
@@ -109,11 +238,15 @@ html {
 	height: 100%;
 }
 
+.animateMargin {
+	transition: margin 0.5s ease-in;
+}
+
 /**
 	Material icons
  */
 .material-symbols-outlined {
-	color: $secondary;
+	color: var(--q-secondary);
 	font-variation-settings: 'FILL' 0,
 	'wght' 200,
 	'GRAD' 0,
@@ -129,7 +262,7 @@ html {
 }
 
 .material-symbols-outlined.filled {
-	color: $secondary;
+	color: var(--q-secondary);
 	font-variation-settings: 'FILL' 1,
 	'wght' 200,
 	'GRAD' 0,
@@ -137,7 +270,7 @@ html {
 }
 
 .material-symbols-outlined.heavy {
-	color: $secondary;
+	color: var(--q-secondary);
 	font-variation-settings: 'FILL' 0,
 	'wght' 500,
 	'GRAD' 0,
@@ -145,7 +278,7 @@ html {
 }
 
 .material-symbols-outlined.filledLight {
-	color: $secondary;
+	color: var(--q-secondary);
 	font-variation-settings: 'FILL' 1,
 	'wght' 100,
 	'GRAD' 0,
@@ -153,7 +286,7 @@ html {
 }
 
 .material-symbols-outlined.light {
-	color: $secondary;
+	color: var(--q-secondary);
 	font-variation-settings: 'FILL' 0,
 	'wght' 100,
 	'GRAD' 0,
@@ -164,12 +297,16 @@ html {
 	Ace edtior
  */
 .tower-editor.ace-monokai {
-	background-color: $dark;
+	background-color: var(--q-dark);
+}
+
+.tower-editor.ace-tomorrow {
+	background-color: var(--q-dark);
 }
 
 .tower-editor > .ace_gutter {
-	border-right: solid 2px $primary;
-	background-color: $dark;
+	border-right: solid 2px var(--q-dark-page);
+	background-color: var(--q-dark);
 }
 
 .ace-monokai .ace_marker-layer .ace_active-line {
@@ -201,7 +338,7 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-	background: $dark;
+	background: var(--q-dark);
 	border-radius: 0.5rem;
 }
 
@@ -231,8 +368,8 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-	border: 1px solid $secondary;
+	border: 1px solid var(--q-secondary);
 	-webkit-text-fill-color: $accent;
-	-webkit-box-shadow: 0 0 0 1000px $dark inset;
+	-webkit-box-shadow: 0 0 0 1000px var(--q-dark) inset;
 	transition: background-color 2000s ease-in-out 0s;
 }

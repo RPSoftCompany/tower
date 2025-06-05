@@ -10,7 +10,9 @@
 
 const { configure } = require('quasar/wrappers');
 
-module.exports = configure(function (/* ctx */) {
+module.exports = configure(async function (/* ctx */) {
+	const pluginRewriteAll = await import('vite-plugin-rewrite-all');
+
 	return {
 		eslint: {
 			// fix: true,
@@ -53,7 +55,7 @@ module.exports = configure(function (/* ctx */) {
 		build: {
 			target: {
 				browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
-				node: 'node16',
+				node: 'node22',
 			},
 
 			vueRouterMode: 'history', // available values: 'hash', 'history'
@@ -75,9 +77,7 @@ module.exports = configure(function (/* ctx */) {
 			// extendViteConf (viteConf) {},
 			// viteVuePluginOptions: {},
 
-			// vitePlugins: [
-			//   [ 'package-name', { ..options.. } ]
-			// ]
+			vitePlugins: [[pluginRewriteAll.default(), {}]],
 		},
 
 		// Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
@@ -89,7 +89,7 @@ module.exports = configure(function (/* ctx */) {
 		// https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
 		framework: {
 			config: {
-				dark: true,
+				dark: false,
 			},
 
 			iconSet: 'svg-material-symbols-outlined', // Quasar icon set
@@ -103,7 +103,7 @@ module.exports = configure(function (/* ctx */) {
 			// directives: [],
 
 			// Quasar plugins
-			plugins: ['Notify', 'Cookies'],
+			plugins: ['Notify', 'Cookies', 'LocalStorage'],
 		},
 
 		animations: 'all', // --- includes all animations

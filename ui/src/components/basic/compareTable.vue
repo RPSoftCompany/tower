@@ -21,7 +21,7 @@
 		:class="`tw-grid-cols-${configs ? configs?.length * 2 + 1 : 1} ${
 			hasScroll ? 'tw-mr-[0.65rem]' : ''
 		}`"
-		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 bg-primary"
+		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 bg-darkPage"
 	>
 		<div class="tw-text-sm tw-font-semibold tw-self-center tw-text-center">
 			Variable names
@@ -32,7 +32,7 @@
 			:key="config.id"
 			:draggable="configs ? configs.length > 1 : false"
 			class="tw-bg-darkPage tw-content-center tw-h-full tw-text-secondary tw-text-center tw-text-sm tw-font-semibold tw-min-h-[3.5rem] tw-col-span-2"
-			:class="{ 'tw-cursor-grab': configs ? configs.length > 1 : false}"
+			:class="{ 'tw-cursor-grab': configs ? configs.length > 1 : false }"
 			flat
 			square
 			@dragend="dragStarted = false"
@@ -66,7 +66,13 @@
 								"
 							/>
 						</div>
-						<div class="tw-flex-grow tw-flex tw-justify-center">
+						<div
+							class="tw-flex-grow tw-flex tw-justify-center"
+							v-if="
+								config.configuration &&
+								config.configuration[config.version ? config.version : 1]
+							"
+						>
 							<div>
 								<div>
 									{{ config.path }}
@@ -112,12 +118,7 @@
 														.createdBy?.username
 												: false
 										"
-										>{{
-											config.configuration
-												? config.configuration[config.version as number]
-														.createdBy?.username
-												: ''
-										}}</span
+										>{{ getUsernameForConfig(config) }}</span
 									>
 								</div>
 							</div>
@@ -136,7 +137,7 @@
 						<div class="tw-self-center">
 							<q-btn
 								:disable="
-									config.version && config.configuration
+									config.version !== undefined && config.configuration
 										? config.version >= config.configuration.length - 1
 										: true
 								"
@@ -147,7 +148,7 @@
 								@click="
 									versionChanged(
 										config.id,
-										config.version ? config.version + 1 : 0,
+										config.version ? config.version + 1 : 1,
 									)
 								"
 							/>
@@ -291,7 +292,6 @@ import {
 } from 'components/constantVariables/constantVariable';
 import { diffChars } from 'diff';
 import { computed, ref } from 'vue';
-import { now } from '@vue/devtools-api';
 
 //====================================================
 // Interface
@@ -327,6 +327,9 @@ const emit = defineEmits([
 //====================================================
 // Computed
 //====================================================
+/**
+ * filteredVariables
+ */
 const filteredVariables = computed(() => {
 	if (!props.filter) {
 		return props.variables;
@@ -400,6 +403,17 @@ const getVariableFromConfiguration = (
 	}
 
 	return undefined;
+};
+
+const getUsernameForConfig = (config: ArchiveConfig) => {
+	if (config.configuration) {
+		const createdBy = config.configuration[config.version as number].createdBy;
+		if (createdBy) {
+			return createdBy.type === 'ldap' ? createdBy.display : createdBy.username;
+		}
+	}
+
+	return '';
 };
 
 /**

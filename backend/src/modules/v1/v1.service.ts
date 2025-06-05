@@ -25,12 +25,12 @@ import { Liquid } from 'liquidjs';
 import { ConstantVariablesService } from '../constant-variables/constant-variables.service';
 import { ConnectionsService } from '../connections/connections.service';
 import { AWSConnection } from '../connections/AWSConnection.schema';
-import {
-  ConfigurationModel,
-  ConfigurationModelDocument,
-} from '../configuration-models/configuration-models.schema';
+import { ConfigurationModelDocument } from '../configuration-models/configuration-models.schema';
 import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
-import { ConfigurationModelsService } from '../configuration-models/configuration-models.service';
+import { AzureConnection } from '../connections/AzureConnection.schema';
+import { KeyVaultSecret } from '@azure/keyvault-secrets';
+import { GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager/dist-types/commands';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @Injectable()
 export class V1Service {
@@ -55,8 +55,14 @@ export class V1Service {
    * @param userRoles
    * @param url
    * @param type
+   * @param params
    */
-  async matchUrl(userRoles: string[], url: string, type?: string) {
+  async matchUrl(
+    userRoles: string[],
+    url: string,
+    type?: string,
+    params?: any,
+  ) {
     type ??= 'v1';
 
     const promises = [];
@@ -97,6 +103,7 @@ export class V1Service {
       toUse,
       url,
       allBases,
+      params.version ? params.version : undefined,
     );
 
     return await this.compileConfiguration(
@@ -121,25 +128,11 @@ export class V1Service {
     allBases: BaseConfiguration[],
     template: RestConfiguration,
   ) {
-    configuration = await this.incorporateConstantVariables(
+    configuration = await this.incorporateAll(
       userRoles,
       allBases,
       configuration,
     );
-
-    const variables = await this.incorporateVaultVariables(
-      allBases,
-      configuration,
-    );
-
-    await this.incorporateAWSSecretManagerVariables(allBases, configuration);
-
-    configuration.variables = [...variables];
-
-    configuration.variablesByName = {};
-    configuration.variables.forEach((variable) => {
-      configuration.variablesByName[variable.name] = variable.value;
-    });
 
     let contentType = 'application/json';
     if (template.returnType === 'plain text') {
@@ -159,18 +152,51 @@ export class V1Service {
   }
 
   /**
+   * incorporateAll
+   *
+   * @param userRoles
+   * @param allBases
+   * @param configuration
+   */
+  async incorporateAll(
+    userRoles: string[],
+    allBases: BaseConfiguration[],
+    configuration: Configuration,
+  ) {
+    configuration = await this.incorporateConstantVariables(
+      userRoles,
+      allBases,
+      configuration,
+    );
+
+    const variables = await this.incorporateVaultVariables(
+      allBases,
+      configuration,
+    );
+
+    configuration.variables = [...variables];
+
+    await this.incorporateAWSSecretManagerVariables(allBases, configuration);
+    await this.incorporateAzureKeyVaultVariables(allBases, configuration);
+
+    return configuration;
+  }
+
+  /**
    * matchFirstConfiguration
    *
    * @param userRoles
    * @param restConfigurations
    * @param url
    * @param allBases
+   * @param version
    */
   async matchFirstConfiguration(
     userRoles: string[],
     restConfigurations: RestConfiguration[],
     url: string,
     allBases: BaseConfiguration[],
+    version?: string,
   ) {
     const type = 'v1';
 
@@ -204,9 +230,9 @@ export class V1Service {
               tempUrl.indexOf(afterModel) + afterModel.length,
               tempUrl.length,
             );
-            models[baseModel] = modelValue;
+            models[`__metadata.${baseModel}`] = modelValue;
           } else {
-            models[baseModel] = tempUrl;
+            models[`__metadata.${baseModel}`] = tempUrl;
           }
         }
       }
@@ -214,11 +240,11 @@ export class V1Service {
       const findArray = [];
 
       for (const base of allBases) {
-        if (!models[base.name]) {
-          models[base.name] = null;
+        if (!models[`__metadata.${base.name}`]) {
+          models[`__metadata.${base.name}`] = null;
         } else {
           findArray.push({
-            name: models[base.name],
+            name: models[`__metadata.${base.name}`],
             base: base.name,
           });
         }
@@ -237,19 +263,28 @@ export class V1Service {
         throw new NotFoundException();
       }
 
-      const configuration: Configuration[] =
-        await this.configurationService.find(
+      let configuration: Configuration;
+
+      if (version === undefined) {
+        configuration = (await this.configurationService.findLatest(
           userRoles,
           {
             where: models,
-            order: 'version DESC',
-            limit: 1,
           },
           false,
-        );
+        )) as Configuration;
+      } else {
+        configuration = (await this.configurationService.findLatest(
+          userRoles,
+          {
+            where: models,
+          },
+          false,
+        )) as Configuration;
+      }
 
-      if (configuration.length > 0) {
-        return { configuration: configuration[0], template: config };
+      if (configuration) {
+        return { configuration: configuration, template: config };
       }
     }
 
@@ -334,6 +369,7 @@ export class V1Service {
       userRoles,
       bases,
       date ? date : new Date(),
+      !date,
     );
 
     if (constVariables && constVariables.length > 0) {
@@ -367,8 +403,8 @@ export class V1Service {
   /**
    * towerToString
    *
-   * @param {any} str any value
-   * @return {string} value as string
+   * @param str any value
+   * @return value as string
    */
   towerToString(str: any) {
     return `${str}`;
@@ -377,9 +413,9 @@ export class V1Service {
   /**
    * towerGetVariableByName
    *
-   * @param {Array} variables
-   * @param {string} name
-   * @return {*|null}
+   * @param variables
+   * @param name
+   * @return
    */
   towerGetVariableByName(variables: ConfigurationVariable[], name: string) {
     const found = variables.find((el) => {
@@ -445,7 +481,11 @@ export class V1Service {
 
     const connections: AWSConnection[] = [];
 
-    for (const variable of configuration.variables) {
+    const allPromises: Promise<GetSecretValueCommandOutput>[] = [];
+    const variableIteratorArray: number[] = [];
+
+    for (let i = 0; i < configuration.variables.length; i++) {
+      let variable = configuration.variables[i];
       if (variable.type === 'AWS SM') {
         if (connections.length === 0) {
           const connectionsQuery =
@@ -455,13 +495,86 @@ export class V1Service {
           }
         }
 
-        variable.value = await this.connectionsService.getAWSSMVariable(
-          connections,
-          configurationBases,
-          variable.value.toString(),
-          variable.valueKey,
+        variableIteratorArray.push(i);
+
+        allPromises.push(
+          this.connectionsService.getAWSSMVariable(
+            connections,
+            configurationBases,
+            variable.value.toString(),
+            variable.valueKey,
+          ),
         );
       }
+    }
+
+    const all = await Promise.all(allPromises);
+
+    for (let i = 0; i < all.length; i++) {
+      const key = variableIteratorArray[i];
+      if (!isNil(all[i])) {
+        const tempJson = JSON.parse(all[i].SecretString);
+        configuration.variables[key].value =
+          tempJson[configuration.variables[key].valueKey];
+      }
+    }
+
+    return configuration.variables;
+  }
+
+  /**
+   * incorporateAzureKeyVaultVariables
+   * @param allBases
+   * @param configuration
+   * @private
+   */
+  private async incorporateAzureKeyVaultVariables(
+    allBases: BaseConfiguration[],
+    configuration: Configuration,
+  ) {
+    const configurationBases: any = {};
+
+    for (const base of allBases) {
+      if (configuration[base.name]) {
+        configurationBases[base.name] = configuration[base.name];
+      }
+    }
+
+    const connections: AzureConnection[] = [];
+
+    const allPromises: Promise<KeyVaultSecret>[] = [];
+    const variableIteratorArray: number[] = [];
+
+    for (let i = 0; i < configuration.variables.length; i++) {
+      let variable = configuration.variables[i];
+
+      if (variable.type === 'AZURE keyVault') {
+        if (connections.length === 0) {
+          const connectionsQuery =
+            await this.connectionsService.getAzureConnections();
+
+          for (const conn of connectionsQuery) {
+            connections.push(conn as any as AzureConnection);
+          }
+        }
+
+        variableIteratorArray.push(i);
+
+        allPromises.push(
+          this.connectionsService.getAzureKeyVaultVariable(
+            connections,
+            configurationBases,
+            variable.value.toString(),
+          ),
+        );
+      }
+    }
+
+    const all = await Promise.all(allPromises);
+
+    for (let i = 0; i < all.length; i++) {
+      const key = variableIteratorArray[i];
+      configuration.variables[key].value = all[i].value;
     }
 
     return configuration.variables;

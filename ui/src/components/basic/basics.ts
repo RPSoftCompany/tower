@@ -25,11 +25,13 @@ export interface ArchiveConfig {
 	effectiveDate?: Date;
 	path: string;
 	configuration?: Array<Configuration>;
+	comment?: string;
 }
 
 export interface VersionChangeEvent {
 	configId: number;
 	version: number;
+	comment: string;
 }
 
 export interface SwitchPlacesEvent {

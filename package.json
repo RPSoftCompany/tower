@@ -1,12 +1,12 @@
-{
+ {
   "name": "tower",
-  "version": "3.2.0",
+  "version": "3.3.1",
   "description": "",
   "main": "index.js",
   "scripts": {
     "dev": "(cd backend && NODE_ENV=development npm run start:dev) & (cd ui && npm start)",
     "test": "(cd ui && npm start) & (cd server; npm run startTest)",
-    "runProd": "NODE_ENN=production node ./backend",
+    "runProd": "NODE_ENV=production node ./backend",
     "build:ui": "(cd ui && NODE_ENV=production npm run build)",
     "build:backend": "(cd backend && NODE_ENV=production npm run build)"
   },

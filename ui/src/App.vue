@@ -21,7 +21,7 @@
 		<q-dialog v-model="showDialog">
 			<q-card style="width: 30rem">
 				<q-card-section
-					class="tw-text-sm tw-font-semibold tw-bg-accent tw-text-black"
+					class="tw-text-sm tw-font-semibold tw-bg-warning tw-text-black"
 				>
 					<div>Unsaved changes</div>
 				</q-card-section>
@@ -33,7 +33,7 @@
 					<q-btn v-close-popup flat label="Cancel" @click="preventNavigation" />
 					<q-btn
 						v-close-popup
-						class="tw-text-accent"
+						class="tw-text-warning"
 						flat
 						label="Ok"
 						@click="followPath"
@@ -64,7 +64,7 @@ const showDialog = computed({
 	},
 	set: () => {
 		//ignore
-	}
+	},
 });
 
 const followPath = () => {

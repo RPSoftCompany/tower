@@ -30,7 +30,7 @@
 				:exportEnabled="exportEnabled"
 				:importEnabled="importEnabled"
 				:title="
-					allBases.length !== Object.keys(baseModelComputed).length
+					basesCount !== Object.keys(baseModelComputed).length
 						? 'Constant variables'
 						: 'Configuration'
 				"
@@ -42,7 +42,7 @@
 					><q-btn
 						v-if="
 							promotionCandidates.length > 0 &&
-							allBases.length === Object.keys(baseModelComputed).length &&
+							basesCount !== Object.keys(baseModelComputed).length &&
 							currentBaseModel
 						"
 						color="transparent"
@@ -67,7 +67,7 @@
 			>
 				<constant-variable-panel
 					v-if="
-						allBases.length !== Object.keys(baseModelComputed).length &&
+						basesCount !== Object.keys(baseModelComputed).length &&
 						currentBaseModel
 					"
 					ref="constVariablePanel"
@@ -93,17 +93,12 @@ import BaseToolbar from 'components/bases/baseToolbar.vue';
 import { ConfigurationModel } from 'components/configurationModel/configurationModel';
 import { computed, Ref, ref } from 'vue';
 import SearchToolbar from 'components/configuration/searchToolbar.vue';
-import { basesStore } from 'stores/bases';
 import ConstantVariablePanel from 'components/constantVariables/constantVariablePanel.vue';
 import ConfigurationPanel from 'components/configuration/configurationPanel.vue';
 import fileDownload from 'js-file-download';
 import { Import } from 'components/models';
 import { Configuration } from 'components/configuration/configuration';
-
-//====================================================
-// Const
-//====================================================
-const baseSt = basesStore();
+import { basesStore } from 'stores/bases';
 
 //====================================================
 // Data
@@ -116,6 +111,7 @@ const showDiff = ref(true);
 
 const promotionCandidates: Ref<Array<Configuration>> = ref([]);
 
+const baseSt = basesStore();
 //====================================================
 // Methods
 //====================================================
@@ -207,9 +203,25 @@ const baseModelComputed = computed(() => {
 });
 
 /**
- * allBases
+ * basesCount
  */
-const allBases = computed(() => baseSt.getBases);
+const basesCount = computed(() => {
+	if (currentBaseModels.value[0]) {
+		const baseModel = currentBaseModels.value[0] as ConfigurationModel;
+		if (baseModel.options.templateEnabled) {
+			const all: Array<Base> = [];
+			for (let i = 0; i < baseSt.getBases.length; i++) {
+				if (baseModel.template && baseModel.template[i]) {
+					all.push(baseSt.getBases[i]);
+				}
+			}
+
+			return all.length;
+		}
+	}
+
+	return baseSt.getBases.length;
+});
 
 /**
  * isCurrentBaseModelEmpty

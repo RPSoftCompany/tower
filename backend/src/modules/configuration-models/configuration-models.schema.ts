@@ -30,6 +30,12 @@ export class ConfigurationModelRule {
 class ConfigurationModelOptions {
   @Prop({ required: true })
   hasRestrictions: string;
+
+  @Prop({ required: false, default: false })
+  forceComment: boolean;
+
+  @Prop({ required: false, default: false })
+  templateEnabled: boolean;
 }
 
 export type ConfigurationModelDocument = HydratedDocument<ConfigurationModel>;
@@ -49,6 +55,9 @@ export class ConfigurationModel {
 
   @Prop({ required: true, type: Object })
   options: ConfigurationModelOptions;
+
+  @Prop({ required: false, type: [Boolean] })
+  template: Array<boolean>;
 
   @Prop({ required: false, default: false })
   deleted: boolean;

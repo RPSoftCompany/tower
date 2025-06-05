@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateConstantVariableDto } from './dto/create-constant-variable.dto';
@@ -28,12 +29,15 @@ import {
 } from '../../helpers/filterTranslator';
 import { HooksService } from '../hooks/hooks.service';
 import { ConfigurationsModule } from '../configurations/configurations.module';
-import { decryptPassword } from '../../helpers/encryptionHelper';
 import { V1Service } from '../v1/v1.service';
 import { ConnectionsService } from '../connections/connections.service';
+import { MaxConstantVariable } from '../max-constant-variable/max-constant-variable.schema';
+import { MaxConstantVariableModule } from '../max-constant-variable/max-constant-variable.module';
+import { maxConfiguration } from '../max-configuration/max-configuration.schema';
+import { MaxConfigurationModule } from '../max-configuration/max-configuration.module';
 
 @Injectable()
-export class ConstantVariablesService {
+export class ConstantVariablesService implements OnModuleInit {
   private readonly logger = new Logger(ConstantVariablesService.name);
 
   constructor(
@@ -46,12 +50,130 @@ export class ConstantVariablesService {
     private configurationModelModel: Model<ConfigurationModelsModule>,
     @InjectModel(Configuration.name)
     private configurationModel: Model<ConfigurationsModule>,
+    @InjectModel(MaxConstantVariable.name)
+    private maxConstantVariable: Model<MaxConstantVariableModule>,
+    @InjectModel(maxConfiguration.name)
+    private maxConfigurationModel: Model<MaxConfigurationModule>,
     @Inject(forwardRef(() => V1Service))
     private readonly v1Service: V1Service,
     @Inject(forwardRef(() => ConnectionsService))
     private readonly connectionsService: ConnectionsService,
     private readonly hooksService: HooksService,
   ) {}
+
+  /**
+   *
+   * @param length
+   * @param chars
+   */
+  randomString(length: number, chars: string) {
+    let mask = '';
+    if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
+    if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if (chars.indexOf('#') > -1) mask += '0123456789';
+    if (chars.indexOf('!') > -1) mask += '~`!@#$%^&*()_+-={}[]:";\'<>?,./|\\';
+    let result = '';
+    for (let i = length; i > 0; --i)
+      result += mask[Math.floor(Math.random() * mask.length)];
+    return result;
+  }
+
+  /**
+   * onModuleInit
+   */
+  async onModuleInit() {
+    const collections = await this.constantVariableModel.db.listCollections();
+    let exists = collections.some((collection) => {
+      return collection.name === 'maxConstantVariable';
+    });
+
+    if (exists) {
+      const count = await this.maxConstantVariable.countDocuments();
+      if (count === 0) {
+        exists = false;
+      }
+    }
+
+    if (exists) {
+      return;
+    }
+
+    const allBases: BaseConfiguration[] =
+      await this.baseConfigurationModel.find();
+
+    const groupId = {};
+    const lookupLet = {
+      maxVersion: '$maxVersion',
+    };
+    const lookupExp = [
+      {
+        $eq: ['$effectiveDate', '$$maxVersion'],
+      },
+    ];
+
+    for (const base of allBases) {
+      groupId[base.name] = `$${base.name}`;
+      const tempRandom = this.randomString(12, 'a');
+      lookupLet[tempRandom] = `$_id.${base.name}`;
+      lookupExp.push({
+        $eq: [`$${base.name}`, `$$${tempRandom}`],
+      });
+    }
+
+    const aggregation = [
+      {
+        $group: {
+          _id: groupId,
+          maxVersion: {
+            $max: '$effectiveDate',
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: 'constantVariable',
+          let: lookupLet,
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: lookupExp,
+                },
+              },
+            },
+          ],
+          as: 'maxDoc',
+        },
+      },
+      {
+        $unwind: {
+          path: '$maxDoc',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$maxDoc',
+        },
+      },
+      {
+        $out: {
+          db: this.configurationModel.db.name,
+          coll: 'maxConstantVariable',
+        },
+      },
+    ];
+
+    await this.constantVariableModel.aggregate(aggregation).exec();
+
+    await this.constantVariableModel.updateMany({ __metadata: null }, [
+      {
+        $set: {
+          __metadata: groupId,
+        },
+      },
+    ]);
+  }
 
   /**
    * create
@@ -90,15 +212,21 @@ export class ConstantVariablesService {
     let numberOfModelsUsed = 0;
     const changeFilter: any = {};
 
+    const __metadata = {};
+
     for (const base of allBases) {
       if (createConstantVariableDto[base.name]) {
+        __metadata[base.name] = `${createConstantVariableDto[base.name]}`;
+
         const modelExists: ConfigurationModel =
           await this.configurationModelModel.findOne({
             base: `${base.name}`,
             name: `${createConstantVariableDto[base.name]}`,
           });
 
-        changeFilter[base.name] = createConstantVariableDto[base.name]
+        changeFilter[`__metadata.${base.name}`] = createConstantVariableDto[
+          base.name
+        ]
           ? createConstantVariableDto[base.name]
           : null;
 
@@ -169,6 +297,8 @@ export class ConstantVariablesService {
             }`,
           );
         }
+      } else {
+        changeFilter[`__metadata.${base.name}`] = null;
       }
     }
 
@@ -176,16 +306,26 @@ export class ConstantVariablesService {
       throw new BadRequestException('At least one base model has to be used');
     }
 
-    createConstantVariableDto.createdBy = userId;
+    const previousVariables: MaxConstantVariable =
+      await this.maxConstantVariable.findOne(changeFilter);
 
-    const previousVariables: ConstantVariable[] = await this.find(userRoles, {
-      where: changeFilter,
-      order: 'effectiveDate DESC',
-      limit: 1,
-    });
+    let version = 1;
+    if (previousVariables !== null) {
+      version = previousVariables.version + 1;
+    }
+
+    createConstantVariableDto.createdBy = userId;
+    createConstantVariableDto.version = version;
+    createConstantVariableDto.__metadata = __metadata;
 
     const created: ConstantVariable = await this.constantVariableModel.create(
       createConstantVariableDto,
+    );
+
+    await this.maxConstantVariable.updateOne(
+      changeFilter,
+      { $set: createConstantVariableDto },
+      { upsert: true },
     );
 
     setTimeout(async () => {
@@ -195,13 +335,13 @@ export class ConstantVariablesService {
         created,
       );
 
-      if (previousVariables.length === 0) {
+      if (previousVariables === null) {
         return;
       } else {
         await this.onConstantVariablesChange(
           userRoles,
           created,
-          previousVariables[0],
+          previousVariables,
           changeFilter,
           allBases,
         );
@@ -241,7 +381,7 @@ export class ConstantVariablesService {
           limit: newFilter.limit,
           skip: newFilter.skip,
         })
-        .populate('createdBy', 'username');
+        .populate('createdBy', ['username', 'type', 'display']);
     } else {
       const match = await this.getRolesMatch(userRoles);
 
@@ -253,7 +393,7 @@ export class ConstantVariablesService {
       if (aggregation.length === 0) {
         return await this.constantVariableModel
           .find()
-          .populate('createdBy', 'username')
+          .populate('createdBy', ['username', 'type', 'display'])
           .exec();
       } else {
         const all: Configuration[] = await this.constantVariableModel
@@ -262,7 +402,7 @@ export class ConstantVariablesService {
 
         return await this.constantVariableModel.populate(all, {
           path: 'createdBy',
-          select: 'username',
+          select: ['username', 'type', 'display'],
         });
       }
     }
@@ -299,7 +439,9 @@ export class ConstantVariablesService {
     userRoles: string[],
     filter: BaseModelStatement,
     date: Date,
+    latest?: boolean,
   ) {
+    latest = latest !== undefined;
     const allBases: BaseConfiguration[] =
       await this.baseConfigurationModel.find({}, undefined, {
         sort: { sequenceNumber: 1 },
@@ -362,11 +504,11 @@ export class ConstantVariablesService {
         __filter.effectiveDate = { $lte: new Date(date) };
       }
       for (const base of allBases) {
-        __filter[base.name] = null;
+        __filter[`__metadata.${base.name}`] = null;
       }
       match.push(__filter);
       for (let j = 0; j < i + 1; j++) {
-        match[i][allBases[j].name] = filter[allBases[j].name];
+        match[i][`__metadata.${allBases[j].name}`] = filter[allBases[j].name];
       }
     }
 
@@ -411,9 +553,13 @@ export class ConstantVariablesService {
     queryFilter.push({ $project: __projectFilter });
     queryFilter.push({ $match: { show: true } });
 
-    const output: ConstantVariable[] = await this.constantVariableModel
-      .aggregate(queryFilter)
-      .exec();
+    let output: ConstantVariable[] = [];
+
+    if (latest) {
+      output = await this.maxConstantVariable.aggregate(queryFilter).exec();
+    } else {
+      output = await this.constantVariableModel.aggregate(queryFilter).exec();
+    }
 
     const currentSequence: BaseModelStatement = {};
     for (const base of allBases) {
@@ -518,121 +664,26 @@ export class ConstantVariablesService {
     bases: BaseModelStatement,
     allBases: BaseConfiguration[],
   ) {
-    // Find differences
-    const diff: Array<string> = [];
-    let forceAll = false;
-
-    if (
-      previousConstantVariables.variables.length >
-      currentConstantVariables.variables.length
-    ) {
-      for (const variable of previousConstantVariables.variables) {
-        const found = currentConstantVariables.variables.some((el) => {
-          return el.name === variable.name;
-        });
-
-        if (!found) {
-          if (variable.addIfAbsent) {
-            forceAll = true;
-            break;
-          }
-          diff.push(variable.name);
-        }
-      }
-    }
-
-    if (!forceAll) {
-      for (const variable of currentConstantVariables.variables) {
-        const found = previousConstantVariables.variables.find((el) => {
-          return el.name === variable.name;
-        });
-
-        if (found) {
-          if (found.addIfAbsent !== variable.addIfAbsent) {
-            forceAll = true;
-            break;
-          }
-
-          const foundValue =
-            found.type === 'password'
-              ? decryptPassword(found.value)
-              : found.value;
-
-          if (
-            found.forced !== variable.forced ||
-            found.type !== variable.type ||
-            foundValue !== variable.value
-          ) {
-            if (variable.addIfAbsent) {
-              forceAll = true;
-              break;
-            }
-            diff.push(variable.name);
-          }
-        } else {
-          diff.push(variable.name);
-        }
-      }
-    }
-
     // Find all configurations
     for (const key in bases) {
       if (!bases[key]) {
-        bases[key] = undefined;
+        bases[key] = null;
         delete bases[key];
       }
     }
 
-    const group: any = {};
-    const first: any = {};
-    for (const base of allBases) {
-      group[base.name] = `$${base.name}`;
-      first[base.name] = {
-        $first: `$${base.name}`,
-      };
-    }
+    const query: any = bases;
 
-    const aggregate: any[] = [
-      {
-        $match: bases,
-      },
-      {
-        $sort: {
-          version: -1,
-        },
-      },
-      {
-        $group: {
-          _id: group,
-          variables: {
-            $first: '$variables',
-          },
-          ...first,
-        },
-      },
-    ];
-
-    if (!forceAll) {
-      aggregate.push({
-        $match: {
-          variables: {
-            $elemMatch: {
-              name: {
-                $in: diff,
-              },
-            },
-          },
-        },
-      });
-    }
-
-    const all = await this.configurationModel.aggregate(aggregate);
+    const all: Configuration[] = await this.maxConfigurationModel.find(query);
 
     for (const configuration of all) {
       this.hooksService
         .executeHook('afterCreate', 'Configuration', configuration)
         .then(() => {
           // IGNORE
+        })
+        .catch((e) => {
+          this.logger.error(e);
         });
 
       // SCP
@@ -641,18 +692,69 @@ export class ConstantVariablesService {
         bases[base.name] = configuration[base.name];
       }
 
-      const newConfig = await this.v1Service.incorporateConstantVariables(
+      const newConfig = await this.v1Service.incorporateAll(
         userRoles,
         allBases,
         configuration,
-        new Date(),
       );
 
+      // Kubernetes
       this.connectionsService
         .executeSCPHook(userRoles, bases, newConfig)
         .then(() => {
           // IGNORE
+        })
+        .catch((e) => {
+          // IGNORE
         });
+
+      this.connectionsService
+        .executeKubernetesHook(bases, newConfig)
+        .then(() => {
+          // IGNORE
+        })
+        .catch((e) => {
+          // IGNORE
+        });
+    }
+  }
+
+  /**
+   * findLatest
+   *
+   * @param userRoles
+   * @param filter
+   */
+  async findLatest(userRoles: string[], filter?: Statement) {
+    const newFilter = filterTranslator(filter);
+
+    if (userRoles.includes('admin')) {
+      return this.maxConstantVariable
+        .find(newFilter.where)
+        .populate('createdBy', ['username', 'type', 'display']);
+    } else {
+      const match = await this.getRolesMatch(userRoles);
+
+      const aggregation = prepareAggregateArray(
+        match.$nor.length > 0 ? match : undefined,
+        newFilter,
+      );
+
+      if (aggregation.length === 0) {
+        return await this.maxConstantVariable
+          .find()
+          .populate('createdBy', ['username', 'type', 'display'])
+          .exec();
+      } else {
+        const all: Array<MaxConstantVariable> = await this.maxConstantVariable
+          .aggregate(aggregation)
+          .exec();
+
+        return await this.maxConstantVariable.populate(all, {
+          path: 'createdBy',
+          select: ['username', 'type', 'display'],
+        });
+      }
     }
   }
 }

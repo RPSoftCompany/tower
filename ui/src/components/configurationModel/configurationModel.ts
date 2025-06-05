@@ -23,7 +23,9 @@ export interface ConfigurationModel {
 	options: {
 		hasRestrictions: boolean;
 		forceComment?: boolean;
+		templateEnabled?: boolean;
 	};
+	template?: Array<boolean>;
 	restrictions: Array<any>;
 	_id?: string;
 }
