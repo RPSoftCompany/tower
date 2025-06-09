@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { CreateConfigurationDto } from './dto/create-configuration.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { V1Module } from '../v1/v1.module';
 import { V1 } from '../v1/v1.schema';
 import { CreateV1Dto } from '../v1/dto/create-v1.dto';
@@ -367,7 +367,8 @@ export class ConfigurationsService implements OnModuleInit {
             name: `${createConfigurationDto[base.name]}`,
           });
 
-        if (modelExists.options.forceComment === true) {
+        // Validate if comment is present (if required)
+        if (modelExists?.options.forceComment === true) {
           if (!createConfigurationDto.comment) {
             throw new BadRequestException(
               `Configuration validation failed. No comment provided`,
@@ -559,7 +560,7 @@ export class ConfigurationsService implements OnModuleInit {
     if (userRoles.includes('admin')) {
       const all = this.configurationModel.find(
         newFilter.where,
-        newFilter.fields,
+        newFilter.fields as ProjectionType<any>,
         {
           sort: newFilter.order,
           limit: newFilter.limit,

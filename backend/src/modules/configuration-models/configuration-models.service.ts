@@ -11,7 +11,7 @@ import {
   prepareAggregateArray,
 } from '../../helpers/filterTranslator';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import {
   ConfigurationModel,
   ConfigurationModelDocument,
@@ -85,11 +85,15 @@ export class ConfigurationModelsService {
     const newFilter = filterTranslator(filter);
 
     if (userRoles.includes('admin')) {
-      return this.configurationModel.find(newFilter.where, newFilter.fields, {
-        sort: newFilter.order,
-        limit: newFilter.limit,
-        skip: newFilter.skip,
-      });
+      return this.configurationModel.find(
+        newFilter.where,
+        newFilter.fields as ProjectionType<any>,
+        {
+          sort: newFilter.order,
+          limit: newFilter.limit,
+          skip: newFilter.skip,
+        },
+      );
     } else {
       const allRoles: Array<Role> = await this.rolesModel.find({
         name: /^configurationModel\.[^.]+\.[^.]+\.view/,

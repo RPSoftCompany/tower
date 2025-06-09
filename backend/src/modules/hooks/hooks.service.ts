@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { UpdateHookDto } from './dto/update-hook.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { Hook, HookDocument, HookObject } from './hooks.schema';
 import { Statement } from '../../helpers/clauses';
 import { filterTranslator } from '../../helpers/filterTranslator';
@@ -89,11 +89,15 @@ export class HooksService implements OnModuleInit {
   find(filter?: Statement): Promise<Array<Hook>> {
     const newFilter = filterTranslator(filter);
 
-    return this.hookModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.hookModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   /**

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { Statement } from '../../helpers/clauses';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ProjectionType } from 'mongoose';
 import { Group, GroupDocument } from './groups.schema';
 import { filterTranslator, MongoFilter } from '../../helpers/filterTranslator';
 import { CRUDExceptionWrapper } from '../../helpers/crudHelpers';
@@ -50,11 +50,15 @@ export class GroupsService {
   find(filter?: Statement): Promise<Array<Group>> {
     const newFilter = filterTranslator(filter);
 
-    return this.groupModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.groupModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   /**
@@ -63,11 +67,15 @@ export class GroupsService {
    * @param filter
    */
   async findWithMongoFilter(filter: MongoFilter) {
-    return this.groupModel.find(filter.where, filter.fields, {
-      sort: filter.order,
-      limit: filter.limit,
-      skip: filter.skip,
-    });
+    return this.groupModel.find(
+      filter.where,
+      filter.fields as ProjectionType<any>,
+      {
+        sort: filter.order,
+        limit: filter.limit,
+        skip: filter.skip,
+      },
+    );
   }
 
   /**
@@ -78,7 +86,10 @@ export class GroupsService {
   findOne(filter?: Statement): Promise<Group> {
     const newFilter = filterTranslator(filter);
 
-    return this.groupModel.findOne(newFilter.where, newFilter.fields);
+    return this.groupModel.findOne(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+    );
   }
 
   /**

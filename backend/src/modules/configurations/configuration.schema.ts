@@ -89,7 +89,7 @@ ConfigurationSchema.post('find', (docs: Configuration[]) => {
 });
 
 ConfigurationSchema.post('findOne', (doc: Configuration) => {
-  if (doc.variables) {
+  if (doc?.variables) {
     doc.variables = doc.variables.map((variable: ConfigurationVariable) => {
       if (variable.type === 'password') {
         variable.value = decryptPassword(variable.value);

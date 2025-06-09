@@ -21,7 +21,7 @@
 		:class="`tw-grid-cols-${configs ? configs?.length * 2 + 1 : 1} ${
 			hasScroll ? 'tw-mr-[0.65rem]' : ''
 		}`"
-		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 bg-darkPage"
+		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 tw-bg-darkPage tw-overflow-auto tw-max-h-full"
 	>
 		<div class="tw-text-sm tw-font-semibold tw-self-center tw-text-center">
 			Variable names
@@ -82,10 +82,10 @@
 									created
 									{{
 										config.configuration
-											? config.configuration[
-													config.version ? config.version : 0
-												].effectiveDate
-											: now()
+											? config?.configuration[
+													config?.version ? config?.version : 0
+												]?.effectiveDate
+											: Date.now()
 									}}
 									<template
 										v-if="
@@ -115,7 +115,7 @@
 										v-if="
 											config.configuration
 												? config.configuration[config.version as number]
-														.createdBy?.username
+														?.createdBy?.username
 												: false
 										"
 										>{{ getUsernameForConfig(config) }}</span
@@ -161,9 +161,12 @@
 	<div
 		ref="contentRef"
 		:class="`tw-grid-cols-${configs ? configs.length * 2 + 1 : 1}`"
-		class="tw-grid tower-max-height tw-px-1"
+		class="tw-grid tw-max-h-full tw-px-1"
 	>
-		<template v-for="variableName of filteredVariables" :key="variableName">
+		<template
+			v-for="(variableName, index) of filteredVariables"
+			:key="variableName"
+		>
 			<div class="tw-text-center tw-self-center fullWordWrap">
 				{{ variableName }}
 			</div>
@@ -188,16 +191,17 @@
 					</q-inner-loading>
 					<template
 						v-if="
-							!config.loading && !(dragStarted && draggedId === `${config.id}`)
+							config &&
+							!config.loading &&
+							!(dragStarted && draggedId === `${config.id}`)
 						"
 					>
 						<template
 							v-if="
+								config.configuration &&
 								getVariableFromConfiguration(
 									variableName,
-									config.configuration
-										? config.configuration[config.version as number].variables
-										: [],
+									config.configuration[config.version ?? 0]?.variables ?? [],
 								) === undefined
 							"
 						>
@@ -212,24 +216,19 @@
 										valueAsString(
 											getVariableFromConfiguration(
 												variableName,
-												config.configuration
-													? config.configuration[config.version as number]
-															.variables
-													: [],
+												config?.configuration?.[config.version ?? 0]
+													?.variables ?? [],
 											),
 										),
 										valueAsString(
 											getVariableFromConfiguration(
 												variableName,
-												configs && configs[0].configuration
-													? configs[0].configuration[
-															configs[0].version as number
-														].variables
-													: [],
+												configs?.[0]?.configuration?.[configs[0]?.version ?? 0]
+													?.variables ?? [],
 											),
 										),
 									)"
-									:key="`${diff.value}_${index}`"
+									:key="Math.random()"
 								>
 									<div class="tw-self-center">
 										<span
@@ -248,14 +247,12 @@
 								</template>
 							</template>
 							<template v-else>
-								<div class="tw-self-center">
+								<div class="tw-text-start">
 									{{
 										getVariableFromConfiguration(
 											variableName,
-											config.configuration
-												? config.configuration[config.version as number]
-														.variables
-												: [],
+											config?.configuration?.[config.version ?? 0]?.variables ??
+												[],
 										)
 									}}
 								</div>
@@ -269,7 +266,8 @@
 									getVariableFromConfiguration(
 										variableName,
 										config.configuration
-											? config.configuration[config.version as number].variables
+											? (config.configuration[config.version ?? 0]?.variables ??
+													[])
 											: [],
 									)
 								}}
@@ -346,12 +344,12 @@ const filteredVariables = computed(() => {
 			let exists = false;
 			for (let config of props.configs) {
 				if (
-					config.configuration &&
-					config.configuration[config.version as number].variables
+					config?.configuration &&
+					config?.configuration[config.version ?? 0]?.variables
 				) {
 					const variable = getVariableFromConfiguration(
 						el,
-						config.configuration[config.version as number].variables,
+						config?.configuration[config.version ?? 0]?.variables ?? [],
 					);
 
 					const stringVariable = valueConverter(
@@ -407,7 +405,7 @@ const getVariableFromConfiguration = (
 
 const getUsernameForConfig = (config: ArchiveConfig) => {
 	if (config.configuration) {
-		const createdBy = config.configuration[config.version as number].createdBy;
+		const createdBy = config?.configuration[config.version ?? 0]?.createdBy;
 		if (createdBy) {
 			return createdBy.type === 'ldap' ? createdBy.display : createdBy.username;
 		}

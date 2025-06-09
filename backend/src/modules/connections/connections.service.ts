@@ -18,11 +18,11 @@ import {
 import { Statement } from '../../helpers/clauses';
 import { filterTranslator } from '../../helpers/filterTranslator';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { Connection, ConnectionDocument } from './connections.schema';
-import { LDAP } from './ldapConnection.schema';
+import { LDAP, LDAPConnectionDocument } from './ldapConnection.schema';
 import { SCP } from './ScpConnection.schema';
-import { Vault } from './VaultConnection.schema';
+import { Vault, VaultConnectionDocument } from './VaultConnection.schema';
 import sftp from 'ssh2-sftp-client';
 import axios from 'axios';
 import { authenticate } from 'ldap-authentication';
@@ -128,29 +128,34 @@ export class ConnectionsService implements OnModuleInit {
       if (createConnectionDto.system === 'LDAP') {
         const ldapConnection = createConnectionDto as CreateLDAPConnectionDto;
 
-        const existingConnection = await this.connectionModel.findOne({
-          system: LDAP.name,
-        });
+        const existingConnection: LDAPConnectionDocument =
+          await this.connectionModel.findOne({
+            system: LDAP.name,
+          });
 
-        for (const key in existingConnection) {
-          if (key !== '_id' && !isEmpty(ldapConnection[key])) {
-            existingConnection[key] = ldapConnection[key];
-          }
-        }
+        existingConnection.enabled = ldapConnection.enabled;
+        existingConnection.bindCredentials = ldapConnection.bindCredentials;
+        existingConnection.bindDN = ldapConnection.bindDN;
+        existingConnection.defaultGroups = ldapConnection.defaultGroups;
+        existingConnection.url = ldapConnection.url;
+        existingConnection.displayAttribute = ldapConnection.displayAttribute;
+        existingConnection.usernameAttribute = ldapConnection.usernameAttribute;
+        existingConnection.searchBase = ldapConnection.searchBase;
 
         return await existingConnection.save();
       } else if (createConnectionDto.system === Vault.name) {
         const VaultConnection = createConnectionDto as CreateVaultConnectionDto;
 
-        const existingConnection = await this.connectionModel.findOne({
-          system: 'Vault',
-        });
+        const existingConnection: VaultConnectionDocument =
+          await this.connectionModel.findOne({
+            system: 'Vault',
+          });
 
-        for (const key in VaultConnection) {
-          if (key !== '_id') {
-            existingConnection[key] = VaultConnection[key];
-          }
-        }
+        existingConnection.enabled = VaultConnection.enabled;
+        existingConnection.url = VaultConnection.url;
+        existingConnection.globalToken = VaultConnection.globalToken;
+        existingConnection.useGlobalToken = VaultConnection.useGlobalToken;
+        existingConnection.tokens = VaultConnection.tokens;
 
         return await existingConnection.save();
       } else if (createConnectionDto.system === SCP.name) {
@@ -260,11 +265,15 @@ export class ConnectionsService implements OnModuleInit {
   find(filter?: Statement): Promise<Array<Connection | LDAP | SCP | Vault>> {
     const newFilter = filterTranslator(filter);
 
-    return this.connectionModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.connectionModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   /**
@@ -922,13 +931,13 @@ export class ConnectionsService implements OnModuleInit {
               });
 
               if (template) {
-                configuration.variables.map(variable => {
+                configuration.variables.map((variable) => {
                   if (variable.type === 'password') {
                     variable.value = decryptPassword(variable.value);
                   }
 
                   return variable;
-                })
+                });
 
                 const renderedData = await this.v1Service.renderTemplate(
                   template.template,

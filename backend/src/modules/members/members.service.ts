@@ -10,7 +10,7 @@ import { CreateMemberDto, memberType } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { Member, MemberDocument } from './member.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { LoginDto } from './dto/login.dto';
 import { compareSync } from 'bcrypt';
 import { AccessTokenService } from '../access-token/access-token.service';
@@ -160,11 +160,15 @@ export class MembersService implements OnModuleInit {
   find(filter?: Statement): Promise<Array<Member>> {
     const newFilter = filterTranslator(filter);
 
-    return this.memberModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.memberModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   /**

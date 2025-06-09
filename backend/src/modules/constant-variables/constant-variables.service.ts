@@ -10,7 +10,7 @@ import {
 import { CreateConstantVariableDto } from './dto/create-constant-variable.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { BaseConfiguration } from '../base-configurations/base-configurations.schema';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { BaseConfigurationsModule } from '../base-configurations/base-configurations.module';
 import { ConfigurationModel } from '../configuration-models/configuration-models.schema';
 import { ConfigurationModelsModule } from '../configuration-models/configuration-models.module';
@@ -376,7 +376,7 @@ export class ConstantVariablesService implements OnModuleInit {
 
     if (userRoles.includes('admin')) {
       return this.constantVariableModel
-        .find(newFilter.where, newFilter.fields, {
+        .find(newFilter.where, newFilter.fields as ProjectionType<any>, {
           sort: newFilter.order,
           limit: newFilter.limit,
           skip: newFilter.skip,

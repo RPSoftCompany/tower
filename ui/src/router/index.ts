@@ -16,7 +16,7 @@
  * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
  */
 
-import { route } from 'quasar/wrappers';
+import { defineRouter } from '#q-app/wrappers';
 import {
 	createMemoryHistory,
 	createRouter,
@@ -41,7 +41,7 @@ import { AxiosError } from 'axios';
  * with the Router instance.
  */
 
-export default route(function (/* { store, ssrContext } */) {
+export default defineRouter(function (/* { store, ssrContext } */) {
 	const createHistory = process.env.SERVER
 		? createMemoryHistory
 		: process.env.VUE_ROUTER_MODE === 'history'

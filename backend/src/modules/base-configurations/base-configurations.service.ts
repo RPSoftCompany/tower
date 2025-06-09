@@ -1,6 +1,6 @@
 import { CreateBaseConfigurationDto } from './dto/create-base-configuration.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import {
   BaseConfiguration,
   BaseConfigurationDocument,
@@ -44,11 +44,15 @@ export class BaseConfigurationsService {
   find(filter?: Statement): Promise<Array<BaseConfiguration>> {
     const newFilter = filterTranslator(filter);
 
-    return this.baseConfigurationModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.baseConfigurationModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   /**

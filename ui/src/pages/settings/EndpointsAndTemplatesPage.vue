@@ -169,6 +169,7 @@
 				dense
 				color="secondary"
 				:prefix="`/v1/`"
+				:autofocus="false"
 			/>
 			<div class="tw-flex tw-mt-2">
 				<div class="tw-flex-grow">
@@ -372,7 +373,7 @@ const newEndpoint = () => {
 	currentEndpoint.value = null;
 	nextTick(() => {
 		currentEndpointClone.value = {
-			url: '',
+			url: urlExample.value,
 			returnType: 'json',
 			sequenceNumber: allEndpoints.value.length,
 			template:
@@ -428,7 +429,7 @@ const notEmpty = (value: string) => {
 		return true;
 	}
 
-	return "URL can't be empty";
+	return `URL can't be empty`;
 };
 
 /**
@@ -629,7 +630,10 @@ const isDifferent = computed(() => {
  */
 const isSequenceDifferent = computed(() => {
 	for (let i = 0; i < allEndpointsClone.value.length; i++) {
-		if (allEndpointsClone.value[i].sequenceNumber !== i) {
+		if (
+			allEndpointsClone.value[i] !== undefined &&
+			allEndpointsClone.value[i].sequenceNumber !== i
+		) {
 			return true;
 		}
 	}

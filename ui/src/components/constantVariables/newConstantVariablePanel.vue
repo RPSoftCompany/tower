@@ -46,7 +46,7 @@
 			<div class="tw-flex">
 				<div class="tw-flex-grow tw-mx-2">
 					<!-- String -->
-					<template v-if="type.value === ConfigurationVariableType.STRING">
+					<template v-if="type?.value === ConfigurationVariableType.STRING">
 						<q-input
 							v-model="value as string"
 							:autofocus="false"
@@ -56,7 +56,7 @@
 						/>
 					</template>
 					<!-- Password -->
-					<template v-if="type.value === ConfigurationVariableType.PASSWORD">
+					<template v-if="type?.value === ConfigurationVariableType.PASSWORD">
 						<q-input
 							v-model="value as string"
 							:autofocus="false"
@@ -76,7 +76,7 @@
 						</q-input>
 					</template>
 					<!-- Number -->
-					<template v-if="type.value === ConfigurationVariableType.NUMBER">
+					<template v-if="type?.value === ConfigurationVariableType.NUMBER">
 						<q-input
 							v-model="value as number"
 							:autofocus="false"
@@ -87,7 +87,7 @@
 						/>
 					</template>
 					<!-- Boolean -->
-					<template v-if="type.value === ConfigurationVariableType.BOOLEAN">
+					<template v-if="type?.value === ConfigurationVariableType.BOOLEAN">
 						<q-btn-toggle
 							v-model="value as boolean"
 							:options="[
@@ -101,7 +101,7 @@
 						/>
 					</template>
 					<!-- Text -->
-					<template v-if="type.value === ConfigurationVariableType.TEXT">
+					<template v-if="type?.value === ConfigurationVariableType.TEXT">
 						<q-input
 							v-model="value as string"
 							:autofocus="false"
@@ -112,7 +112,7 @@
 						/>
 					</template>
 					<!-- List -->
-					<template v-if="type.value === ConfigurationVariableType.LIST">
+					<template v-if="type?.value === ConfigurationVariableType.LIST">
 						<q-select
 							v-model="value as Array<string>"
 							color="secondary"
@@ -127,7 +127,7 @@
 						/>
 					</template>
 					<!-- Vault -->
-					<template v-if="type.value === ConfigurationVariableType.VAULT">
+					<template v-if="type?.value === ConfigurationVariableType.VAULT">
 						<q-input
 							v-model="value as string"
 							:autofocus="false"
@@ -137,7 +137,7 @@
 						/>
 					</template>
 					<!-- AWS -->
-					<template v-if="type.value === ConfigurationVariableType.AWS">
+					<template v-if="type?.value === ConfigurationVariableType.AWS">
 						<div class="flex tw-gap-1">
 							<q-input
 								v-model="value as string"
@@ -158,7 +158,7 @@
 						</div>
 					</template>
 					<!-- Azure -->
-					<template v-if="type.value === ConfigurationVariableType.AZURE">
+					<template v-if="type?.value === ConfigurationVariableType.AZURE">
 						<div class="flex tw-gap-1">
 							<q-input
 								v-model="value as string"
@@ -264,7 +264,7 @@ const emit = defineEmits(['addNewConstantVariable']);
 const addNewVariable = () => {
 	emit('addNewConstantVariable', {
 		name: name.value,
-		type: type.value.value,
+		type: type?.value?.value,
 		value: value.value,
 		valueKey: valueKey.value,
 		forced: forced.value,
@@ -284,9 +284,12 @@ const addNewVariable = () => {
 // Watch
 //====================================================
 watch(
-	() => type.value.value,
+	() => type?.value?.value,
 	() => {
-		value.value = valueConverter(value.value, type.value.value);
+		value.value = valueConverter(
+			value.value,
+			type?.value?.value ?? ConfigurationVariableType.STRING,
+		);
 	},
 );
 </script>

@@ -158,7 +158,7 @@
 		</q-card>
 	</q-dialog>
 	<q-card
-		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tw-flex-1 tw-grow"
+		class="tw-bg-darkPage tw-text-secondary tw-gap-3 row tw-pt-2 tw-rounded tw-flex-1 tw-grow tw-max-h-full"
 		flat
 	>
 		<q-inner-loading :showing="loading">
@@ -201,7 +201,7 @@
 				(configurationWithCurrentArchive.length > 0 ||
 					configurationVariablesArchive.length > 0)
 			"
-			class="tw-w-full"
+			class="tw-w-full tw-flex tw-flex-col tw-max-h-full"
 		>
 			<div
 				:class="{
@@ -307,7 +307,7 @@
 							flat
 							icon="sym_o_last_page"
 							padding="sm"
-							@click="version = configurationVariablesArchive.length - 1"
+							@click="showLastVersion"
 						>
 							<q-tooltip
 								:delay="1000"
@@ -348,18 +348,15 @@
 			<q-intersection
 				:class="{
 					'tw-col-span-2': configurationVariablesArchive.length > 0,
-					'tower-max-height': userCanModify,
-					'tower-max-height-readOnly': !userCanModify,
 				}"
+				class="tw-overflow-auto"
 				transition="fade"
 				v-else
 			>
 				<q-intersection
-					once
 					v-for="row of configurationWithCurrentArchive"
 					:key="row.name"
 					class="tower-configuration-row"
-					ssr-prerender
 				>
 					<configuration-variable-row
 						v-model:type="row.type"
@@ -381,33 +378,33 @@
 					/>
 				</q-intersection>
 			</q-intersection>
+			<div v-if="userCanModify">
+				<transition
+					enter-active-class="animated fadeIn"
+					leave-active-class="animated fadeOut"
+				>
+					<new-configuration-variable-panel
+						v-if="!loading"
+						:existing-variable-names="configurationVariableNames as string[]"
+						@addNewVariable="addNewVariable"
+					/>
+				</transition>
+				<transition
+					enter-active-class="animated fadeIn"
+					leave-active-class="animated fadeOut"
+				>
+					<save-panel
+						v-if="!loading"
+						:has-errors="hasErrors"
+						:save-enabled="isDifferent && !loading"
+						@saveClicked="
+							commentNeeded ? showCommentsDialog() : saveConfiguration()
+						"
+					/>
+				</transition>
+			</div>
 		</div>
 	</q-card>
-	<div v-if="userCanModify">
-		<transition
-			enter-active-class="animated fadeIn"
-			leave-active-class="animated fadeOut"
-		>
-			<new-configuration-variable-panel
-				v-if="!loading"
-				:existing-variable-names="configurationVariableNames as string[]"
-				@addNewVariable="addNewVariable"
-			/>
-		</transition>
-		<transition
-			enter-active-class="animated fadeIn"
-			leave-active-class="animated fadeOut"
-		>
-			<save-panel
-				v-if="!loading"
-				:has-errors="hasErrors"
-				:save-enabled="isDifferent && !loading"
-				@saveClicked="
-					commentNeeded ? showCommentsDialog() : saveConfiguration()
-				"
-			/>
-		</transition>
-	</div>
 </template>
 
 <script lang="ts" setup>
@@ -439,6 +436,7 @@ import { navigationStore } from 'stores/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosError } from 'axios';
 import { cloneDeep, isNil } from 'lodash';
+import { toOrdinal } from 'number-to-words';
 //====================================================
 // Const
 //====================================================
@@ -504,7 +502,24 @@ const emit = defineEmits(['update:promotionCandidates']);
 // Computed
 //====================================================
 /**
- * promotionCandidatesCategories
+ * Computed variable that generates and categorizes promotion candidate configurations.
+ *
+ * This variable computes a mapping of categorized promotion candidates based on the input data.
+ * It processes the `localPromotionCandidates` against `configModel` to create groups of candidate
+ * configurations under specific category keys. Each candidate configuration includes an ID, base,
+ * name, and details of the candidate's full configuration.
+ *
+ * The computed value is derived as follows:
+ * - If `localPromotionCandidates` is not empty, for each candidate, the function iterates through
+ *   `configModel` to categorize candidates based on a composed key (`[value] [base]`).
+ * - If a category for the key exists, the corresponding candidate is added to the category.
+ * - If the category does not exist, a new category is created with the candidate added to it.
+ * - Each candidate configuration includes a unique ID generated using `uuidv4`, the base property,
+ *   corresponding name, and the raw candidate configuration.
+ * - If `localPromotionCandidates` is empty, the computed value is `null`.
+ *
+ * @return {Map<string, Array<any>> | null} A map object where keys represent categories and values
+ * represent arrays of promotion candidate configurations, or null if no candidates are available.
  */
 const promotionCandidatesCategories = computed(() => {
 	if (localPromotionCandidates.value.length > 0) {
@@ -543,7 +558,18 @@ const promotionCandidatesCategories = computed(() => {
 });
 
 /**
- * commentNeeded
+ * A computed property that evaluates whether a comment is required based on the `configModel` property
+ * in the `props` object. The computation iterates through the elements of `configModel` and determines
+ * if any of the elements have their `options.forceComment` property set to `true`.
+ *
+ * The result will be `true` if at least one element in `configModel` meets the condition; otherwise, `false`.
+ *
+ * Dependencies:
+ * - `props.configModel`: An array where each element is inspected to check the `forceComment` property.
+ *
+ * Returns:
+ * - {boolean} `true` if a comment is needed as determined by the `forceComment` property of an element in `configModel`.
+ *   Otherwise, `false`.
  */
 const commentNeeded = computed(() => {
 	return props.configModel.some((el) => {
@@ -554,21 +580,38 @@ const commentNeeded = computed(() => {
 });
 
 /**
- * currentVersionDate
+ * A computed property that determines the current version's effective date.
+ * If the `version.value` is non-negative, it retrieves the effective date from the
+ * `configurationVariablesArchive` based on the `version.value` and formats it as
+ * a localized string. Otherwise, it returns the current date.
+ *
+ * Dependencies:
+ * - `version.value`: The current version index.
+ * - `configurationVariablesArchive.value`: The archive containing configuration variables
+ *   with effective dates mapped by version indices.
+ *
+ * Returns:
+ * - {string} The localized string representation of the effective date for the current version
+ *   or the current date if no valid version is provided.
  */
 const currentVersionDate = computed(() => {
 	if (version.value >= 0) {
-		const date = new Date(
-			configurationVariablesArchive.value[version.value]?.effectiveDate,
-		);
-		return date.toLocaleString();
+		const effectiveDate =
+			configurationVariablesArchive.value[version.value]?.effectiveDate;
+		if (effectiveDate) {
+			const date = new Date(effectiveDate);
+			return date.toLocaleString();
+		}
 	}
 
-	return new Date();
+	return new Date().toLocaleString();
 });
 
 /**
- * currentVersionAuthor
+ * Represents the author of the current version based on the provided configuration variables and version.
+ * The value is computed dynamically and determines the author's identity based on the type of the `createdBy` field.
+ * If the `createdBy` type is 'ldap', it returns the display name; otherwise, it returns the username.
+ * If no valid author is found or version is invalid, it returns an empty string.
  */
 const currentVersionAuthor = computed(() => {
 	if (version.value >= 0) {
@@ -584,7 +627,19 @@ const currentVersionAuthor = computed(() => {
 });
 
 /**
- * promoted
+ * A computed property that determines if a specific version of a configuration variable
+ * is marked as promoted. The `promoted` property is retrieved from an archive of configuration
+ * variables based on the current version value.
+ *
+ * If the `version` value is less than 0, the returned value will be `false`.
+ * Otherwise, the promoted status is extracted from the corresponding record in the
+ * `configurationVariablesArchive`, indexed by the `version` value.
+ *
+ * Dependencies:
+ * - `version.value`: Represents the current version index.
+ * - `configurationVariablesArchive.value`: An archive containing configuration variable records.
+ *
+ * @type {import('vue').ComputedRef<boolean>}
  */
 const promoted = computed(() => {
 	if (version.value >= 0) {
@@ -595,7 +650,16 @@ const promoted = computed(() => {
 });
 
 /**
- * userCanModify
+ * A computed property that determines if a user has permission to modify a configuration.
+ *
+ * The variable evaluates the user's administrative rights and role-based permissions in the context of the provided configuration model.
+ * It checks the following conditions:
+ * - If the user has administrative rights, they are granted modify access without further checks.
+ * - If the user lacks administrative rights, the function iterates through the configuration model and associated roles for the bases.
+ * - If the user has view permission but lacks modify permission for any configuration model base, modify access is denied.
+ * - Otherwise, modify access is determined based on the presence of a specific role (`configuration.modify`).
+ *
+ * This property is useful for implementing fine-grained access control in applications where permissions are calculated dynamically based on roles and configuration details.
  */
 const userCanModify = computed(() => {
 	if (userSt.hasAdminRights) {
@@ -629,7 +693,23 @@ const userCanModify = computed(() => {
 });
 
 /**
- * configurationWithCurrentArchive
+ * A computed property that dynamically generates and returns a list of configuration variables,
+ * incorporating modifications, constant variables, archived variables, and filtering logic based on the provided states or properties.
+ *
+ * The resulting array consists of configuration variables prioritizing current variables, constant variables,
+ * and archived variables while applying filters, sorting, and error-checking logic where applicable.
+ *
+ * The computation includes:
+ * - Combining the current configuration variables with additional constant variables and archived variables.
+ * - Updating variable details (e.g., type, value, source) if certain conditions are met, such as `forced` state.
+ * - Adding missing variables from constant variables or archive if the `addIfAbsent` condition is present.
+ * - Marking archived variables that no longer exist in the current configuration as `deleted`.
+ * - Checking for any errors in configuration and sorting the resulting list by variable names in a case-insensitive manner.
+ * - Applying a user-provided filter to the variable name, type, or value.
+ *
+ * The computed array of configuration variables is designed to account for multiple data sources while ensuring consistency and flexibility.
+ *
+ * @return {Array<ConfigurationVariableToDisplay>} The processed and filtered list of configuration variables to display.
  */
 const configurationWithCurrentArchive = computed(() => {
 	let array: Array<ConfigurationVariableToDisplay> = [];
@@ -645,27 +725,27 @@ const configurationWithCurrentArchive = computed(() => {
 			});
 
 			if (currentIndex >= 0) {
-				if (el.forced) {
+				if (el.forced && array[currentIndex]) {
 					array[currentIndex].constantVariable = true;
 					array[currentIndex].forced = true;
 					array[currentIndex].value = el.value;
-					array[currentIndex].valueKey = el.valueKey;
+					array[currentIndex].valueKey = el.valueKey ?? '';
 					array[currentIndex].type = el.type;
-					array[currentIndex].sourceModel = el.sourceModel;
-					array[currentIndex].sourceBase = el.sourceBase;
+					array[currentIndex].sourceModel = el.sourceModel ?? '';
+					array[currentIndex].sourceBase = el.sourceBase ?? '';
 				}
 			} else {
 				if (el.addIfAbsent) {
 					array.push({
-						name: el.name,
-						type: el.type,
+						name: el.name ?? '',
+						type: el.type ?? ConfigurationVariableType.STRING,
 						value: el.value,
-						valueKey: el.valueKey,
-						forced: el.forced,
-						addIfAbsent: el.addIfAbsent,
+						valueKey: el.valueKey ?? '',
+						forced: el.forced ?? false,
+						addIfAbsent: el.addIfAbsent ?? false,
 						constantVariable: true,
-						sourceBase: el.sourceBase,
-						sourceModel: el.sourceModel,
+						sourceBase: el.sourceBase ?? '',
+						sourceModel: el.sourceModel ?? '',
 					});
 				}
 			}
@@ -674,9 +754,10 @@ const configurationWithCurrentArchive = computed(() => {
 
 	if (
 		configurationVariablesArchive.value.length > 0 &&
+		configurationVariablesArchive.value[version.value] &&
 		configurationVariablesArchive.value[version.value]?.variables
 	) {
-		configurationVariablesArchive.value[version.value].variables.forEach(
+		configurationVariablesArchive.value[version.value]?.variables.forEach(
 			(archiveEl) => {
 				const exists = array.some((currentEl) => {
 					return archiveEl.name === currentEl.name;
@@ -687,7 +768,7 @@ const configurationWithCurrentArchive = computed(() => {
 						name: archiveEl.name,
 						type: archiveEl.type,
 						value: archiveEl.value,
-						valueKey: archiveEl.valueKey,
+						valueKey: archiveEl.valueKey ?? '',
 						deleted: true,
 					});
 				}
@@ -725,7 +806,17 @@ const configurationWithCurrentArchive = computed(() => {
 });
 
 /**
- * configurationVariableNames
+ * A computed property that generates a unique list of configuration variable names.
+ * It collects variable names from two sources: `configurationVariables.value?.variables`
+ * and `constVariables.value`. The names are added to a `Set` to ensure uniqueness.
+ *
+ * If `configurationVariables.value?.variables` exists, their `name` properties are
+ * added to the `Set`. Additionally, for each element in `constVariables.value`,
+ * the `name` is added to the `Set` if the `addIfAbsent` property of the element is `true`.
+ *
+ * The `Set` is then converted to an array and returned.
+ *
+ * @type {import('vue').ComputedRef<string[]>}
  */
 const configurationVariableNames = computed(() => {
 	const set = new Set();
@@ -746,21 +837,34 @@ const configurationVariableNames = computed(() => {
 });
 
 /**
- * isDifferent
+ * A computed property that determines whether a specific condition or state is different
+ * based on the result of the `isDifferentThan` function. The value updates reactively
+ * whenever the dependencies of the computed property change.
+ *
+ * @type {boolean}
  */
 const isDifferent = computed(() => {
 	return isDifferentThan();
 });
 
 /**
- * differentThanShownVersion
+ * A computed property that evaluates whether the current version differs from the shown version.
+ *
+ * The property depends on a reactive `version` value and determines if it is different
+ * based on the result of the `isDifferentThan` function.
+ *
+ * @type {import('vue').ComputedRef<boolean>}
  */
 const differentThanShownVersion = computed(() => {
 	return isDifferentThan(version.value);
 });
 
 /**
- * importEnabled
+ * Reactive computed property that determines if the import functionality is enabled.
+ * The value is derived based on the existence and non-empty state of the `variables` in the
+ * `configurationVariables` object.
+ *
+ * @type {boolean}
  */
 const importEnabled = computed(() => {
 	return (
@@ -770,7 +874,16 @@ const importEnabled = computed(() => {
 });
 
 /**
- * previewLabel
+ * A computed property that generates a label string based on the promotion candidate preview configuration.
+ *
+ * The label is constructed by iterating over the bases provided by `baseSt.getBases` and appending base-specific
+ * information from the `promotionCandidatePreviewConfig` object. If multiple base information exists, they are
+ * separated by a forward slash. Additionally, the version from the configuration is appended to the label string.
+ *
+ * If the `promotionCandidatePreviewConfig` is not defined or does not exist, the computed property resolves to
+ * an empty string.
+ *
+ * @type {import('vue').ComputedRef<string>}
  */
 const previewLabel = computed(() => {
 	if (promotionCandidatePreviewConfig.value) {
@@ -798,7 +911,35 @@ const previewLabel = computed(() => {
 // Methods
 //====================================================
 /**
- * getConfiguration
+ * Asynchronously fetches and processes configuration data for a given system setup.
+ * This function retrieves data from multiple API endpoints, applies filtering, processes the retrieved
+ * data, and updates corresponding variables in the current state of the application.
+ *
+ * The function handles configuration model rules, constant variables, and configuration history
+ * and applies base-specific and metadata-based filtering criteria. Additionally, it manages potential
+ * promotions if the user has modification permissions for the loaded configurations.
+ *
+ * Key operations:
+ * - Initializes various configuration-related variables and sets up filtering parameters.
+ * - Validates the presence of a `configModel` in the provided properties.
+ * - Fetches configuration data, rules, count, and constant variables from the server using
+ *   parallel API requests.
+ * - Processes the retrieved data to update state variables such as `configurationVariables`,
+ *   `configurationModelRules`, and `constVariables`.
+ * - Notifies the user in case of data-fetching errors.
+ *
+ * The function also handles additional scenarios:
+ * - Maintains a local archive of configuration records for history purposes.
+ * - Adjusts the current configuration version based on received data.
+ * - Handles specific criteria for constant variables and updates their properties based
+ *   on associated metadata.
+ * - Initiates promotion candidate fetching asynchronously if modification permissions are enabled.
+ *
+ * @function
+ * @async
+ *
+ * @returns {Promise<void>} Resolves when the configuration data has been successfully processed and
+ * state variables have been updated. Handles errors internally and does not return any result or throw errors.
  */
 const getConfiguration = async () => {
 	configurationVariables.value = null;
@@ -967,8 +1108,14 @@ const getConfiguration = async () => {
 };
 
 /**
- * configurationArchiveVersion
- * @param variableName
+ * Retrieves a configuration variable by its name from the archived configuration versions.
+ *
+ * This function searches for a specific variable within the archived configuration versions
+ * based on the provided variable name. If the archive does not contain the desired configuration
+ * version or the version is invalid, it will return `undefined`.
+ *
+ * @param {string} variableName - The name of the variable to be retrieved from the archive.
+ * @returns {Object|undefined} The configuration variable object if found, otherwise `undefined`.
  */
 const configurationArchiveVersion = (variableName: string) => {
 	if (
@@ -979,14 +1126,21 @@ const configurationArchiveVersion = (variableName: string) => {
 	}
 
 	const variables =
-		configurationVariablesArchive.value[version.value].variables;
-	return variables.find((el) => {
+		configurationVariablesArchive.value[version.value]?.variables;
+	return variables?.find((el) => {
 		return el.name === variableName;
 	});
 };
 
 /**
- * addNewVariable
+ * Adds a new variable to the configuration if it does not already exist.
+ *
+ * This function checks if the provided variable exists in the list of variables
+ * stored in `configurationVariables`. If the variable does not exist, it is added
+ * to the list. If `configurationVariables.value` is not initialized, it initializes
+ * the configuration with default values before attempting to add the variable.
+ *
+ * @param {ConfigurationVariable} variable - The variable to be added to the configuration.
  */
 const addNewVariable = (variable: ConfigurationVariable) => {
 	if (!configurationVariables.value) {
@@ -1011,7 +1165,12 @@ const addNewVariable = (variable: ConfigurationVariable) => {
 };
 
 /**
- * removeVariable
+ * Removes a variable with the specified name from the configuration variables list.
+ *
+ * This function modifies the `configurationVariables` object by filtering out
+ * the variable with the given name from its `variables` array, if it exists.
+ *
+ * @param {string} name - The name of the variable to be removed.
  */
 const removeVariable = (name: string) => {
 	if (configurationVariables.value) {
@@ -1023,7 +1182,20 @@ const removeVariable = (name: string) => {
 };
 
 /**
- * checkForErrors
+ * Validates an array of configuration variables against predefined rules and assigns error messages if validation fails.
+ *
+ * The function checks each configuration variable in the provided array against a set of rules. If a variable does not satisfy
+ * the conditions specified in the rules, it assigns an error message to the variable and indicates that errors were found by
+ * updating the `hasErrors.value` flag.
+ *
+ * Rules may include:
+ * - Matching specific values or regular expressions for a target property of the variable.
+ * - Validating conditions for specific properties based on matching rules.
+ *
+ * Variables with `constantVariable` and `forced` properties are exempt from validation.
+ *
+ * @param {Array<ConfigurationVariableToDisplay>} array - The array of configuration variables to validate.
+ * @returns {Array<ConfigurationVariableToDisplay>} The array of configuration variables, which may include error messages for invalid entries.
  */
 const checkForErrors = (array: Array<ConfigurationVariableToDisplay>) => {
 	hasErrors.value = false;
@@ -1079,16 +1251,46 @@ const checkForErrors = (array: Array<ConfigurationVariableToDisplay>) => {
 	return array;
 };
 
+/**
+ * A function that resets the comment field and displays the comments dialog.
+ *
+ * Resets the value of the `comment` variable to an empty string
+ * and sets the `commentsDialog` variable to `true` to trigger the display
+ * of the dialog interface for comments.
+ */
 const showCommentsDialog = () => {
 	comment.value = '';
 	commentsDialog.value = true;
 };
 
 /**
- * saveConfiguration
+ * Asynchronously saves the current configuration to the server.
+ *
+ * This function checks whether a configuration with a higher version already exists.
+ * If a newer version exists, it aborts the save operation and fetches the latest configuration.
+ * Otherwise, it attempts to save the provided configuration variables along with additional metadata.
+ *
+ * Notifications are displayed to the user to indicate the status of the operation, such as:
+ * - Errors encountered during the save process.
+ * - Successful completion of the operation.
+ *
+ * Dependencies:
+ * - Axios for making HTTP requests.
+ * - Quasar's notification system ($q.notify) for user feedback.
+ *
+ * The process includes:
+ * - Verifying if the configuration version matches the latest version.
+ * - Constructing a payload for the save operation based on defined variables and metadata.
+ * - Sending the payload to the server via a POST request.
+ * - Handling responses or errors from the server.
+ *
+ * The function updates UI indicators like loading states and fetches the configuration data
+ * after a successful save or when an error necessitates version synchronization.
+ *
+ * Note: Handles async operations with proper use of `try-catch` blocks and async/await syntax.
  */
 const saveConfiguration = async () => {
-	// Check if configuration with higher version exists already
+	// Check if configuration with a higher version exists already
 	currentConfigurationFilter.limit = 1;
 	const currentConfigurationRequest = await towerAxios.get(
 		`configurations?filter=${JSON.stringify(currentConfigurationFilter, null, '')}`,
@@ -1106,7 +1308,7 @@ const saveConfiguration = async () => {
 			currentVersion =
 				configurationVariablesArchive.value[
 					configurationVariablesArchive.value.length - 1
-				].version;
+				]?.version ?? 0;
 		}
 
 		if (currentVersion !== currentConfigurationRequest.data[0].version) {
@@ -1176,7 +1378,15 @@ const saveConfiguration = async () => {
 };
 
 /**
- * exportConfiguration
+ * Exports the current configuration in JSON format.
+ *
+ * This function checks if the required configuration variables are available.
+ * If they are present, it retrieves the export details through `exportJSON` and
+ * returns the serialized JSON string representation of the configuration.
+ * If configuration variables are missing, the function returns undefined.
+ *
+ * @function
+ * @returns {string|undefined} The exported configuration as a JSON string, or undefined if the configuration is not available.
  */
 const exportConfiguration = () => {
 	if (!configurationVariables.value?.variables) {
@@ -1190,7 +1400,12 @@ const exportConfiguration = () => {
 };
 
 /**
- * importJSON
+ * Exports configuration variables in JSON format.
+ *
+ * The function processes a list of configuration variables and creates an object that includes the name, type,
+ * and value of each variable. It returns the constructed object containing these details.
+ *
+ * @returns {ImportDetails} A JSON object containing the exported configuration variables
  */
 const exportJSON = () => {
 	const obj: ImportDetails = {
@@ -1211,8 +1426,13 @@ const exportJSON = () => {
 };
 
 /**
- * importConfiguration
- * @param importDetails
+ * Imports and processes configuration data from a file.
+ *
+ * This function parses configuration data, validates its structure, and updates the application's variable store if the data is valid.
+ * If the imported data is invalid or missing key components, appropriate error notifications are displayed to the user.
+ *
+ * @param {Import} importDetails - The import details containing the file data to be parsed.
+ * @throws Will notify the user if the file data cannot be parsed or if the configuration data is invalid or incomplete.
  */
 const importConfiguration = (importDetails: Import) => {
 	let data = null;
@@ -1281,7 +1501,18 @@ const importConfiguration = (importDetails: Import) => {
 };
 
 /**
- * isDifferentThan
+ * Determines whether the current state of configuration variables differs from a given archived state or from the latest archive.
+ *
+ * The function evaluates discrepancies between the `configurationVariables` and `configurationVariablesArchive` values based on several conditions:
+ * - If no archived or current configuration variables exist, returns `false`.
+ * - If there are no archived variables, but the current configuration variables are present, returns `true`.
+ * - Compares a specific version of the archive (determined by the `versionToCheck` parameter or defaults to the latest archive version) with the current variables to identify differences, such as:
+ *   - Variation in the number of variables.
+ *   - Differences in variable properties, including `type`, `valueKey`, `value`, or specific transformations for `AWS` or `LIST` variable types.
+ *   - Excludes constant variables that are marked as forced.
+ *
+ * @param {number} [versionToCheck] - An optional version index of the archived configuration variables to compare against. Defaults to the last version in the archive if not provided.
+ * @returns {boolean} - Returns `true` if differences are detected, otherwise `false`.
  */
 const isDifferentThan = (versionToCheck?: number) => {
 	if (
@@ -1308,13 +1539,13 @@ const isDifferentThan = (versionToCheck?: number) => {
 			configurationVariablesArchive.value[versionToCheck];
 
 		if (
-			currentVariables.variables?.length !==
+			currentVariables?.variables?.length !==
 			configurationVariables.value?.variables.length
 		) {
 			return true;
 		}
 
-		const isDiff = currentVariables.variables.some((el) => {
+		const isDiff = currentVariables?.variables.some((el) => {
 			const local = configurationVariables.value?.variables.find((Var) => {
 				return Var.name === el.name;
 			});
@@ -1365,31 +1596,56 @@ const isDifferentThan = (versionToCheck?: number) => {
 };
 
 /**
- * fullRevert
+ * Restores the `configurationVariables` to the state stored in the archive for a specific version.
+ * This method clones the variables associated with the specified version in the archive and assigns them
+ * to the current `configurationVariables`. No operation is performed if the `configurationVariables` or
+ * the archive for the desired version is undefined.
+ *
+ * The restoration is deep to avoid mutating the archived data or introducing unintended shared references.
  */
 const fullRevert = () => {
 	if (configurationVariables.value) {
-		configurationVariables.value.variables = cloneDeep(
-			configurationVariablesArchive.value[version.value].variables,
+		const variables = cloneDeep(
+			configurationVariablesArchive.value[version.value]?.variables,
 		);
+		if (variables) {
+			configurationVariables.value.variables = variables;
+		}
 	}
 };
 
 /**
- * promoteConfiguration
+ * Asynchronously promotes a configuration version if certain conditions are met.
+ *
+ * This function checks if specific configuration variables and their archive are present and properly defined.
+ * It updates the configuration version's promotion status and notifies the user of the operation's success or failure.
+ * If an error occurs during the promotion process, the promotion status is rolled back and an error notification is displayed.
+ *
+ * The promotion request is sent to the server using a `POST` request to the specified endpoint for the targeted configuration version.
+ * Notifications are shown to indicate whether the promotion succeeded or failed.
  */
 const promoteConfiguration = async () => {
-	if (configurationVariables.value) {
-		configurationVariablesArchive.value[version.value].promoted = true;
+	if (
+		configurationVariables.value &&
+		configurationVariablesArchive.value &&
+		configurationVariablesArchive.value[version.value]
+	) {
+		const archiveConfig = configurationVariablesArchive.value[version.value];
+		if (archiveConfig && 'promoted' in archiveConfig) {
+			archiveConfig.promoted = true;
+		}
 
 		try {
 			await towerAxios.post(
 				`/configurations/${
-					configurationVariablesArchive.value[version.value]._id
+					configurationVariablesArchive.value[version.value]?._id
 				}/promote`,
 			);
 		} catch (e) {
-			configurationVariablesArchive.value[version.value].promoted = false;
+			const archiveConfig = configurationVariablesArchive.value[version.value];
+			if (archiveConfig && 'promoted' in archiveConfig) {
+				archiveConfig.promoted = false;
+			}
 
 			$q.notify({
 				color: 'negative',
@@ -1412,14 +1668,36 @@ const promoteConfiguration = async () => {
 };
 
 /**
- * promote
+ * Handles the promotion process by selecting a candidate's configuration
+ * and updating configuration variables accordingly.
+ *
+ * This function evaluates the available promotion candidates and their categories.
+ * It identifies the currently active promotion candidate based on its ID
+ * and retrieves its associated configuration. Once identified, it updates
+ * the `configurationVariables` collection by replacing existing variables
+ * with those from the active promotion candidate's configuration.
+ *
+ * Preconditions:
+ * - `localPromotionCandidates.value` and `promotionCandidatesCategories.value`
+ *   must contain valid data structures for processing.
+ * - The candidate's configuration is expected to contain a "variables" property
+ *   holding details like name, type, and value.
+ *
+ * Notes:
+ * - If the candidate's configuration variable type is a list, the function
+ *   makes a deep copy of the variable's value.
+ * - The function safely ensures that no operations proceed unless required
+ *   values and structures are present and valid.
  */
 const promote = () => {
 	if (localPromotionCandidates.value && promotionCandidatesCategories.value) {
 		let promoteFrom: Configuration | null = null;
 
 		for (const array of promotionCandidatesCategories.value.values()) {
-			for (let el of array) {
+			for (const el of array as Array<{
+				id: string;
+				configuration: Configuration;
+			}>) {
 				if (el.id === activePromotionCandidate.value) {
 					promoteFrom = el.configuration;
 					break;
@@ -1447,7 +1725,18 @@ const promote = () => {
 };
 
 /**
- * getPromotionCandidates
+ * Fetches and processes the list of promotion candidates by constructing a model
+ * based on provided configurations and sending it to an API endpoint.
+ *
+ * This function integrates information from `baseSt.getBases` and `props.configModel`
+ * to dynamically build a request payload. The payload is then sent via a POST
+ * request to the `/configurations/promotionCandidates` endpoint. On successful
+ * response (status 200), the returned data is stored in `localPromotionCandidates.value`.
+ *
+ * @async
+ * @function getPromotionCandidates
+ * @returns {Promise<void>} A Promise that resolves once the promotion candidates
+ * list is fetched and processed.
  */
 const getPromotionCandidates = async () => {
 	const model: any = {};
@@ -1473,14 +1762,37 @@ const getPromotionCandidates = async () => {
 };
 
 /**
- * showPromotionCandidatesDialog
+ * Updates the current `version.value` based on the number of archived configuration variables.
+ * If `configurationVariablesArchive.value` contains some entries, the last version number is set to one less
+ * than the archive's length; otherwise, it defaults to 1.
+ */
+const showLastVersion = () => {
+	version.value = configurationVariablesArchive.value?.length
+		? configurationVariablesArchive.value.length - 1
+		: 1;
+};
+
+/**
+ * Asynchronous function to display the promotion candidates dialog.
+ *
+ * This function sets the state of the promotionCandidatesDialog to true,
+ * which indicates that the dialog should be displayed to the user.
+ *
+ * The function does not take any parameters and does not return
+ * any value. It is executed asynchronously.
  */
 const showPromotionCandidatesDialog = async () => {
 	promotionCandidatesDialog.value = true;
 };
 
 /**
- * setActivePromotionCandidate
+ * Toggles the active promotion candidate based on the provided ID.
+ *
+ * If the given `id` matches the current active promotion candidate's value,
+ * it resets the value to an empty string, effectively deactivating it.
+ * Otherwise, it sets the active promotion candidate's value to the given `id`.
+ *
+ * @param {string} id - The identifier of the promotion candidate to activate or deactivate.
  */
 const setActivePromotionCandidate = (id: string) => {
 	if (activePromotionCandidate.value === id) {
@@ -1491,7 +1803,12 @@ const setActivePromotionCandidate = (id: string) => {
 };
 
 /**
- * showPromotionCandidatePreviewDialog
+ * Displays the promotion candidate preview dialog with the specified configuration.
+ *
+ * @function showPromotionCandidatePreviewDialog
+ * @param {MouseEvent} event - The mouse event triggering the function.
+ * The event's propagation will be stopped.
+ * @param {Configuration} config - The configuration object for the promotion candidate preview dialog.
  */
 const showPromotionCandidatePreviewDialog = (
 	event: MouseEvent,
@@ -1503,31 +1820,18 @@ const showPromotionCandidatePreviewDialog = (
 	promotionCandidatePreviewConfig.value = config;
 };
 
-//====================================================
-// Watch
-//====================================================
-watch(() => props.configModel, getConfiguration, {
-	immediate: false,
-	deep: true,
-});
-
-watch(
-	isDifferent,
-	(current: boolean) => {
-		if (current && !loading.value) {
-			navigationSt.preventNavigation();
-		} else {
-			navigationSt.allowNavigation();
-		}
-	},
-	{ immediate: true },
-);
-
-watch(localPromotionCandidates, (current) => {
-	emit('update:promotionCandidates', current);
-});
-
-watch(version, async (current) => {
+/**
+ * Updates the application's configuration variables for a specific version if they are not already loaded.
+ *
+ * The `versionChanged` function is triggered when the current version is updated. It performs the following tasks:
+ * - Retrieves and updates configuration variables for the specified version if they are not already loaded.
+ * - Constructs and sends a request to fetch configuration data based on specified filters.
+ * - Updates the application state with the fetched configuration data.
+ * - Notifies the user in case of an error during the request.
+ *
+ * @param {number} current - The current version index to be checked and potentially updated.
+ */
+const versionChanged = async (current: number) => {
 	if (
 		configurationVariablesArchive.value[current] &&
 		!configurationVariablesArchive.value[current].variables
@@ -1576,6 +1880,34 @@ watch(version, async (current) => {
 
 		loading.value = false;
 	}
+};
+
+//====================================================
+// Watch
+//====================================================
+watch(() => props.configModel, getConfiguration, {
+	immediate: false,
+	deep: true,
+});
+
+watch(
+	isDifferent,
+	(current: boolean) => {
+		if (current && !loading.value) {
+			navigationSt.preventNavigation();
+		} else {
+			navigationSt.allowNavigation();
+		}
+	},
+	{ immediate: true },
+);
+
+watch(localPromotionCandidates, (current) => {
+	emit('update:promotionCandidates', current);
+});
+
+watch(version, async (current) => {
+	await versionChanged(current);
 });
 
 //====================================================
@@ -1593,11 +1925,10 @@ defineExpose({
 <style scoped>
 .tower-max-height {
 	overflow: auto;
-	max-height: calc(100vh - 22rem);
+	max-height: 100%;
 }
 
 .tower-max-height-readOnly {
 	overflow: auto;
-	max-height: calc(100vh - 14rem);
 }
 </style>

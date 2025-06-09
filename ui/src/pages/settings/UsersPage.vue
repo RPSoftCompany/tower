@@ -17,7 +17,7 @@
   -->
 
 <template>
-	<div class="tw-flex tw-flex-col tw-h-full">
+	<div class="tw-flex tw-flex-col tw-justify-between tw-h-full">
 		<div class="tw-flex tw-flex-col tw-items-center tw-overflow-auto">
 			<tower-select
 				v-model="currentUser"
@@ -373,7 +373,7 @@
 				</div>
 			</transition>
 		</div>
-		<div class="tw-justify-self-end">
+		<div>
 			<save-panel
 				v-if="currentUserClone"
 				:save-enabled="isDifferent"

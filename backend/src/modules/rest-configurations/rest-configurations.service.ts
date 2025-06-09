@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRestConfigurationDto } from './dto/create-rest-configuration.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import {
   RestConfiguration,
   RestConfigurationDocument,
@@ -25,11 +25,15 @@ export class RestConfigurationsService {
   find(filter?: Statement): Promise<Array<RestConfiguration>> {
     const newFilter = filterTranslator(filter);
 
-    return this.restConfigurationModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.restConfigurationModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   findById(id: string): Promise<Member> {

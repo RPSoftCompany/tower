@@ -4,7 +4,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { Statement } from '../../helpers/clauses';
 import { filterTranslator } from '../../helpers/filterTranslator';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { Role, RoleDocument } from './roles.schema';
 
 @Injectable()
@@ -83,11 +83,15 @@ export class RolesService implements OnModuleInit {
   async find(filter?: Statement): Promise<Array<Role>> {
     const newFilter = filterTranslator(filter);
 
-    return this.roleModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.roleModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   /**

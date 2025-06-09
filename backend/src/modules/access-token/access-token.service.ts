@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { AccessToken, AccessTokenDocument } from './access-token.schema';
 import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { Statement } from '../../helpers/clauses';
@@ -12,6 +12,7 @@ import { readFileSync } from 'fs';
 @Injectable()
 export class AccessTokenService {
   private readonly logger = new Logger(AccessTokenService.name);
+
   constructor(
     @InjectModel(AccessToken.name)
     private accessTokenModel: Model<AccessTokenDocument>,
@@ -225,11 +226,15 @@ export class AccessTokenService {
   async find(filter?: Statement): Promise<Array<AccessToken>> {
     const newFilter = filterTranslator(filter);
 
-    return this.accessTokenModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.accessTokenModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   async logout(id: string) {

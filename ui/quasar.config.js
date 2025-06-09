@@ -8,9 +8,10 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
-const { configure } = require('quasar/wrappers');
+import { defineConfig } from '#q-app/wrappers';
+import tailwindcss from '@tailwindcss/vite';
 
-module.exports = configure(async function (/* ctx */) {
+export default defineConfig(async (ctx) => {
 	const pluginRewriteAll = await import('vite-plugin-rewrite-all');
 
 	return {
@@ -58,6 +59,15 @@ module.exports = configure(async function (/* ctx */) {
 				node: 'node22',
 			},
 
+			typescript: {
+				strict: true, // (recommended) enables strict settings for TypeScript
+				vueShim: true, // required when using ESLint with type-checked rules, will generate a shim file for `*.vue` files
+				extendTsConfig(tsConfig) {
+					// You can use this hook to extend tsConfig dynamically
+					// For basic use cases, you can still update the usual tsconfig.json file to override some settings
+				},
+			},
+
 			vueRouterMode: 'history', // available values: 'hash', 'history'
 			// vueRouterBase,
 			// vueDevtools,
@@ -70,20 +80,23 @@ module.exports = configure(async function (/* ctx */) {
 			// env: {},
 			// rawDefine: {}
 			// ignorePublicFolder: true,
-			// minify: false,
+			minify: true,
 			// polyfillModulePreload: true,
 			// distDir
 
 			// extendViteConf (viteConf) {},
 			// viteVuePluginOptions: {},
 
-			vitePlugins: [[pluginRewriteAll.default(), {}]],
+			vitePlugins: [
+				[pluginRewriteAll.default(), {}],
+				[tailwindcss, { config: './tailwind.config.js' }],
+			],
 		},
 
 		// Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
 		devServer: {
 			// https: true
-			open: false, // opens browser window automatically
+			open: true, // opens browser window automatically
 		},
 
 		// https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework

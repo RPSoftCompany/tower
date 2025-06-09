@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { Promotion, PromotionDocument } from './promotions.schema';
 import { Statement } from '../../helpers/clauses';
 import { filterTranslator } from '../../helpers/filterTranslator';
@@ -22,11 +22,15 @@ export class PromotionsService {
   find(filter?: Statement): Promise<Array<Promotion>> {
     const newFilter = filterTranslator(filter);
 
-    return this.promotionModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.promotionModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   findById(id: string) {

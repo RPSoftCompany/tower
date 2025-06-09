@@ -16,7 +16,7 @@
  * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
  */
 
-import { store } from 'quasar/wrappers';
+import { defineStore } from '#q-app/wrappers';
 import { createPinia } from 'pinia';
 import { createPersistedStatePlugin } from 'pinia-plugin-persistedstate-2';
 import { Router } from 'vue-router';
@@ -35,7 +35,9 @@ declare module 'pinia' {
 
 const parseJwt = (token: string) => {
 	const base64Url = token.split('.')[1];
-	const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+	const base64: string = base64Url
+		? base64Url.replace(/-/g, '+').replace(/_/g, '/')
+		: '';
 	const jsonPayload = decodeURIComponent(
 		window
 			.atob(base64)
@@ -58,7 +60,7 @@ const parseJwt = (token: string) => {
  * with the Store instance.
  */
 
-export default store((ssrContext) => {
+export default defineStore((ssrContext) => {
 	const pinia = createPinia();
 
 	const cookies = process.env.SERVER ? Cookies.parseSSR(ssrContext) : Cookies; // otherwise we're on client
@@ -77,7 +79,7 @@ export default store((ssrContext) => {
 				},
 				setItem: (key, value) => {
 					if (key === 'tower_user') {
-						let expires = undefined;
+						let expires = new Date(0);
 						try {
 							const decoded = parseJwt(value);
 							const date = new Date(0);

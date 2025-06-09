@@ -55,24 +55,38 @@ import { navigationStore } from 'stores/navigation';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
+// Initialize the navigation store
 const navigationSt = navigationStore();
+// Initialize the Vue Router
 const router = useRouter();
 
+/**
+ * Computed property to control the visibility of the "Unsaved changes" dialog.
+ * It uses the `getShowDialog` getter from the navigation store.
+ */
 const showDialog = computed({
 	get: () => {
 		return navigationSt.getShowDialog;
 	},
 	set: () => {
-		//ignore
+		//ignore setter as it's controlled by the store
 	},
 });
 
+/**
+ * Handles proceeding with navigation when the user confirms leaving a page with unsaved changes.
+ * Allows navigation, closes the dialog, and navigates to the intended destination.
+ */
 const followPath = () => {
 	navigationSt.allowNavigation();
 	navigationSt.closeNavigationDialog();
 	router.push(navigationSt.getDestination);
 };
 
+/**
+ * Handles preventing navigation when the user cancels leaving a page with unsaved changes.
+ * Closes the "Unsaved changes" dialog.
+ */
 const preventNavigation = () => {
 	navigationSt.closeNavigationDialog();
 };

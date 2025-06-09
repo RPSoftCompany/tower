@@ -67,10 +67,14 @@ export class ConfigurationsController {
           process.env.SECRET = null;
         }
       } else {
-        process.env.SECRET = secret;
-        if (decryptPassword(initialized.encryptionCheck) !== secret) {
-          process.env.SECRET = null;
-          throw new BadRequestException('Invalid encryption key');
+        if (initialized.booted) {
+          throw new BadRequestException('Tower has already been initialized');
+        } else {
+          process.env.SECRET = secret;
+          if (decryptPassword(initialized.encryptionCheck) !== secret) {
+            process.env.SECRET = null;
+            throw new BadRequestException('Invalid encryption key');
+          }
         }
       }
     } else {
