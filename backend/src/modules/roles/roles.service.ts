@@ -18,16 +18,20 @@ export class RolesService implements OnModuleInit {
   constructor(@InjectModel(Role.name) private roleModel: Model<RoleDocument>) {}
 
   /**
-   * create
-   * @param createRoleDto
+   * Creates a new role using the provided data transfer object.
+   *
+   * @param {CreateRoleDto} createRoleDto - The data transfer object containing the details of the role to be created.
+   * @return {Promise<Role>} A promise that resolves to the newly created role.
    */
   async create(createRoleDto: CreateRoleDto) {
     return await this.roleModel.create(createRoleDto);
   }
 
   /**
-   * count
-   * @param filter
+   * Counts the number of documents in the database that match the given filter condition.
+   *
+   * @param {Statement} [filter] - The optional filter object used to specify conditions for the count query.
+   * @return {Promise<number>} A promise that resolves to the count of documents matching the filter.
    */
   async count(filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
@@ -36,7 +40,10 @@ export class RolesService implements OnModuleInit {
   }
 
   /**
-   * onModuleInit
+   * Handles the initialization process for the module by ensuring predefined roles exist in the database.
+   * If any roles from the predefined list are not found, they will be created.
+   *
+   * @return {Promise<void>} A promise that resolves when the initialization process completes.
    */
   async onModuleInit() {
     const rolesList = [
@@ -77,8 +84,10 @@ export class RolesService implements OnModuleInit {
   }
 
   /**
-   * find
-   * @param filter
+   * Finds and retrieves an array of Role objects based on the specified filter.
+   *
+   * @param {Statement} [filter] - Optional parameter to specify query constraints such as conditions, fields, sorting, limits, and offsets.
+   * @return {Promise<Array<Role>>} A promise that resolves to an array of Role objects matching the filter criteria.
    */
   async find(filter?: Statement): Promise<Array<Role>> {
     const newFilter = filterTranslator(filter);
@@ -95,16 +104,21 @@ export class RolesService implements OnModuleInit {
   }
 
   /**
-   * findOne
-   * @param id
+   * Finds a single role by its unique identifier.
+   *
+   * @param {string} id - The unique identifier of the role to find.
+   * @return {Promise<Role>} A promise that resolves to the role object if found, or null if not found.
    */
   async findOne(id: string): Promise<Role> {
     return this.roleModel.findById(id);
   }
 
   /**
-   * findOneWithFilter
-   * @param filter
+   * Finds a single role document that matches the specified filter criteria.
+   *
+   * @param {Statement} [filter] - Optional filter criteria to query the role document.
+   *                               If not provided, a default filter will be applied.
+   * @return {Promise<Role>} A promise that resolves to a single role document matching the filter criteria.
    */
   async findOneWithFilter(filter?: Statement): Promise<Role> {
     const newFilter = filterTranslator(filter);
@@ -113,17 +127,21 @@ export class RolesService implements OnModuleInit {
   }
 
   /**
-   * update
-   * @param id
-   * @param updateRoleDto
+   * Updates a role with the provided data.
+   *
+   * @param {string} id - The unique identifier of the role to update.
+   * @param {UpdateRoleDto} updateRoleDto - The data to update the role with.
+   * @return {Promise<Role>} A promise that resolves to the updated role.
    */
   async update(id: string, updateRoleDto: UpdateRoleDto): Promise<Role> {
     return this.roleModel.findByIdAndUpdate(id, updateRoleDto, { new: true });
   }
 
   /**
-   * remove
-   * @param id
+   * Removes a document from the role collection based on the provided ID.
+   *
+   * @param {string} id - The unique identifier of the document to be removed.
+   * @return {Promise<Object|null>} A promise that resolves to the removed document or null if no document was found.
    */
   async remove(id: string) {
     return this.roleModel.findOneAndDelete({

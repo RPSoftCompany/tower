@@ -63,6 +63,13 @@ export class ConnectionsService implements OnModuleInit {
     @Inject(forwardRef(() => V1Service)) private readonly v1Service: V1Service,
   ) {}
 
+  /**
+   * Lifecycle method that is executed when the module is initialized.
+   * This method performs checks to ensure the existence and connectivity of LDAP and Vault services.
+   * Logs a debug message once the checks are completed.
+   *
+   * @return {Promise<void>} A promise that resolves once the initialization checks are complete.
+   */
   async onModuleInit() {
     await this.checkIfLDAPExists();
     await this.checkIfVaultExists();
@@ -70,6 +77,12 @@ export class ConnectionsService implements OnModuleInit {
     this.logger.debug('Connections check finished');
   }
 
+  /**
+   * Checks if an LDAP connection exists in the system. If no LDAP connection is found,
+   * creates a default LDAP configuration with predefined properties and stores it.
+   *
+   * @return {Promise<void>} A promise that resolves when the check and possible creation of the LDAP configuration are complete.
+   */
   async checkIfLDAPExists() {
     const connection = await this.connectionModel.findOne({
       system: LDAP.name,
@@ -91,6 +104,12 @@ export class ConnectionsService implements OnModuleInit {
     }
   }
 
+  /**
+   * Checks if a vault exists in the database and creates a new vault entry if it does not exist.
+   *
+   * @return {Promise<void>} Resolves when the operation is completed, either by confirming the vault exists
+   *                         or creating a new vault entry.
+   */
   async checkIfVaultExists() {
     const connection = await this.connectionModel.findOne({
       system: Vault.name,
@@ -111,9 +130,14 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * upsert
+   * Handles the upsert operation for various types of system connections. This method updates an existing
+   * connection if an ID is provided or creates a new connection if no ID is specified. It supports
+   * connections for LDAP, Vault, SCP, AWS, Azure, and Kubernetes systems.
    *
-   * @param createConnectionDto
+   * @param {CreateLDAPConnectionDto | CreateSCPConnectionDto | CreateVaultConnectionDto | CreateAWSConnectionDto | CreateAzureConnectionDto | CreateKubernetesConnectionDto} createConnectionDto
+   * Object containing the necessary details to either create or update a connection. The type of connection is determined by the provided system property.
+   * @return {Promise<LDAPConnectionDocument | VaultConnectionDocument | SCPConnectionDocument | AWSConnectionDocument | AzureConnectionDocument | KubernetesConnectionDocument>}
+   * Returns a Promise resolving to the saved or updated connection document for the respective system. Throws an exception if the system name or details are invalid.
    */
   async upsert(
     createConnectionDto:
@@ -258,9 +282,10 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * find
+   * Searches for connections based on the given filter criteria and returns a list of connections.
    *
-   * @param filter
+   * @param {Statement} [filter] - Optional filter criteria used to query and refine the retrieved connections.
+   * @return {Promise<Array<Connection | LDAP | SCP | Vault>>} A promise that resolves to an array containing the resulting connections.
    */
   find(filter?: Statement): Promise<Array<Connection | LDAP | SCP | Vault>> {
     const newFilter = filterTranslator(filter);
@@ -277,9 +302,11 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * findOne
+   * Fetches a single record based on the provided identifier.
    *
-   * @param id
+   * @param {string} id - The unique identifier of the record to find.
+   * @return {Promise<Object>} A promise that resolves to the found record if it exists,
+   * or an empty object if no matching record is found.
    */
   async findOne(id: string) {
     const connection = await this.connectionModel.find({
@@ -294,9 +321,11 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * remove
+   * Removes a connection from the database based on the provided ID.
    *
-   * @param id
+   * @param {string} id - The unique identifier of the connection to be removed.
+   * @return {Promise<void>} A promise that resolves when the operation is complete.
+   * @throws {BadRequestException} If the connection system type is not deletable.
    */
   async remove(id: string) {
     const connection = await this.connectionModel.find({
@@ -320,11 +349,9 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * test connection
+   * Tests the connection for a given connection type and corresponding connection details.
    *
-   * @param type
-   * @param body
-   */
+   * @param {string} type - The type of connection to test. It should be one of the following: 'LDAP', '*/
   async testConnection(
     type: string,
     body?:
@@ -482,10 +509,11 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * getVaultVariable
+   * Retrieves a variable from a Vault system based on the provided configuration and variable name.
    *
-   * @param configurationBases
-   * @param variableName
+   * @param {any} configurationBases An object representing configuration bases and their associated values.
+   * @param {string} variableName The name or path of the variable to retrieve from the Vault.
+   * @return {Promise<string>} A promise that resolves to the value of the requested Vault variable, or an empty string if not found or disabled.
    */
   async getVaultVariable(configurationBases: any, variableName: string) {
     const connection: Vault = await this.connectionModel.findOne({
@@ -535,7 +563,9 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * getAWSConnections
+   * Retrieves a list of AWS connection records from the database.
+   *
+   * @return {Promise<Array<Object>>} A promise resolving to an array of connection objects related to AWS.
    */
   async getAWSConnections() {
     return this.connectionModel.find({
@@ -544,12 +574,13 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * getAWSSMVariable
+   * Retrieves a specific variable from AWS Secrets Manager based on the provided connections and configuration parameters.
    *
-   * @param connections
-   * @param configurationBases
-   * @param variableName
-   * @param valueKey
+   * @param {AWSConnection[]} connections - Array of AWS connection configurations, including region, accessKeyId, and secretAccessKey.
+   * @param {Object} configurationBases - Key-value pairs used to filter the connections and match specific configuration criteria.
+   * @param {string} variableName - Name of the variable (secret) to retrieve from AWS Secrets Manager.
+   * @param {string} valueKey - Key to specify which value to extract from the retrieved secret.
+   * @return {Promise<any>} Resolves to the secret value retrieved from AWS Secrets Manager, or null if no valid connection is found. Throws an exception in case of an error.
    */
   async getAWSSMVariable(
     connections: AWSConnection[],
@@ -593,7 +624,9 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * getAzureConnections
+   * Retrieves a list of Azure connections from the database.
+   *
+   * @return {Promise<Array>} A promise that resolves to an array of Azure connection objects.
    */
   async getAzureConnections() {
     return this.connectionModel.find({
@@ -602,10 +635,13 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * getAzureKeyVaultVariable
-   * @param connections
-   * @param configurationBases
-   * @param variableName
+   * Fetches a variable from Azure Key Vault based on the provided connections and configuration bases.
+   *
+   * @param {AzureConnection[]} connections - An array of AzureConnection objects containing connection details such as tenant ID, client ID, client secret, vault name, and URL.
+   * @param {Object} configurationBases - A set of key-value pairs used to validate which connection item matches the desired configuration.
+   * @param {string} variableName - The name of the variable (secret) to retrieve from Azure Key Vault.
+   * @return {Promise<Secret>} A promise that resolves to the requested secret from Azure Key Vault or null if no valid connection is found or the variable is not retrieved.
+   * @throws {BadRequestException} If an error occurs while connecting to Azure Key Vault or retrieving the secret.
    */
   async getAzureKeyVaultVariable(
     connections: AzureConnection[],
@@ -646,11 +682,12 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * executeSCPHook
+   * Executes an SCP hook by aggregating configurations, filtering items, and making SCP requests based on user roles and the provided configuration.
    *
-   * @param userRoles
-   * @param configurationBases
-   * @param configuration
+   * @param {string[]} userRoles - Array of user roles used to determine access permissions and scope of the SCP hook execution.
+   * @param {Object} configurationBases - Object containing key-value pairs used to filter items within the hook execution.
+   * @param {Configuration} configuration - Configuration object containing additional details required for the execution of the SCP hook.
+   * @return {Promise<void>} A Promise that resolves when the SCP hook execution is completed.
    */
   async executeSCPHook(
     userRoles: string[],
@@ -709,13 +746,14 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * requestSCP
+   * Initiates a secure copy protocol (SCP) request based on a given connection configuration, user roles, and templates.
+   * Verifies the connection type, handles authentication, compiles configuration data, and uploads it to the remote server.
    *
-   * @param connection
-   * @param userRoles
-   * @param allBases
-   * @param configuration
-   * @private
+   * @param {SCP} connection An object representing the SCP configuration, including host, port, authentication type, and connection-specific details.
+   * @param {string[]} userRoles An array of strings representing the roles assigned to the user, used to determine permissions and configurations.
+   * @param {any} allBases A data structure containing base-level configurations needed for compiling the template.
+   * @param {Configuration} configuration An object representing the configuration to be compiled and uploaded, including variables and other parameters.
+   * @return {Promise<void>} Resolves after the SCP request completes successfully, or logs an error and completes if an issue occurs.
    */
   private async requestSCP(
     connection: SCP,
@@ -780,10 +818,12 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * executeKubernetesHook
+   * Executes a Kubernetes hook by iterating through all Kubernetes connections,
+   * and processing requests based on the provided configurations.
    *
-   * @param configurationBases
-   * @param configuration
+   * @param {any} configurationBases - Base configurations required for the Kubernetes hook execution.
+   * @param {Configuration} configuration - Additional configuration details necessary for the operation.
+   * @return {Promise<void>} Resolves when all Kubernetes requests have been processed.
    */
   async executeKubernetesHook(
     configurationBases: any,
@@ -810,12 +850,12 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * requestKubernetes
+   * Handles Kubernetes secret management based on the provided configuration and connection details.
    *
-   * @param kubernetesConnection
-   * @param configurationBases
-   * @param configuration
-   * @private
+   * @param {KubernetesConnection} kubernetesConnection - The connection details required to interact with the Kubernetes API.
+   * @param {any} configurationBases - A collection of base configuration items used for validation and secret naming.
+   * @param {Configuration} configuration - A configuration object containing variables and other settings for secret management.
+   * @return {Promise<void>} A promise that resolves when the Kubernetes secrets are successfully processed.
    */
   private async requestKubernetes(
     kubernetesConnection: KubernetesConnection,
@@ -1002,12 +1042,12 @@ export class ConnectionsService implements OnModuleInit {
   }
 
   /**
-   * requestVault
+   * Sends a request to retrieve data from a specified Vault endpoint and extracts the value of a given variable name.
    *
-   * @param token
-   * @param url
-   * @param variableName
-   * @private
+   * @param {string} token - The authentication token required to access the Vault endpoint.
+   * @param {string} url - The URL of the Vault endpoint.
+   * @param {string} variableName - The name of the variable to extract from the Vault response data.
+   * @return {Promise<string>} A promise that resolves to the value of the specified variable if present; an empty string is returned otherwise.
    */
   private async requestVault(token: string, url: string, variableName) {
     let vaultResponse = null;

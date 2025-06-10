@@ -62,9 +62,13 @@ export class ConstantVariablesService implements OnModuleInit {
   ) {}
 
   /**
+   * Generates a random string based on the specified length and character set.
    *
-   * @param length
-   * @param chars
+   * @param {number} length - The desired length of the random string.
+   * @param {string} chars - A string containing characters to define the character set.
+   *                         Use 'a' for lowercase letters, 'A' for uppercase letters,
+   *                         '#' for digits, and '!' for special characters.
+   * @return {string} A randomly generated string of the specified length using the given character set.
    */
   randomString(length: number, chars: string) {
     let mask = '';
@@ -79,7 +83,12 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * onModuleInit
+   * Initializes the module by performing setup processes such as checking,
+   * aggregating, and creating/updating the 'maxConstantVariable' collection.
+   * If the collection already exists and contains data, no further actions are taken.
+   * Otherwise, the method performs calculations and inserts aggregated data.
+   *
+   * @return {Promise<void>} Resolves when the initialization process completes successfully.
    */
   async onModuleInit() {
     const collections = await this.constantVariableModel.db.listCollections();
@@ -176,11 +185,14 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * create
+   * Creates a new constant variable based on the provided data and performs required validations and hooks.
    *
-   * @param userRoles
-   * @param userId
-   * @param createConstantVariableDto
+   * @param {string[]} userRoles - Array of roles assigned to the user.
+   * @param {string} userId - The ID of the user making the request.
+   * @param {CreateConstantVariableDto} createConstantVariableDto - Data Transfer Object containing the information to create a constant variable.
+   * @return {Promise<ConstantVariable>} A promise that resolves to the newly created constant variable.
+   * @throws {UnauthorizedException} If the user lacks appropriate permissions to create or modify the constant variable.
+   * @throws {BadRequestException} If the validation of the provided configuration fails or no base models are used.
    */
   async create(
     userRoles: string[],
@@ -352,9 +364,10 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * remove (for testing purposes only)
+   * Removes a document from the database based on the provided identifier.
    *
-   * @param id
+   * @param {string} id - The unique identifier of the document to be removed.
+   * @return {Promise<void>} A promise that resolves when the document is successfully removed.
    */
   async remove(id: string) {
     await this.constantVariableModel.findOneAndDelete({
@@ -363,10 +376,11 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * find
+   * Retrieves a list of ConstantVariable objects based on the provided user roles and filter criteria.
    *
-   * @param userRoles
-   * @param filter
+   * @param {string[]} userRoles - Array of roles assigned to the user. Determines access privileges.
+   * @param {Statement} [filter] - Optional filter criteria to narrow down the search results.
+   * @return {Promise<Array<ConstantVariable>>} A promise that resolves to an array of ConstantVariable objects.
    */
   async find(
     userRoles: string[],
@@ -409,10 +423,11 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * findById
+   * Retrieves a specific record by its unique identifier if it matches the provided user roles.
    *
-   * @param userRoles
-   * @param id
+   * @param {string[]} userRoles - The roles associated with the user that will be used to filter the data.
+   * @param {string} id - The unique identifier of the record to retrieve.
+   * @return {Promise<ConstantVariable>} The matching record if found, otherwise null.
    */
   async findById(userRoles: string[], id: string): Promise<ConstantVariable> {
     const value = await this.find(userRoles, {
@@ -429,11 +444,14 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * findForDate
+   * Fetches constant variables based on the provided user roles, filters, and date criteria,
+   * returning the matched data either as the latest or full dataset.
    *
-   * @param userRoles
-   * @param filter
-   * @param date
+   * @param {string[]} userRoles - Array of user roles to determine role-based access.
+   * @param {BaseModelStatement} filter - Filter object to specify the base conditions of the query.
+   * @param {Date} date - The date to query up to, filtering by effective date.
+   * @param {boolean} [latest] - Optional flag to indicate whether to return only the latest records.
+   * @return {Promise<Array<ConstantVariableObject>>} A promise resolving to an array of matched constant variable objects.
    */
   async findByDate(
     userRoles: string[],
@@ -611,9 +629,10 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * getRolesMatch
+   * Generates a query condition based on the roles provided by the user.
    *
-   * @private
+   * @param {string[]} userRoles - An array of role names associated with the user.
+   * @return {Promise<{ $nor: Object[] }>} A promise that resolves to a query object containing a `$nor` condition with roles to exclude.
    */
   private async getRolesMatch(userRoles: string[]) {
     if (userRoles.includes('admin')) {
@@ -648,14 +667,16 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * onConstantVariablesChange
+   * Handles changes in constant variables by updating configurations, executing hooks,
+   * and managing connections. This method performs operations such as querying configurations,
+   * incorporating updates, and executing specific service hooks.
    *
-   * @param userRoles
-   * @param currentConstantVariables
-   * @param previousConstantVariables
-   * @param bases
-   * @param allBases
-   * @private
+   * @param {string[]} userRoles An array of user roles used for authorization and scoping actions.
+   * @param {ConstantVariable} currentConstantVariables The current state of constant variables.
+   * @param {ConstantVariable} previousConstantVariables The previous state of constant variables before the change.
+   * @param {BaseModelStatement} bases Base model statement object used to filter configurations.
+   * @param {BaseConfiguration[]} allBases A collection of base configurations affecting the behavior of the method.
+   * @return {Promise<void>} A promise that resolves when all operations have been successfully executed.
    */
   private async onConstantVariablesChange(
     userRoles: string[],
@@ -720,10 +741,11 @@ export class ConstantVariablesService implements OnModuleInit {
   }
 
   /**
-   * findLatest
+   * Finds and retrieves the latest filtered records based on user roles and an optional filter condition.
    *
-   * @param userRoles
-   * @param filter
+   * @param {string[]} userRoles - An array of user roles to determine access and filtering rules.
+   * @param {Statement} [filter] - An optional filter condition used to narrow down the data retrieval.
+   * @return {Promise<Array>} A promise that resolves to an array of records, populated with the 'createdBy' field.
    */
   async findLatest(userRoles: string[], filter?: Statement) {
     const newFilter = filterTranslator(filter);

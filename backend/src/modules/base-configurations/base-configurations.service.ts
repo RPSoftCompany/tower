@@ -22,8 +22,10 @@ export class BaseConfigurationsService {
   ) {}
 
   /**
-   * create
-   * @param createBaseConfigurationDto
+   * Creates a new base configuration record in the database.
+   *
+   * @param {CreateBaseConfigurationDto} createBaseConfigurationDto - The data transfer object containing the details of the configuration to be created.
+   * @return {Promise<Object>} A promise that resolves to the created base configuration object.
    */
   async create(createBaseConfigurationDto: CreateBaseConfigurationDto) {
     const created = await this.baseConfigurationModel.create(
@@ -38,8 +40,12 @@ export class BaseConfigurationsService {
   }
 
   /**
-   * find
-   * @param filter
+   * Finds and retrieves an array of BaseConfiguration objects based on the provided filter criteria.
+   *
+   * @param {Statement} [filter] - An optional filter object used to query the BaseConfiguration model.
+   *                               It can contain conditions, fields, order, limit, and skip.
+   * @return {Promise<Array<BaseConfiguration>>} - A promise that resolves to an array of BaseConfiguration objects
+   *                                                matching the provided filter criteria.
    */
   find(filter?: Statement): Promise<Array<BaseConfiguration>> {
     const newFilter = filterTranslator(filter);
@@ -56,8 +62,10 @@ export class BaseConfigurationsService {
   }
 
   /**
-   * count
-   * @param filter
+   * Counts the number of documents that satisfy the given filter criteria.
+   *
+   * @param {Statement} [filter] - Optional filter object to specify query conditions.
+   * @return {Promise<number>} A promise that resolves to the number of matching documents.
    */
   count(filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
@@ -66,24 +74,32 @@ export class BaseConfigurationsService {
   }
 
   /**
-   * findAll
+   * Retrieves all records from the base configuration model.
+   *
+   * @return {Promise<Array<Object>>} A promise that resolves to an array of objects representing all records.
    */
   findAll() {
     return this.baseConfigurationModel.find();
   }
 
   /**
-   * findById
-   * @param id
+   * Retrieves a BaseConfiguration object by its unique identifier.
+   *
+   * @param {string} id - The unique identifier of the BaseConfiguration to retrieve.
+   * @return {Promise<BaseConfiguration>} A promise that resolves to the BaseConfiguration object if found, otherwise resolves to null or rejects with an error.
    */
   findById(id: string): Promise<BaseConfiguration> {
     return this.baseConfigurationModel.findById(id);
   }
 
   /**
-   * updatePartial
-   * @param id
-   * @param updatePartialBaseConfigurationDto
+   * Updates a partial set of fields in an existing base configuration record.
+   * Specifically updates only the fields provided in the updatePartialBaseConfigurationDto,
+   * ignoring the "_id" field.
+   *
+   * @param {string} id - The unique identifier of the base configuration to be updated.
+   * @param {UpdatePartialBaseConfigurationDto} updatePartialBaseConfigurationDto - An object containing only the fields to be updated in the existing base configuration.
+   * @return {Promise<Object>} A promise that resolves to the updated configuration object after the changes have been saved, or undefined if the record does not exist.
    */
   async updatePartial(
     id: string,
@@ -102,9 +118,11 @@ export class BaseConfigurationsService {
   }
 
   /**
-   * update
-   * @param id
-   * @param updateBaseConfigurationDto
+   * Updates a base configuration document in the database.
+   *
+   * @param {string} id - The unique identifier of the base configuration to be updated.
+   * @param {UpdateFullBaseConfigurationDto} updateBaseConfigurationDto - The data transfer object containing updated properties.
+   * @return {Promise<Object|null>} The updated base configuration document if successful, or null if not found.
    */
   async update(
     id: string,
@@ -118,8 +136,10 @@ export class BaseConfigurationsService {
   }
 
   /**
-   * remove
-   * @param id
+   * Removes a base configuration and its related index by the given ID.
+   *
+   * @param {string} id - The unique identifier of the base configuration to be removed.
+   * @return {Promise<void>} A promise that resolves when the removal process is complete.
    */
   async remove(id: string) {
     const baseConfiguration: BaseConfiguration =

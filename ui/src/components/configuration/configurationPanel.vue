@@ -1922,13 +1922,4 @@ defineExpose({
 });
 </script>
 
-<style scoped>
-.tower-max-height {
-	overflow: auto;
-	max-height: 100%;
-}
-
-.tower-max-height-readOnly {
-	overflow: auto;
-}
-</style>
+<style scoped></style>

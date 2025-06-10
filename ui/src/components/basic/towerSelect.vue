@@ -72,7 +72,18 @@ interface towerSelectProps {
 }
 
 /**
- * Props
+ * Props for the towerSelect component.
+ *
+ * @typedef {Object} towerSelectProps
+ *
+ * @property {any} [modelValue=null] - The current selected value of the select component.
+ * @property {Function} [options=() => []] - A function that returns the list of options available in the select component.
+ * @property {string} [optionLabel=''] - A key for determining the display label of options in the select component.
+ * @property {string} [label=''] - The label displayed alongside the select component.
+ * @property {boolean} [loading=false] - A boolean flag indicating whether the component is in a loading state.
+ * @property {boolean} [disable=false] - A boolean flag indicating whether the select component is disabled.
+ * @property {boolean} [clearable=false] - A boolean flag indicating whether the selected value can be cleared by the user.
+ * @property {string} [filter=''] - A string used to filter the options in the select component.
  */
 const props = withDefaults(defineProps<towerSelectProps>(), {
 	modelValue: null,
@@ -86,31 +97,63 @@ const props = withDefaults(defineProps<towerSelectProps>(), {
 });
 
 /**
- * Emits
+ * Emits a set of predefined events that can be triggered by the component.
+ *
+ * Events:
+ * - 'update:modelValue': Emitted to indicate changes in the `modelValue` binding.
+ * - 'update:filter': Emitted to indicate changes in the `filter` property.
  */
 const emit = defineEmits(['update:modelValue', 'update:filter']);
 
-/**
- * Data
- */
 const options = ref(props.options);
 const select: Ref<QSelect | null> = ref(null);
 
 /**
- * Computed
+ * Reactive reference for the model value, providing two-way binding functionality.
+ *
+ * This computed property acts as a bridge between the parent component's `modelValue` prop
+ * and the child component's local state. It offers a getter that retrieves the value from
+ * the `modelValue` prop and a setter that emits an event to update the parent component's
+ * `modelValue`, enabling synchronization.
+ *
+ * Suitable for use in components designed to support v-model binding.
  */
 const modelValue = computed({
 	get: () => props.modelValue,
 	set: (value) => emit('update:modelValue', value),
 });
 
+/**
+ * A computed property representing the current filter value.
+ * This property provides both getter and setter functionality.
+ *
+ * Getter:
+ * Retrieves the current filter value from the `props.filter`.
+ *
+ * Setter:
+ * Emits the `update:filter` event with the provided value to update the filter.
+ */
 const currentFilter = computed({
 	get: () => props.filter,
 	set: (value) => emit('update:filter', value),
 });
 
 /**
- * Methods
+ * Updates the current filter value and manages the filtering of options based on the provided value.
+ *
+ * @param {string} val - The filter string input by the user.
+ * @param {Function} update - A callback function to update the options list or apply changes.
+ *
+ * @description
+ * If the filter string (`val`) is empty, the function resets the options to the original list.
+ * If a filter string is provided, it filters the available options based on the specified label or the string value of each option.
+ * The filtering process is case-insensitive.
+ *
+ * The function leverages the `update` callback to ensure reactivity or to apply changes to a reactive data structure.
+ *
+ * Filtering behavior depends on the existence of `props.options` and an optional `props.optionLabel`:
+ * - If `props.optionLabel` is provided, the filtering is applied to the property matching the specified label in each option object.
+ * - If `props.optionLabel` is not provided, the filtering is applied to the string representation of each option.
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
 const filterFn = (val: string, update: Function) => {
@@ -142,6 +185,16 @@ const filterFn = (val: string, update: Function) => {
 	});
 };
 
+/**
+ * A function that triggers the validation process of the selected value.
+ *
+ * This function accesses the `validate` method of the currently selected value
+ * from the `select` object and executes it. If no selected value exists,
+ * the operation will safely return `undefined`.
+ *
+ * @function
+ * @returns {*} Returns the result of the `validate` method if it exists, otherwise `undefined`.
+ */
 const validate = () => {
 	return select.value?.validate();
 };

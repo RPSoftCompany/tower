@@ -30,11 +30,13 @@ export class MembersService implements OnModuleInit {
   private ldapInitialized: boolean;
 
   /**
-   * constructor
+   * Constructor for initializing the service with required models and services.
    *
-   * @param memberModel
-   * @param connectionsModel
-   * @param accessTokenService
+   * @param {Model<MemberDocument>} memberModel - The model representing the Member collection.
+   * @param {Model<ConnectionsModule>} connectionsModel - The model representing the Connections collection.
+   * @param {AccessTokenService} accessTokenService - The service handling access token-related operations.
+   *
+   * @return {void} Initializes the LDAP connection and state for the class instance.
    */
   constructor(
     @InjectModel(Member.name) private memberModel: Model<MemberDocument>,
@@ -50,7 +52,10 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * onModuleInit
+   * Initializes the module by performing necessary setup tasks.
+   * This method checks for the existence of an admin user and logs the completion of the check.
+   *
+   * @return {Promise<void>} A promise that resolves when the initialization logic is completed.
    */
   async onModuleInit() {
     await this.checkIfAdminUserExists();
@@ -58,7 +63,10 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * checkIfAdminUserExists
+   * Checks if an admin user exists in the system. If no admin user is found,
+   * it will create a default admin user with predefined properties.
+   *
+   * @return {Promise<void>} A promise that resolves when the operation is complete.
    */
   async checkIfAdminUserExists() {
     const exists = await this.find({
@@ -82,7 +90,11 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * initializeLdap
+   * Initializes the LDAP connection by retrieving the configuration from the connection model.
+   * If available and enabled, sets the connection as the active LDAP connection.
+   * Sets a flag indicating that the LDAP initialization process is complete.
+   *
+   * @return {Promise<void>} A promise that resolves when the LDAP initialization is complete.
    */
   async initializeLdap() {
     const connections: LDAP[] = await this.connectionsModel.find({
@@ -101,10 +113,11 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * ldapLogin
+   * Authenticates a user with LDAP credentials.
    *
-   * @param username
-   * @param password
+   * @param {string} username - The username of the user attempting to log in.
+   * @param {string} password - The password of the user attempting to log in.
+   * @return {Promise<boolean>} A promise that resolves to `true` if the authentication succeeds, and `false` otherwise.
    */
   async ldapLogin(username: string, password: string) {
     this.logger.debug('LDAP');
@@ -143,8 +156,10 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * create
-   * @param createMemberDto
+   * Creates a new member in the database using the provided data transfer object.
+   *
+   * @param {CreateMemberDto} createMemberDto - The data transfer object containing the details of the member to be created.
+   * @return {Promise<Object>} A promise that resolves with the created member object.
    */
   async create(createMemberDto: CreateMemberDto) {
     return CRUDExceptionWrapper(async () => {
@@ -153,9 +168,10 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * find
+   * Finds and retrieves an array of members based on the provided filter criteria.
    *
-   * @param filter
+   * @param {Statement} [filter] - The optional filter criteria used to narrow down the search results.
+   * @return {Promise<Array<Member>>} A promise that resolves to an array of members matching the filter criteria.
    */
   find(filter?: Statement): Promise<Array<Member>> {
     const newFilter = filterTranslator(filter);
@@ -172,19 +188,22 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * findOne
+   * Retrieves a single member by its unique identifier.
    *
-   * @param id
+   * @param {string} id - The unique identifier of the member to be retrieved.
+   * @return {Promise<Member>} A promise that resolves to the member if found, or rejects if not found.
    */
   findOne(id: string): Promise<Member> {
     return this.memberModel.findById(id);
   }
 
   /**
-   * update
+   * Inserts or updates a member in the database. If a member with the specified ID exists,
+   * it updates the member's details. Otherwise, creates a new member record.
    *
-   * @param id
-   * @param upsertMemberDto
+   * @param {string} id - The ID of the member to be inserted or updated.
+   * @param {UpsertMemberDto} upsertMemberDto - The data transfer object containing the member's details.
+   * @return {Promise<Object>} A promise that resolves to the updated or newly created member object.
    */
   async upsert(id: string, upsertMemberDto: UpsertMemberDto) {
     return CRUDExceptionWrapper(async () => {
@@ -204,10 +223,11 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * setAsTechnicalUser
+   * Sets a user as a technical user or non-technical user and generates a technical user token.
    *
-   * @param id
-   * @param techUser
+   * @param {string} id - The unique identifier of the user.
+   * @param {boolean} techUser - A boolean indicating whether the user should be set as a technical user.
+   * @return {Promise<any>} A promise that resolves with the created technical user token.
    */
   async setAsTechnicalUser(id: string, techUser: boolean) {
     await this.upsert(id, {
@@ -218,10 +238,11 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * update
+   * Updates an existing member in the database with the provided data.
    *
-   * @param id
-   * @param updateMemberDto
+   * @param {string} id - The unique identifier of the member to update.
+   * @param {UpdateMemberDto} updateMemberDto - An object containing the updated properties for the member.
+   * @return {Promise<Object>} A promise that resolves to the updated member object, or an empty object if the member was not found.
    */
   async update(id: string, updateMemberDto: UpdateMemberDto) {
     return CRUDExceptionWrapper(async () => {
@@ -241,10 +262,11 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * replace
+   * Replaces an existing member's data with the provided updated data.
    *
-   * @param id
-   * @param updateMemberDto
+   * @param {string} id - The unique identifier of the member to be updated.
+   * @param {UpdateMemberDto} updateMemberDto - The object containing the updated member data.
+   * @return {Promise<Member>} A promise that resolves to the updated member object.
    */
   async replace(id: string, updateMemberDto: UpdateMemberDto) {
     return CRUDExceptionWrapper(async () => {
@@ -255,11 +277,14 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * login
+   * Handles the login process for a user, supports both regular and LDAP-based authentication.
+   * It validates user credentials, manages LDAP-specific logic, and generates access tokens if requested.
    *
-   * @param loginDto
-   * @param issueToken
-   * @param include
+   * @param {LoginDto} loginDto - The login details including username and password provided by the user.
+   * @param {boolean} [issueToken] - Optional flag to indicate whether an access token should be issued. Defaults to true if not provided.
+   * @param {string} [include] - Optional string to specify additional user information to include in the output, e.g., 'user'.
+   * @return {Promise<Object>} Returns a promise that resolves to the login response, which may include user details, a generated token, and token TTL.
+   * @throws {HttpException} Throws an exception if the user is blocked or if the login credentials are invalid.
    */
   async login(loginDto: LoginDto, issueToken?: boolean, include?: string) {
     let member = await this.memberModel
@@ -376,9 +401,10 @@ export class MembersService implements OnModuleInit {
   }
 
   /**
-   * deleteUser FOR TESTING PURPOSES ONLY
+   * Deletes a user from the database by their user ID. (FOR TESTING ONLY)
    *
-   * @param userId
+   * @param {string} userId - The unique identifier of the user to be deleted.
+   * @return {Promise<void>} A promise that resolves when the user is successfully deleted.
    */
   async deleteUser(userId: string) {
     await this.memberModel.findOneAndDelete({
