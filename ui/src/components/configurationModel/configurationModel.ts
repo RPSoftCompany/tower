@@ -27,7 +27,7 @@ export interface ConfigurationModel {
 	};
 	template?: Array<boolean>;
 	restrictions: Array<any>;
-	_id?: string;
+	_id?: string | undefined;
 }
 
 export interface ConfigurationModelRule {

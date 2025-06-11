@@ -17,7 +17,7 @@
   -->
 
 <template>
-	<div>
+	<div class="tw-h-full tw-flex tw-flex-col">
 		<div class="tw-flex tw-justify-center tw-text-secondary tw-py-3">
 			<div class="tw-flex tw-w-[33.3%]">
 				<q-select
@@ -93,7 +93,7 @@
 		<q-splitter
 			v-if="treeNodes.length > 0 && !loading"
 			v-model="splitterModel"
-			class="tw-flex tower-max-height tw-mt-3"
+			class="tw-flex tw-h-full tw-mt-3"
 		>
 			<template v-slot:before>
 				<q-tree
@@ -194,6 +194,10 @@
 </template>
 
 <script setup lang="ts">
+// This component provides a page for users to search for configuration variables
+// across different configurations based on variable name or value, with an option
+// for regular expression matching. Results are displayed in a tree structure.
+
 import { ref, Ref } from 'vue';
 import { towerAxios } from 'boot/axios';
 import { ConfigurationVariable } from 'components/configuration/configuration';
@@ -204,107 +208,178 @@ import { typeOptions } from 'components/constantVariables/constantVariable';
 import { Base } from 'components/bases/base';
 
 //====================================================
-// Interfaces
+// Interfaces & Enums
 //====================================================
+
+/**
+ * Enum to define whether the search target is the variable's name or its value.
+ */
 enum NameValue {
 	NAME = 'name',
 	VALUE = 'value',
 }
 
+/**
+ * Interface representing an item returned from the configuration find API.
+ * It includes the item's ID, metadata (used for tree structure), and an array of found variables.
+ * The `[x: string]: unknown;` allows for additional dynamic properties in `__metadata`.
+ */
 interface ConfigurationFindItem {
-	_id: string;
-	__metadata: any;
-	variables: Array<ConfigurationVariable>;
+	_id: string; // The ID of the configuration item (e.g., device, interface).
+	__metadata: any; // Metadata containing hierarchical information (e.g., device name, interface name).
+	variables: Array<ConfigurationVariable>; // Array of variables found within this configuration item.
 
-	[x: string]: unknown;
+	[x: string]: unknown; // Allows for additional, unspecified properties, typically within __metadata.
 }
 
 //====================================================
 // Const
 //====================================================
+/**
+ * Access to the Pinia store for base configurations (e.g., device, interface types).
+ */
 const baseSt = basesStore();
 
 //====================================================
 // Data
 //====================================================
+/**
+ * Reactive reference to the type of search target: 'name' or 'value'.
+ * Defaults to searching by variable name.
+ */
 const targetType: Ref<NameValue> = ref(NameValue.NAME);
+/**
+ * Reactive reference to the search string input by the user.
+ */
 const searchValue = ref('');
+/**
+ * Reactive boolean indicating whether the `searchValue` should be treated as a regular expression.
+ * Defaults to false (plain text search).
+ */
 const isRegex = ref(false);
+/**
+ * Reactive boolean indicating whether a search operation is currently in progress.
+ * Used to disable inputs and show loading indicators.
+ */
 const loading = ref(false);
+/**
+ * Reactive boolean indicating whether the last search yielded no results.
+ * Used to display an appropriate message to the user.
+ */
 const emptyOutput = ref(false);
 
+/**
+ * Reactive array holding the nodes for the QTree component, representing the search results.
+ */
 const treeNodes: Ref<Array<QTreeNode>> = ref([]);
+/**
+ * Reactive reference to the currently selected node in the QTree.
+ * Can be a QTreeNode object or null if no node is selected.
+ */
 const selectedTreeNode: Ref<QTreeNode | null> = ref(null);
+/**
+ * Template ref for the QTree component. Allows direct interaction with the QTree instance.
+ */
 const treeRef: Ref<QTree | null> = ref(null);
 
+/**
+ * Reactive reference to the model for the QSplitter component, controlling the split position.
+ * Defaults to 50 (50% split).
+ */
 const splitterModel = ref(50);
 
 //====================================================
 // Methods
 //====================================================
 /**
- * search
+ * Performs the search for variables based on `searchValue`, `targetType`, and `isRegex`.
+ * Fetches data from the backend, processes it into a tree structure, and updates UI state.
  */
 const search = async () => {
-	loading.value = true;
+	loading.value = true; // Set loading state to true.
+	treeNodes.value = []; // Clear previous search results.
+	emptyOutput.value = false; // Reset empty output flag.
 
-	treeNodes.value = [];
-
+	// Construct query parameters for the API request.
 	const params = `searchText=${searchValue.value}&valueOrName=${
-		targetType.value === NameValue.VALUE
+		targetType.value === NameValue.VALUE // API expects boolean for valueOrName
 	}&isRegex=${isRegex.value}`;
 
-	const response = await towerAxios.get(
-		`/configurations/findVariable?${params}`,
-	);
-	if (response.status === 200) {
-		if (
-			response.data.variables.length === 0 &&
-			response.data.constantVariables.length === 0
-		) {
-			emptyOutput.value = true;
-		} else {
-			emptyOutput.value = false;
-			createResponseTree(response.data.variables);
-			createResponseTreeForGlobals(response.data.constantVariables);
+	try {
+		const response = await towerAxios.get(
+			`/configurations/findVariable?${params}`,
+		);
+		if (response.status === 200) {
+			// Check if both regular variables and constant variables are empty.
+			if (
+				response.data.variables.length === 0 &&
+				response.data.constantVariables.length === 0
+			) {
+				emptyOutput.value = true; // Set flag if no results found.
+			} else {
+				emptyOutput.value = false;
+				// Process and build the tree for regular configuration variables.
+				createResponseTree(response.data.variables);
+				// Process and build the tree for global/constant variables.
+				createResponseTreeForGlobals(response.data.constantVariables);
 
-			sortTree(treeNodes.value);
+				// Sort the entire tree alphabetically by label.
+				sortTree(treeNodes.value);
+			}
+		} else {
+			// Handle non-200 responses (e.g., display an error notification).
+			console.error('Search request failed with status:', response.status);
+			emptyOutput.value = true; // Assume empty output on error for simplicity.
 		}
+	} catch (error) {
+		console.error('Error during search:', error);
+		emptyOutput.value = true; // Assume empty output on error.
+		// Optionally, show a user-facing error message.
 	}
 
-	loading.value = false;
+	loading.value = false; // Set loading state to false.
 };
 
 /**
- * createResponseTree
+ * Constructs the tree structure for regular configuration variables from the API response.
+ * Iterates through each configuration item and its associated base hierarchy to build nested tree nodes.
+ * @param {Array<ConfigurationFindItem>} configs - Array of configuration items containing variables.
  */
 const createResponseTree = (configs: Array<ConfigurationFindItem>) => {
 	for (const config of configs) {
-		let parent = treeNodes.value;
-		let parentIndex = -1;
+		let parent = treeNodes.value; // Start at the root of the tree.
+		let parentIndex = -1; // Index of the current parent node in its children array.
+
+		// Iterate through the defined bases (e.g. 'site', 'device', 'interface') to build the hierarchy.
 		for (let i = 0; i < baseSt.getBases.length; i++) {
 			const base = baseSt.getBases[i];
-			const name = config.__metadata[base.name]
-				? (config.__metadata[base.name] as string)
+			// Get the name for the current base level from metadata or use '__NONE__' if not present.
+			const name = config.__metadata[base?.name ?? 0]
+				? (config.__metadata[base?.name ?? 0] as string)
 				: '__NONE__';
+
+			// Find if a node with this name already exists at the current level.
 			const parentIndexTemp = parent.findIndex((el) => {
 				return el.name === name;
 			});
 
 			if (parentIndexTemp === -1) {
+				// If node doesn't exist, create and add it.
 				parent.push({
-					id: uuidv4(),
-					name: name,
-					label: name === '__NONE__' ? 'EMPTY' : name,
-					icon: base.icon,
-					selectable: false,
+					id: uuidv4(), // Unique ID for the tree node.
+					name: name, // Internal name, used for matching.
+					label: name === '__NONE__' ? 'EMPTY' : name, // Display label.
+					icon: base.icon, // Icon for this base type.
+					selectable: false, // Intermediate nodes are not selectable by default.
+					children: [], // Initialize children array.
 				});
-
-				parentIndex = parent.length - 1;
+				parentIndex = parent.length - 1; // Update parentIndex to the new node.
 			} else {
+				// If node exists, use it.
 				parentIndex = parentIndexTemp;
 			}
 
+			// If this is not the last level of the hierarchy, move to the children of the current node.
 			if (i + 1 < baseSt.getBases.length) {
 				if (!parent[parentIndex].children) {
 					parent[parentIndex].children = [] as Array<QTreeNode>;
@@ -313,6 +388,8 @@ const createResponseTree = (configs: Array<ConfigurationFindItem>) => {
 			}
 		}
 
+		// After iterating through all bases, the current `parent[parentIndex]` is the leaf node for this config item.
+		// Assign the found variables to its 'value' property and make it selectable.
 		if (parent[parentIndex]) {
 			parent[parentIndex].value = config.variables;
 			parent[parentIndex].selectable = true;
@@ -321,44 +398,51 @@ const createResponseTree = (configs: Array<ConfigurationFindItem>) => {
 };
 
 /**
- * createResponseTreeForGlobals
- * @param configs
+ * Constructs the tree structure for global/constant variables from the API response.
+ * Similar to `createResponseTree` but adapts to potentially different metadata structures for globals.
+ * It also marks these variables with a 'global = true' flag.
+ * @param {Array<ConfigurationFindItem>} configs - Array of items containing global/constant variables.
  */
 const createResponseTreeForGlobals = (
 	configs: Array<ConfigurationFindItem>,
 ) => {
 	for (const config of configs) {
 		const allBasesInGlobal: Array<Base> = [];
+		// Determine the relevant base hierarchy for this global variable item.
 		for (const base of baseSt.getBases) {
 			if (config.__metadata[base.name]) {
 				allBasesInGlobal.push(base);
 			}
 		}
 
-		let parent = treeNodes.value;
+		let parent = treeNodes.value; // Start at the root.
 		let parentIndex = -1;
 
+		// Build the tree hierarchy based on `allBasesInGlobal`.
 		for (let i = 0; i < allBasesInGlobal.length; i++) {
 			const base = allBasesInGlobal[i];
+			const name = config.__metadata[base.name] as string; // Assume name exists as per `allBasesInGlobal` logic.
 
 			const parentIndexTemp = parent.findIndex((el) => {
-				return el.name === config.__metadata[base.name];
+				return el.name === name;
 			});
 
 			if (parentIndexTemp === -1) {
+				// Create new node if it doesn't exist.
 				parent.push({
 					id: uuidv4(),
-					name: config.__metadata[base.name],
-					label: config.__metadata[base.name] as string,
+					name: name,
+					label: name, // Global items usually have direct names.
 					icon: base.icon,
 					selectable: false,
+					children: [],
 				});
-
 				parentIndex = parent.length - 1;
 			} else {
 				parentIndex = parentIndexTemp;
 			}
 
+			// Descend into children if not the last base level.
 			if (i + 1 < allBasesInGlobal.length) {
 				if (!parent[parentIndex].children) {
 					parent[parentIndex].children = [] as Array<QTreeNode>;
@@ -367,74 +451,80 @@ const createResponseTreeForGlobals = (
 			}
 		}
 
+		// Assign variables to the leaf node, mark them as global, and make the node selectable.
 		if (parent[parentIndex]) {
-			parent[parentIndex].value = config.variables;
-			parent[parentIndex].selectable = true;
-			parent[parentIndex].value.map((el: any) => {
-				el.global = true;
+			parent[parentIndex].value = config.variables.map((el: any) => {
+				el.global = true; // Mark each variable as global.
 				return el;
 			});
+			parent[parentIndex].selectable = true;
 		}
 	}
 };
 
 /**
- * sortTree
+ * Recursively sorts the tree nodes alphabetically by their `label` property.
+ * @param {Array<QTreeNode>} tree - The array of tree nodes (or a sub-tree) to sort.
+ * @returns {Array<QTreeNode>} The sorted array of tree nodes.
  */
-const sortTree = (tree: Array<QTreeNode>) => {
-	if (tree.length > 0) {
+const sortTree = (tree: Array<QTreeNode>): Array<QTreeNode> => {
+	if (tree && tree.length > 0) {
+		// Recursively sort children of each node first.
 		for (let item of tree) {
-			if (item.children) {
-				item.children = sortTree(item.children);
+			if (item.children && item.children.length > 0) {
+				item.children = sortTree(item.children as Array<QTreeNode>);
 			}
 		}
 
+		// Sort the current level of nodes.
 		return tree.sort((a: QTreeNode, b: QTreeNode) => {
+			// Ensure labels exist before comparing.
 			if (a.label && b.label) {
 				return a.label.toLowerCase() > b.label.toLowerCase() ? 1 : -1;
 			}
-
-			return 1;
+			// Fallback if labels are missing (should ideally not happen with proper data).
+			return 0; // Or handle as an error/specific case.
 		});
 	}
-
-	return [];
+	return []; // Return empty array if input tree is empty or null.
 };
 
 /**
- * curentTypeIcon
- * @param currentType
+ * Retrieves the icon name associated with a given variable type.
+ * @param {string} currentType - The type of the variable (e.g., 'string', 'integer').
+ * @returns {string | undefined} The icon name if found, otherwise undefined.
  */
-const currentTypeIcon = (currentType: string) => {
+const currentTypeIcon = (currentType: string): string | undefined => {
 	if (currentType) {
+		// Find the type option that matches the currentType.
 		const found = typeOptions.find((el) => {
 			return el.value === currentType;
 		});
 
 		if (found) {
-			return found.icon;
+			return found.icon; // Return the icon string.
 		}
 	}
-
-	return undefined;
+	return undefined; // Return undefined if type is not found or input is invalid.
 };
 
 /**
- * currentTypeText
- * @param currentType
+ * Retrieves the display text (label) associated with a given variable type.
+ * @param {string} currentType - The type of the variable.
+ * @returns {string | undefined} The label text if found, otherwise undefined.
  */
-const currentTypeText = (currentType: string) => {
+const currentTypeText = (currentType: string): string | undefined => {
 	if (currentType) {
+		// Find the type option that matches the currentType.
 		const found = typeOptions.find((el) => {
 			return el.value === currentType;
 		});
 
 		if (found) {
-			return found.label;
+			return found.label; // Return the display label.
 		}
 	}
-
-	return undefined;
+	return undefined; // Return undefined if type is not found or input is invalid.
 };
 </script>
 
