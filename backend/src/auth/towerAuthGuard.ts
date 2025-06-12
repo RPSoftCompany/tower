@@ -68,6 +68,10 @@ export class TowerAuthGuard implements CanActivate {
       throw new UnauthorizedException('User blocked');
     }
 
+    if (user && user.temporaryBlocked) {
+      throw new UnauthorizedException('User is temporary blocked');
+    }
+
     if (user) {
       request.__userData = user;
       return this.validateRoles(request, roles, user);

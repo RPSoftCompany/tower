@@ -22,6 +22,7 @@ import { Statement } from '../../helpers/clauses';
 import { UpsertMemberDto } from './dto/upsert-member.dto';
 import { Connection } from '../connections/connections.schema';
 import { ConnectionsModule } from '../connections/connections.module';
+import process from 'process';
 
 @Injectable()
 export class MembersService implements OnModuleInit {
@@ -334,8 +335,20 @@ export class MembersService implements OnModuleInit {
       });
     }
 
-    if (member && !member.blocked) {
+    if (member && member.temporaryBlocked) {
+      if (
+        member.lastInvalidLoginAttemptDate &&
+        new Date().getTime() - member.lastInvalidLoginAttemptDate.getTime() >=
+          Number(process.env.BLOCK_USER_AFTER_INVALID_PASS_TIMEOUT_SECONDS) *
+            1000
+      ) {
+        member.temporaryBlocked = false;
+      }
+    }
+
+    if (member && member.blocked !== true && member.temporaryBlocked !== true) {
       if (!validLdapAuth && member.type === 'ldap') {
+        await this.temporaryBlockUser(member);
         throw new HttpException(
           'Invalid username or password',
           HttpStatus.UNAUTHORIZED,
@@ -357,10 +370,16 @@ export class MembersService implements OnModuleInit {
       }
 
       if (!passwordValid) {
+        await this.temporaryBlockUser(member);
         throw new HttpException(
           'Invalid username or password',
           HttpStatus.UNAUTHORIZED,
         );
+      }
+
+      if (member.invalidLoginAttempts > 0) {
+        member.invalidLoginAttempts = 0;
+        await this.memberModel.updateOne({ _id: member._id }, member);
       }
 
       if (issueToken === false) {
@@ -390,14 +409,55 @@ export class MembersService implements OnModuleInit {
       }
 
       return output;
-    } else if (member && member.blocked) {
-      throw new HttpException('User blocked', HttpStatus.UNAUTHORIZED);
+    } else if ((member && member.blocked) || member.temporaryBlocked) {
+      throw new HttpException(
+        member.blocked ? 'User blocked' : 'User temporary blocked',
+        HttpStatus.UNAUTHORIZED,
+      );
     } else {
       throw new HttpException(
         'Invalid username or password',
         HttpStatus.UNAUTHORIZED,
       );
     }
+  }
+
+  /**
+   * Temporarily blocks a user if their invalid login attempts to exceed a threshold.
+   * Updates the user's login attempt data and status in the database.
+   *
+   * @param {Member} member - The member object containing user details and login attempt data.
+   * @return {Promise<boolean>} Returns a promise that resolves to `true` if the user is already temporarily blocked, or `false` otherwise.
+   */
+  private async temporaryBlockUser(member: MemberDocument) {
+    if (process.env.BLOCK_USER_AFTER_INVALID_PASS !== 'true') {
+      return;
+    }
+
+    if (!member) {
+      return false;
+    }
+
+    if (member?.temporaryBlocked) {
+      return true;
+    }
+
+    if (
+      member.invalidLoginAttempts >=
+      Number(process.env.BLOCK_USER_AFTER_INVALID_PASS_ATTEMPTS_COUNT)
+    ) {
+      member.invalidLoginAttempts++;
+      member.temporaryBlocked = true;
+    } else {
+      member.invalidLoginAttempts = member.invalidLoginAttempts
+        ? member.invalidLoginAttempts + 1
+        : 1;
+    }
+
+    member.lastInvalidLoginAttemptDate = new Date();
+
+    await member.save();
+    return false;
   }
 
   /**

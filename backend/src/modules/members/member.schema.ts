@@ -29,6 +29,15 @@ export class Member {
 
   @Prop()
   blocked: boolean;
+
+  @Prop({ required: false })
+  lastInvalidLoginAttemptDate?: Date;
+
+  @Prop({ required: false, default: 0 })
+  invalidLoginAttempts?: number;
+
+  @Prop({ required: false, default: false })
+  temporaryBlocked?: boolean;
 }
 
 const MemberSchema = SchemaFactory.createForClass(Member);

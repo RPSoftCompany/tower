@@ -405,25 +405,25 @@ watch(
 		if (current && previous && current !== previous) {
 			if (current === 'usersAndPermissions') {
 				if (!usersAndPermissions.some((el) => el.url === selectedNode.value)) {
-					selectedNode.value = usersAndPermissions[0].url;
+					selectedNode.value = usersAndPermissions[0]?.url ?? '';
 				}
 			} else if (current === 'configurationSettings') {
 				if (
 					!configurationSettings.some((el) => el.url === selectedNode.value)
 				) {
-					selectedNode.value = configurationSettings[0].url;
+					selectedNode.value = configurationSettings[0]?.url ?? '';
 				}
 			} else if (current === 'api') {
 				if (!api.some((el) => el.url === selectedNode.value)) {
-					selectedNode.value = api[0].url;
+					selectedNode.value = api[0]?.url ?? '';
 				}
 			} else if (current === 'audit') {
 				if (!audit.some((el) => el.url === selectedNode.value)) {
-					selectedNode.value = audit[0].url;
+					selectedNode.value = audit[0]?.url ?? '';
 				}
 			} else if (current === 'connections') {
 				if (!connections.some((el) => el.url === selectedNode.value)) {
-					selectedNode.value = connections[0].url;
+					selectedNode.value = connections[0]?.url ?? '';
 				}
 			}
 		}
@@ -444,10 +444,6 @@ watch(
 </script>
 
 <style scoped>
-.towerActiveFolderTab {
-	background-color: var(--q-dark);
-}
-
 .towerFolderTabs {
 	border-bottom: solid 1px var(--q-dark);
 }
