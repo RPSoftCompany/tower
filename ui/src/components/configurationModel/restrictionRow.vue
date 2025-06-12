@@ -30,7 +30,7 @@
 				:loading="false"
 				:options="baseModels[index]"
 				:rules="[
-					() => isValid || isNew || 'At least one model has to be chosen'
+					() => isValid || isNew || 'At least one model has to be chosen',
 				]"
 				class="tw-mr-2"
 				displayAsEmpty="ANY"
@@ -50,6 +50,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * Component that represents a single row in the restriction configuration.
+ * It allows users to select models for each base and provides functionality
+ * to add new restrictions or delete existing ones.
+ */
 import { basesStore } from 'stores/bases';
 import { computed, ref } from 'vue';
 import TowerSelect from 'components/basic/towerSelect.vue';
@@ -58,6 +63,7 @@ import { QSelect } from 'quasar';
 //====================================================
 // Const
 //====================================================
+/** Store instance for managing bases data */
 const basesSt = basesStore();
 
 //====================================================
@@ -81,26 +87,35 @@ const allBases = ref([]);
 const emit = defineEmits([
 	'update:modelValue',
 	'addNewRestriction',
-	'deleteRestriction'
+	'deleteRestriction',
 ]);
 
 //====================================================
 // Computed
 //====================================================
+/**
+ * Returns array of bases that are used in this restriction row
+ * Limited by the number of base models provided
+ */
 const basesInThisRestriction = computed(() => {
 	return [...basesSt.getBases].splice(0, props.baseModels.length);
 });
 
 /**
- *
+ * Two-way binding for the model value
+ * Allows getting and setting the model data while emitting changes to parent
  */
 const localModel = computed({
 	get: () => props.modelValue,
-	set: value => emit('update:modelValue', value)
+	set: (value) => emit('update:modelValue', value),
 });
 
+/**
+ * Checks if the current restriction is valid
+ * At least one model must be selected across all bases
+ */
 const isValid = computed(() => {
-	return basesInThisRestriction.value.some(el => {
+	return basesInThisRestriction.value.some((el) => {
 		return localModel.value[el.name];
 	});
 });
@@ -108,6 +123,11 @@ const isValid = computed(() => {
 //====================================================
 // Methods
 //====================================================
+/**
+ * Handles the add/delete button click
+ * If this is a new restriction row, it emits add event
+ * Otherwise, it emits delete event with the restriction ID
+ */
 const addOrDelete = () => {
 	if (props.isNew) {
 		emit('addNewRestriction');
@@ -116,8 +136,12 @@ const addOrDelete = () => {
 	}
 };
 
+/**
+ * Validates all base selects when focus is lost
+ * Ensures proper validation state for all select components
+ */
 const onBlur = () => {
-	allBases.value.forEach(el => {
+	allBases.value.forEach((el) => {
 		(el as QSelect).validate();
 	});
 };

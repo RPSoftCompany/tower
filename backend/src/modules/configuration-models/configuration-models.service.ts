@@ -11,7 +11,7 @@ import {
   prepareAggregateArray,
 } from '../../helpers/filterTranslator';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import {
   ConfigurationModel,
   ConfigurationModelDocument,
@@ -38,9 +38,12 @@ export class ConfigurationModelsService {
   ) {}
 
   /**
-   * create
+   * Creates a new configuration model based on the provided data.
+   * Executes hooks before and after the creation process.
    *
-   * @param createConfigurationModelDto
+   * @param {CreateConfigurationModelDto} createConfigurationModelDto - The data transfer object containing the details for creating a configuration model.
+   * @return {Promise<Object>} The created configuration model object.
+   * @throws {BadRequestException} If the base model specified in the data transfer object does not exist.
    */
   async create(createConfigurationModelDto: CreateConfigurationModelDto) {
     await this.hooksService.executeHook(
@@ -73,10 +76,11 @@ export class ConfigurationModelsService {
   }
 
   /**
-   * find
+   * Finds and retrieves configuration models based on user roles and an optional filter.
    *
-   * @param userRoles
-   * @param filter
+   * @param {string[]} userRoles - An array of user roles that determine access permissions.
+   * @param {Statement} [filter] - Optional filter conditions to apply to the query.
+   * @return {Promise<Array<ConfigurationModel>>} A promise that resolves to an array of configuration models.
    */
   async find(
     userRoles: string[],
@@ -85,11 +89,15 @@ export class ConfigurationModelsService {
     const newFilter = filterTranslator(filter);
 
     if (userRoles.includes('admin')) {
-      return this.configurationModel.find(newFilter.where, newFilter.fields, {
-        sort: newFilter.order,
-        limit: newFilter.limit,
-        skip: newFilter.skip,
-      });
+      return this.configurationModel.find(
+        newFilter.where,
+        newFilter.fields as ProjectionType<any>,
+        {
+          sort: newFilter.order,
+          limit: newFilter.limit,
+          skip: newFilter.skip,
+        },
+      );
     } else {
       const allRoles: Array<Role> = await this.rolesModel.find({
         name: /^configurationModel\.[^.]+\.[^.]+\.view/,
@@ -129,10 +137,11 @@ export class ConfigurationModelsService {
   }
 
   /**
-   * findById
+   * Finds an entity by its unique identifier and user roles.
    *
-   * @param userRoles
-   * @param id
+   * @param {string[]} userRoles - An array of user roles used to filter the search criteria.
+   * @param {string} id - The unique identifier of the entity to find.
+   * @return {Promise<Object|null>} A promise that resolves to the found entity object if it exists, or null if no entity is found.
    */
   async findById(userRoles: string[], id: string) {
     const array = await this.find(userRoles, {
@@ -149,11 +158,14 @@ export class ConfigurationModelsService {
   }
 
   /**
-   * update
+   * Updates a configuration model based on the provided update data, user roles, and ID.
+   * This method performs access control checks and executes hooks before and after the update operation.
    *
-   * @param userRoles
-   * @param id
-   * @param updateConfigurationModelDto
+   * @param {string[]} userRoles - Array of roles assigned to the user performing the update.
+   * @param {string} id - Unique identifier of the configuration model to be updated.
+   * @param {UpdateConfigurationModelDto} updateConfigurationModelDto - Data Transfer Object containing the updated configuration details.
+   * @return {Promise<ConfigurationModel>} - Returns the updated configuration model if successful, or null if the model is not found.
+   * @throws {UnauthorizedException} - If the user does not have sufficient permissions to update the configuration model.
    */
   async update(
     userRoles: string[],
@@ -203,11 +215,14 @@ export class ConfigurationModelsService {
   }
 
   /**
-   * partialUpdate
+   * Partially updates a configuration model by merging the provided values into the existing entity.
+   * Executes hooks before and after the update operation and enforces role-based access control.
    *
-   * @param userRoles
-   * @param id
-   * @param updateConfigurationModelDto
+   * @param {string[]} userRoles - An array of roles assigned to the current user.
+   * @param {string} id - The unique identifier of the configuration model to update.
+   * @param {PartialUpdateConfigurationModelDto} updateConfigurationModelDto - The data containing partial updates to the configuration model.
+   * @return {Promise<ConfigurationModel>} A promise that resolves to the updated configuration model.
+   * @throws {UnauthorizedException} If the user does not have the appropriate permissions to update.
    */
   async partialUpdate(
     userRoles: string[],
@@ -260,10 +275,12 @@ export class ConfigurationModelsService {
   }
 
   /**
-   * remove
+   * Removes a configuration and associated roles for the specified identifier.
    *
-   * @param userRoles
-   * @param id
+   * @param {string[]} userRoles - An array of roles associated with the user performing the operation.
+   * @param {string} id - The unique identifier of the configuration to be removed.
+   * @return {Promise<void>} A promise that resolves when the operation is completed.
+   * @throws {UnauthorizedException} If the user does not have the required permissions to perform the operation.
    */
   async remove(userRoles: string[], id: string) {
     const candidate = await this.findById(userRoles, id);

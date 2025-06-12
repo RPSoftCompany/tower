@@ -21,7 +21,7 @@
 		:class="`tw-grid-cols-${configs ? configs?.length * 2 + 1 : 1} ${
 			hasScroll ? 'tw-mr-[0.65rem]' : ''
 		}`"
-		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 bg-darkPage"
+		class="tw-grid tw-sticky tw-px-1 tw-top-0 tw-z-10 tw-bg-darkPage tw-overflow-auto tw-max-h-full"
 	>
 		<div class="tw-text-sm tw-font-semibold tw-self-center tw-text-center">
 			Variable names
@@ -82,10 +82,10 @@
 									created
 									{{
 										config.configuration
-											? config.configuration[
-													config.version ? config.version : 0
-												].effectiveDate
-											: now()
+											? config?.configuration[
+													config?.version ? config?.version : 0
+												]?.effectiveDate
+											: Date.now()
 									}}
 									<template
 										v-if="
@@ -115,7 +115,7 @@
 										v-if="
 											config.configuration
 												? config.configuration[config.version as number]
-														.createdBy?.username
+														?.createdBy?.username
 												: false
 										"
 										>{{ getUsernameForConfig(config) }}</span
@@ -161,9 +161,12 @@
 	<div
 		ref="contentRef"
 		:class="`tw-grid-cols-${configs ? configs.length * 2 + 1 : 1}`"
-		class="tw-grid tower-max-height tw-px-1"
+		class="tw-grid tw-max-h-full tw-px-1"
 	>
-		<template v-for="variableName of filteredVariables" :key="variableName">
+		<template
+			v-for="(variableName, index) of filteredVariables"
+			:key="variableName"
+		>
 			<div class="tw-text-center tw-self-center fullWordWrap">
 				{{ variableName }}
 			</div>
@@ -188,16 +191,17 @@
 					</q-inner-loading>
 					<template
 						v-if="
-							!config.loading && !(dragStarted && draggedId === `${config.id}`)
+							config &&
+							!config.loading &&
+							!(dragStarted && draggedId === `${config.id}`)
 						"
 					>
 						<template
 							v-if="
+								config.configuration &&
 								getVariableFromConfiguration(
 									variableName,
-									config.configuration
-										? config.configuration[config.version as number].variables
-										: [],
+									config.configuration[config.version ?? 0]?.variables ?? [],
 								) === undefined
 							"
 						>
@@ -212,24 +216,19 @@
 										valueAsString(
 											getVariableFromConfiguration(
 												variableName,
-												config.configuration
-													? config.configuration[config.version as number]
-															.variables
-													: [],
+												config?.configuration?.[config.version ?? 0]
+													?.variables ?? [],
 											),
 										),
 										valueAsString(
 											getVariableFromConfiguration(
 												variableName,
-												configs && configs[0].configuration
-													? configs[0].configuration[
-															configs[0].version as number
-														].variables
-													: [],
+												configs?.[0]?.configuration?.[configs[0]?.version ?? 0]
+													?.variables ?? [],
 											),
 										),
 									)"
-									:key="`${diff.value}_${index}`"
+									:key="Math.random()"
 								>
 									<div class="tw-self-center">
 										<span
@@ -248,14 +247,12 @@
 								</template>
 							</template>
 							<template v-else>
-								<div class="tw-self-center">
+								<div class="tw-text-start">
 									{{
 										getVariableFromConfiguration(
 											variableName,
-											config.configuration
-												? config.configuration[config.version as number]
-														.variables
-												: [],
+											config?.configuration?.[config.version ?? 0]?.variables ??
+												[],
 										)
 									}}
 								</div>
@@ -269,7 +266,8 @@
 									getVariableFromConfiguration(
 										variableName,
 										config.configuration
-											? config.configuration[config.version as number].variables
+											? (config.configuration[config.version ?? 0]?.variables ??
+													[])
 											: [],
 									)
 								}}
@@ -328,7 +326,14 @@ const emit = defineEmits([
 // Computed
 //====================================================
 /**
- * filteredVariables
+ * A computed variable that filters a list of variables based on a given filter string and optional configuration.
+ *
+ * The filter is applied case-insensitively. If no filter is provided, the original list of variables is returned.
+ * The filtering also supports checking against configuration-specific variables when a configuration is present.
+ *
+ * Dependency: This computed property depends on `props.filter`, `props.variables`, and optionally `props.configs` and their nested structures.
+ *
+ * @type {ComputedRef<Array<string>>} - A reactive reference that contains the filtered list of variables.
  */
 const filteredVariables = computed(() => {
 	if (!props.filter) {
@@ -346,12 +351,12 @@ const filteredVariables = computed(() => {
 			let exists = false;
 			for (let config of props.configs) {
 				if (
-					config.configuration &&
-					config.configuration[config.version as number].variables
+					config?.configuration &&
+					config?.configuration[config.version ?? 0]?.variables
 				) {
 					const variable = getVariableFromConfiguration(
 						el,
-						config.configuration[config.version as number].variables,
+						config?.configuration[config.version ?? 0]?.variables ?? [],
 					);
 
 					const stringVariable = valueConverter(
@@ -371,7 +376,15 @@ const filteredVariables = computed(() => {
 });
 
 /**
- * hasScroll
+ * A computed property that determines if the referenced content element has a vertical scroll.
+ *
+ * The computation checks:
+ * - If the `contentRef` is defined and references a valid HTMLDivElement.
+ * - If the `configs` property in `props` exists and has elements.
+ * - It then evaluates whether the content's scroll height exceeds its client height,
+ *   indicating the presence of vertical scrolling.
+ *
+ * Returns `true` if the content element has a vertical scroll, otherwise `false`.
  */
 const hasScroll = computed(() => {
 	if (contentRef.value && props.configs && props.configs.length > 0) {
@@ -386,9 +399,16 @@ const hasScroll = computed(() => {
 // Methods
 //====================================================
 /**
- * getVariableFromConfiguration
- * @param variableName
- * @param variables
+ * Retrieves the value of a specific variable from a given configuration.
+ *
+ * This function searches through an array of configuration variables to find a
+ * variable that matches the provided name. If found, it converts and returns
+ * the value of the variable into a string format using a value converter. If
+ * the variable is not found, it returns undefined.
+ *
+ * @param {string} variableName - The name of the variable to retrieve from the configuration.
+ * @param {Array<ConfigurationVariable>} variables - An array of configuration variables to search within.
+ * @returns {string | undefined} The value of the matching variable as a string if found, or undefined if not found.
  */
 const getVariableFromConfiguration = (
 	variableName: string,
@@ -405,9 +425,25 @@ const getVariableFromConfiguration = (
 	return undefined;
 };
 
+/**
+ * Retrieves the username associated with a given configuration.
+ *
+ * This function extracts the username from the `createdBy` field of the
+ * supplied configuration object. If the `createdBy` field exists and
+ * the type is 'ldap', it returns the `display` property; otherwise,
+ * it returns the `username` property.
+ *
+ * If the configuration or `createdBy` field is not found, an empty
+ * string is returned.
+ *
+ * @param {ArchiveConfig} config - The configuration object containing
+ *                                 the necessary details to retrieve the
+ *                                 username.
+ * @returns {string} The extracted username or an empty string if not available.
+ */
 const getUsernameForConfig = (config: ArchiveConfig) => {
 	if (config.configuration) {
-		const createdBy = config.configuration[config.version as number].createdBy;
+		const createdBy = config?.configuration[config.version ?? 0]?.createdBy;
 		if (createdBy) {
 			return createdBy.type === 'ldap' ? createdBy.display : createdBy.username;
 		}
@@ -417,25 +453,36 @@ const getUsernameForConfig = (config: ArchiveConfig) => {
 };
 
 /**
- * removeConfiguration
+ * Removes a specified configuration by emitting an event.
+ *
+ * @param {string} configId - The unique identifier of the configuration to be removed.
+ * @fires removeConfiguration - Signals the removal of a configuration.
  */
 const removeConfiguration = (configId: string) => {
 	emit('removeConfiguration', configId);
 };
 
 /**
- * diffStrings
- * @param current
- * @param archive
+ * Computes the character-level differences between two strings.
+ *
+ * This function compares two strings, `current` and `archive`, and
+ * identifies the differences at the character level. It leverages the
+ * `diffChars` method to calculate these differences.
+ *
+ * @param {string} current - The current version of the string.
+ * @param {string} archive - The archived or older version of the string.
+ * @returns {Array} An array representing the differences between the two strings.
+ * Each difference object may contain properties such as `added`, `removed`, and `value`.
  */
 const diffStrings = (current: string, archive: string) => {
 	return diffChars(archive, current);
 };
 
 /**
- * versionChanged
- * @param configId
- * @param version
+ * Emits a 'versionChanged' event with the provided configuration ID and version.
+ *
+ * @param {string} configId - The unique identifier for the configuration whose version has changed.
+ * @param {number} version - The updated version number of the configuration.
  */
 const versionChanged = (configId: string, version: number) => {
 	emit('versionChanged', {
@@ -445,8 +492,9 @@ const versionChanged = (configId: string, version: number) => {
 };
 
 /**
+ * A callback function triggered when a drag operation starts.
  *
- * @param data
+ * @param {DragEvent} data - The drag event containing information about the drag operation.
  */
 const onDragStart = (data: DragEvent) => {
 	dragStarted.value = true;
@@ -454,8 +502,13 @@ const onDragStart = (data: DragEvent) => {
 };
 
 /**
+ * Handles the drop event triggered during a drag-and-drop operation.
  *
- * @param data
+ * This function is invoked when a draggable item is dropped onto a valid target.
+ * It prevents the default behavior of the drop event, resets the drag state,
+ * and emits an event to switch positions of the dragged and target elements.
+ *
+ * @param {DragEvent} data - The drag event containing information about the drop action.
  */
 const onDrop = (data: DragEvent) => {
 	dragStarted.value = false;
@@ -468,8 +521,11 @@ const onDrop = (data: DragEvent) => {
 };
 
 /**
+ * Determines whether a drop action is allowed during a drag-and-drop operation.
+ * Prevents the default behavior if the target element's ID exists and is not
+ * equal to the dragged element's ID.
  *
- * @param data
+ * @param {DragEvent} data - The drag event object containing information about the drag-and-drop operation.
  */
 const allowDrop = (data: DragEvent) => {
 	if ((data.target as any).id && (data.target as any).id !== draggedId.value) {

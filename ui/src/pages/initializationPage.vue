@@ -41,11 +41,11 @@
 					lazy-rules
 					bottom-slots
 				>
-					<template #counter
-						><div :class="{ 'tw-text-negative': token.length !== 32 }">
+					<template #counter>
+						<div :class="{ 'tw-text-negative': token.length !== 32 }">
 							{{ token.length }}/32
-						</div></template
-					>
+						</div>
+					</template>
 				</q-input>
 				<q-btn
 					:loading="loading"
@@ -69,6 +69,7 @@ import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
 import { towerAxios } from 'boot/axios';
 import { navigationStore } from 'stores/navigation';
+import { AxiosError } from 'axios';
 
 //====================================================
 // Const
@@ -86,6 +87,28 @@ const loading = ref(false);
 //====================================================
 // Methods
 //====================================================
+/**
+ * Asynchronously initializes the tower configuration based on the provided secret token.
+ *
+ * This function verifies the correctness of the `token` by ensuring it is 32 characters long
+ * before proceeding with the initialization process. It makes a POST request to
+ * initialize the tower configuration using the provided secret token. If the initialization
+ * is successful, the application navigates to the login page and updates the state to mark
+ * the initialization as complete. If the tower is already initialized, it handles the scenario
+ * and navigates to the login page. In case of errors, a notification is displayed to the user.
+ *
+ * The initialization process involves:
+ * - Validating the `token`.
+ * - Attempting to initialize tower configurations via an API call.
+ * - Handling specific error responses from the server.
+ * - Navigation control based on initialization status.
+ *
+ * @async
+ * @function
+ * @throws Will notify the user of an error message if initialization fails or an unexpected error occurs.
+ * @note This function relies on several external modules and functions, including `towerAxios`, `router`,
+ * `navigationSt` state management, and the Quasar Framework notification service `$q.notify`.
+ */
 const initialize = async () => {
 	if (token.value?.length === 32) {
 		try {
@@ -96,13 +119,23 @@ const initialize = async () => {
 			navigationSt.setInitialized(true);
 			await router.push('/login');
 		} catch (e) {
-			$q.notify({
-				color: 'negative',
-				position: 'top',
-				textColor: 'secondary',
-				icon: 'sym_o_error',
-				message: 'Invalid token',
-			});
+			const message = (e as AxiosError<{ message: string }>).response?.data
+				?.message;
+
+			if (message === 'Tower has already been initialized') {
+				navigationSt.setInitialized(true);
+				await router.push('/login');
+			} else {
+				$q.notify({
+					color: 'negative',
+					position: 'top',
+					textColor: 'secondary',
+					icon: 'sym_o_error',
+					message:
+						(e as AxiosError<{ message: string }>).response?.data?.message ??
+						'Unknown error',
+				});
+			}
 		}
 
 		loading.value = false;

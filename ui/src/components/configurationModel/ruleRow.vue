@@ -56,17 +56,15 @@
 				ref="targetValueInput"
 				v-model="localTargetValue"
 				:disable="readOnly"
-				:label="
-					`Target ${localTargetType} ${
-						localTargetRegEx ? 'regular expression' : 'text'
-					}`
-				"
+				:label="`Target ${localTargetType} ${
+					localTargetRegEx ? 'regular expression' : 'text'
+				}`"
 				:rules="[
-					val =>
+					(val) =>
 						!!val ||
 						`Target ${localTargetType} ${
 							localTargetRegEx ? 'regular expression' : 'text'
-						} can't be empty`
+						} can't be empty`,
 				]"
 				class="tw-grow"
 				color="secondary"
@@ -133,17 +131,15 @@
 				ref="conditionValueInput"
 				v-model="localConditionValue"
 				:disable="readOnly"
-				:label="
-					`Condition ${localConditionType} ${
-						localConditionRegEx ? 'regular expression' : 'text'
-					}`
-				"
+				:label="`Condition ${localConditionType} ${
+					localConditionRegEx ? 'regular expression' : 'text'
+				}`"
 				:rules="[
-					val =>
+					(val) =>
 						!!val ||
 						`Condition ${localConditionType} ${
 							localConditionRegEx ? 'regular expression' : 'text'
-						} can't be empty`
+						} can't be empty`,
 				]"
 				class="tw-grow"
 				color="secondary"
@@ -174,7 +170,7 @@
 			ref="errorInput"
 			v-model="localError"
 			:disable="readOnly"
-			:rules="[val => !!val || `Error message can't be empty`]"
+			:rules="[(val) => !!val || `Error message can't be empty`]"
 			class="tw-ml-3 tw-grow"
 			color="secondary"
 			dense
@@ -194,9 +190,14 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * Component that represents a single rule row in the configuration model.
+ * Allows users to define target and condition parameters for validation rules,
+ * including support for regular expressions and error messages.
+ */
 import {
 	ConfigurationModelRuleConditionType,
-	ConfigurationModelRuleTargetType
+	ConfigurationModelRuleTargetType,
 } from 'components/configurationModel/configurationModel';
 import { computed, Ref, ref } from 'vue';
 import { QInput } from 'quasar';
@@ -229,7 +230,7 @@ const emit = defineEmits([
 	'update:conditionRegEx',
 	'update:error',
 	'addClicked',
-	'deleteClicked'
+	'deleteClicked',
 ]);
 
 //====================================================
@@ -243,59 +244,108 @@ const errorInput: Ref<QInput | null> = ref(null);
 // Computed
 //====================================================
 /**
- * localTargetType
+ * A computed property that binds to the `targetType` prop and emits updates when changed.
+ *
+ * The `localTargetType` serves as a two-way data binding interface. It uses the `get` function
+ * to retrieve the value of `props.targetType` and the `set` function to emit the updated
+ * value of `targetType` using the `update:targetType` event.
+ *
+ * This computed property is useful for synchronizing the state of a component
+ * with its parent using Vue's props and events system.
+ *
+ * Dependencies:
+ * - `props.targetType`: The current value of the target type provided by the parent component.
+ * - `emit`: A function to notify the parent component about updates.
  */
 const localTargetType = computed({
 	get: () => props.targetType,
-	set: value => emit('update:targetType', value)
+	set: (value) => emit('update:targetType', value),
 });
 
 /**
- * localTargetValue
+ * Represents a computed property that acts as a two-way binding for the target value.
+ *
+ * The `localTargetValue` allows getting the value of `props.targetValue`
+ * and setting it by emitting an `update:targetValue` event with the new value.
+ *
+ * It is used to create a reactive and synchronized property within a component,
+ * enabling external updates through props while maintaining local reactivity.
  */
 const localTargetValue = computed({
 	get: () => props.targetValue,
-	set: value => emit('update:targetValue', value)
+	set: (value) => emit('update:targetValue', value),
 });
 
 /**
- * localTargetRegEx
+ * A computed property that acts as a two-way binding for the `targetRegEx` value.
+ *
+ * The `get` function retrieves the current `targetRegEx` value from the component's `props`.
+ * The `set` function updates the `targetRegEx` value by emitting an `update:targetRegEx` event with the new value.
+ *
+ * Used to synchronize the target regular expression between the parent component and this component.
  */
 const localTargetRegEx = computed({
 	get: () => props.targetRegEx,
-	set: value => emit('update:targetRegEx', value)
+	set: (value) => emit('update:targetRegEx', value),
 });
 
 /**
- * localConditionType
+ * A computed property that serves as a two-way data binding for the `conditionType` property.
+ * It retrieves the current `conditionType` value from the parent component via `props` and
+ * emits an update event when the value is modified.
+ *
+ * The `get` method fetches the current value of `conditionType`.
+ * The `set` method allows updating the `conditionType` value and emits an
+ * 'update:conditionType' event to notify the parent component.
+ *
+ * This variable is useful for maintaining synchronization between a parent component's state
+ * and the local state of a child component.
+ *
+ * @type {object} - Vue computed property with getter and setter.
  */
 const localConditionType = computed({
 	get: () => props.conditionType,
-	set: value => emit('update:conditionType', value)
+	set: (value) => emit('update:conditionType', value),
 });
 
 /**
- * localConditionValue
+ * A computed property that synchronizes with a parent component's conditionValue.
+ * It acts as a two-way data binding mechanism.
+ *
+ * - The `get` function retrieves the current `conditionValue` from the `props` of the component.
+ * - The `set` function emits an `update:conditionValue` event with the provided value to update the parent component.
+ *
+ * This variable is designed to be reactive and updates whenever the bound `conditionValue` changes.
  */
 const localConditionValue = computed({
 	get: () => props.conditionValue,
-	set: value => emit('update:conditionValue', value)
+	set: (value) => emit('update:conditionValue', value),
 });
 
 /**
- * localConditionRegEx
+ * A computed property that binds to a regular expression, used for local condition assessment.
+ * This property provides both getter and setter functionalities.
+ * - **Getter**: Retrieves the current value of `conditionRegEx` from the parent component's props.
+ * - **Setter**: Emits an update event (`update:conditionRegEx`) with the new value to synchronize changes with the parent component.
  */
 const localConditionRegEx = computed({
 	get: () => props.conditionRegEx,
-	set: value => emit('update:conditionRegEx', value)
+	set: (value) => emit('update:conditionRegEx', value),
 });
 
 /**
- * localError
+ * A computed property that manages the local error state with a getter and setter.
+ *
+ * The getter retrieves the `error` property passed through `props`.
+ * The setter emits an `update:error` event with the updated error value.
+ *
+ * This is typically used to synchronize a parent's error state with a child component's local error state in a unidirectional data flow setup.
+ *
+ * @type {import('vue').ComputedRef<unknown>}
  */
 const localError = computed({
 	get: () => props.error,
-	set: value => emit('update:error', value)
+	set: (value) => emit('update:error', value),
 });
 
 /**
@@ -309,21 +359,25 @@ const isValid = computed(() => {
 // Methods
 //====================================================
 /**
- * switchTargetRegEx
+ * Toggles between regular expression and plain text mode for target value.
+ * Updates the localTargetRegEx value to its opposite state.
  */
 const switchTargetRegEx = () => {
 	localTargetRegEx.value = !localTargetRegEx.value;
 };
 
 /**
- * switchConditionRegEx
+ * Toggles between regular expression and plain text mode for condition value.
+ * Updates the localConditionRegEx value to its opposite state.
  */
 const switchConditionRegEx = () => {
 	localConditionRegEx.value = !localConditionRegEx.value;
 };
 
 /**
- * addDeleteButtonClicked
+ * Handles the click event for the add/delete button.
+ * If the row is new, validates inputs and emits 'addClicked' event if valid.
+ * If the row exists, emits 'deleteClicked' event with the row ID.
  */
 const addDeleteButtonClicked = () => {
 	if (props.isNew) {
@@ -337,7 +391,8 @@ const addDeleteButtonClicked = () => {
 };
 
 /**
- * validate
+ * Validates all input fields in the rule row.
+ * Triggers validation on target value, condition value, and error message inputs.
  */
 const validate = () => {
 	if (targetValueInput.value && conditionValueInput.value && errorInput.value) {
@@ -348,7 +403,8 @@ const validate = () => {
 };
 
 /**
- * resetValidation
+ * Resets validation state for all input fields.
+ * Clears validation messages on target value, condition value, and error message inputs.
  */
 const resetValidation = () => {
 	if (targetValueInput.value && conditionValueInput.value && errorInput.value) {
@@ -362,7 +418,7 @@ const resetValidation = () => {
 // Expose
 //====================================================
 defineExpose({
-	resetValidation
+	resetValidation,
 });
 </script>
 

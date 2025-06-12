@@ -18,52 +18,54 @@
 
 <template>
 	<div class="tw-h-full tw-max-h-full tw-flex tw-flex-col">
-		<base-toolbar @update:baseModels="onBaseModelChange" />
-		<transition
-			enter-active-class="animated fadeIn"
-			leave-active-class="animated fadeOut"
-		>
-			<search-toolbar
-				v-if="!isCurrentBaseModelEmpty && currentBaseModel"
-				v-model:filter="filter"
-				v-model:showDiff="showDiff"
-				:exportEnabled="exportEnabled"
-				:importEnabled="importEnabled"
-				:title="
-					basesCount !== Object.keys(baseModelComputed).length
-						? 'Constant variables'
-						: 'Configuration'
-				"
-				class="tw-mt-3"
-				@exportClicked="exportConfiguration"
-				@importClicked="importConfiguration"
+		<div>
+			<base-toolbar @update:baseModels="onBaseModelChange" />
+			<transition
+				enter-active-class="animated fadeIn"
+				leave-active-class="animated fadeOut"
 			>
-				<template #beforeImport
-					><q-btn
-						v-if="
-							promotionCandidates.length > 0 &&
-							basesCount !== Object.keys(baseModelComputed).length &&
-							currentBaseModel
-						"
-						color="transparent"
-						flat
-						icon="sym_o_stairs"
-						padding="sm"
-						text-color="secondary"
-						@click="showPromotionCandidatesDialog"
-					>
-						<q-tooltip>Promotion candidates</q-tooltip>
-					</q-btn></template
+				<search-toolbar
+					v-if="!isCurrentBaseModelEmpty && currentBaseModel"
+					v-model:filter="filter"
+					v-model:showDiff="showDiff"
+					:exportEnabled="exportEnabled"
+					:importEnabled="importEnabled"
+					:title="
+						basesCount !== Object.keys(baseModelComputed).length
+							? 'Constant variables'
+							: 'Configuration'
+					"
+					class="tw-mt-3"
+					@exportClicked="exportConfiguration"
+					@importClicked="importConfiguration"
 				>
-			</search-toolbar>
-		</transition>
+					<template #beforeImport>
+						<q-btn
+							v-if="
+								promotionCandidates.length > 0 &&
+								basesCount !== Object.keys(baseModelComputed).length &&
+								currentBaseModel
+							"
+							color="transparent"
+							flat
+							icon="sym_o_stairs"
+							padding="sm"
+							text-color="secondary"
+							@click="showPromotionCandidatesDialog"
+						>
+							<q-tooltip>Promotion candidates</q-tooltip>
+						</q-btn>
+					</template>
+				</search-toolbar>
+			</transition>
+		</div>
 		<transition
 			enter-active-class="animated fadeIn"
 			leave-active-class="animated fadeOut"
 		>
 			<div
 				v-if="!isCurrentBaseModelEmpty"
-				class="tw-mt-3 tw-flex tw-flex-col tw-grow"
+				class="tw-mt-3 tw-flex tw-flex-col tw-grow tw-overflow-auto"
 			>
 				<constant-variable-panel
 					v-if="
@@ -116,15 +118,36 @@ const baseSt = basesStore();
 // Methods
 //====================================================
 /**
- * onBaseModelChange
- * @param value
+ * A function that is triggered when the base model changes.
+ * It updates the current base models with the provided value.
+ *
+ * @param {Array<ConfigurationModel>} value - The new array of base models to update.
  */
 const onBaseModelChange = (value: Array<ConfigurationModel>) => {
 	currentBaseModels.value = [...value];
 };
 
 /**
- * exportConfiguration
+ * Exports configuration data as a JSON file.
+ *
+ * This function collects configuration data from one of the available panels
+ * (`constVariablePanel` or `configurationPanel`) and processes the data for download.
+ * The filename is dynamically generated based on the selected configuration panel
+ * and additional values from `baseModelComputed`. If the filename exceeds 123
+ * characters, it is truncated to 122 characters and appended with `.json`.
+ *
+ * Preconditions:
+ * - At least one of `constVariablePanel.value` or `configurationPanel.value` must be defined and have a valid `exportConfiguration` method.
+ * - The `baseModelComputed.value` should contain an object with enumerable properties to append to the filename.
+ *
+ * Postconditions:
+ * - A file download is triggered for the generated configuration data with the constructed filename.
+ *
+ * Behavior:
+ * - If `constVariablePanel.value` exists, its exported data is used, and the base filename is set to `constVariables`.
+ * - If only `configurationPanel.value` exists, its exported data is used, and the base filename is set to `configuration`.
+ * - Additional identifiers from `baseModelComputed.value` are appended to the filename.
+ * - The file is downloaded only if data is successfully retrieved.
  */
 const exportConfiguration = () => {
 	let data = null;
@@ -154,7 +177,13 @@ const exportConfiguration = () => {
 };
 
 /**
- * importConfiguration
+ * Handles the import configuration for a given import detail.
+ *
+ * This function checks for the existence of `constVariablePanel.value` or `configurationPanel.value`
+ * and initiates their respective `importConfiguration` method with the provided `importDetails` parameter.
+ *
+ * @function
+ * @param {Import} importDetails - The import details used to configure the import process.
  */
 const importConfiguration = (importDetails: Import) => {
 	if (constVariablePanel.value) {
@@ -165,7 +194,9 @@ const importConfiguration = (importDetails: Import) => {
 };
 
 /**
- * showPromotionCandidatesDialog
+ * Displays the promotion candidates dialog if the `configurationPanel` object has a valid value.
+ * This function checks whether the `configurationPanel` is defined and invokes the
+ * `showPromotionCandidatesDialog` method on its `value` property, if available.
  */
 const showPromotionCandidatesDialog = () => {
 	if (configurationPanel.value) {
@@ -174,7 +205,11 @@ const showPromotionCandidatesDialog = () => {
 };
 
 /**
- * setPromotionCandidates
+ * Sets the list of promotion candidates.
+ *
+ * This function updates the `promotionCandidates` with the provided array of `Configuration` objects.
+ *
+ * @param {Array<Configuration>} value - The array of `Configuration` objects to set as promotion candidates.
  */
 const setPromotionCandidates = (value: Array<Configuration>) => {
 	promotionCandidates.value = value;

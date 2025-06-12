@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { CreateConfigurationDto } from './dto/create-configuration.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { V1Module } from '../v1/v1.module';
 import { V1 } from '../v1/v1.schema';
 import { CreateV1Dto } from '../v1/dto/create-v1.dto';
@@ -68,7 +68,15 @@ export class ConfigurationsService implements OnModuleInit {
   ) {}
 
   /**
-   * onModuleInit
+   * Initializes the module by performing necessary checks and setups, such as validating the encryption key, initializing
+   * configurations, and creating indexes. If the environment variable `SECRET` is not properly configured with a 32-character
+   * encryption key, the method logs and exits the initialization process.
+   *
+   * The method also manages reinitialization scenarios by checking the current state and comparing encryption keys.
+   * If the encryption key mismatch is detected, the method logs an error and halts further execution.
+   *
+   * @return {Promise<void>} A promise that resolves when the module is successfully initialized, or rejects/logs errors
+   * during the process if there are issues with the encryption key or other system checks.
    */
   async onModuleInit() {
     if (process.env.SECRET && process.env.SECRET.length !== 32) {
@@ -108,9 +116,13 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
+   * Generates a random string based on the specified length and character set.
    *
-   * @param length
-   * @param chars
+   * @param {number} length - The length of the random string to generate.
+   * @param {string} chars - A string specifying the character groups to include.
+   *                         Use 'a' for lowercase letters, 'A' for uppercase letters,
+   *                         '#' for digits, and '!' for special characters.
+   * @return {string} A random string composed of characters from the specified groups.
    */
   randomString(length: number, chars: string) {
     let mask = '';
@@ -127,7 +139,19 @@ export class ConfigurationsService implements OnModuleInit {
   async updateMetadata() {}
 
   /**
-   * createMaxConnectionsCollection
+   * Creates or updates the 'maxConfiguration' collection in the database based on the existing configurations.
+   * This method ensures the 'maxConfiguration' collection exists and is populated with documents
+   * having the maximum version for each configuration group.
+   *
+   * Steps performed:
+   * 1. Checks if the 'maxConfiguration' collection exists. If it does, verifies that it contains documents.
+   * 2. Creates the 'maxConfiguration' collection if it does not exist or is empty.
+   * 3. Retrieves all base configurations and constructs grouping criteria based on base configuration names.
+   * 4. Updates documents in the main configuration collection by setting metadata.
+   * 5. Runs an aggregation pipeline to determine the maximum version of configurations per group
+   *    and writes the resulting documents to the 'maxConfiguration' collection.
+   *
+   * @return {Promise<void>} Returns a promise that resolves once the operation is complete.
    */
   async createMaxConfigurationsCollection() {
     const collections = await this.maxConfiguration.db.listCollections();
@@ -238,7 +262,10 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * createIndexes
+   * Creates and applies database indexes based on the configurations retrieved from the base configuration model.
+   * This method dynamically generates indexes for several schemas based on the properties of each base configuration.
+   *
+   * @return {Promise<void>} A promise that resolves when all indexes have been created and synchronized successfully.
    */
   async createIndexes() {
     const allBases: BaseConfiguration[] =
@@ -275,9 +302,10 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * removeIndex
+   * Removes a specific index from the schema based on the provided name.
    *
-   * @param name
+   * @param {string} name - The name of the index to be removed.
+   * @return {Promise<void>} A promise that resolves once the index has been removed and the indexes have been updated.
    */
   async removeIndex(name: string) {
     // const allIndexes = await this.configurationModel.listIndexes();
@@ -299,16 +327,19 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * getInitialized
+   * Retrieves and returns an initialized instance of V1 from the data store.
+   *
+   * @return {Promise<V1>} A promise that resolves to an instance of V1.
    */
   async getInitialized(): Promise<V1> {
     return this.v1Model.findOne();
   }
 
   /**
-   * initialize
+   * Initializes the resource using the provided data transfer object.
    *
-   * @param createV1Dto
+   * @param {CreateV1Dto} createV1Dto - The data transfer object containing initialization details.
+   * @return {Promise<any>} A promise that resolves to the created resource if initialization is required, or undefined if already initialized.
    */
   async initialize(createV1Dto: CreateV1Dto) {
     const initialized = await this.getInitialized();
@@ -318,11 +349,14 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * create - creates new configuration
+   * Creates a new configuration based on the provided details and validates it using various constraints and rules.
    *
-   * @param createConfigurationDto
-   * @param userRoles
-   * @param userId
+   * @param {CreateConfigurationDto} createConfigurationDto - The data transfer object containing configuration details such as variables, draft status, and comments.
+   * @param {string[]} userRoles - An array of roles assigned to the current user, used for permissions validation.
+   * @param {string} userId - The ID of the user creating the configuration, used for auditing and metadata purposes.
+   * @return {Promise<Configuration>} A promise that resolves to the newly created configuration object.
+   * @throws {BadRequestException} Throws an exception if the configuration validation fails or required inputs are missing.
+   * @throws {UnauthorizedException} Throws an exception if the user lacks proper permissions to perform the operation.
    */
   async create(
     createConfigurationDto: CreateConfigurationDto,
@@ -367,7 +401,8 @@ export class ConfigurationsService implements OnModuleInit {
             name: `${createConfigurationDto[base.name]}`,
           });
 
-        if (modelExists.options.forceComment === true) {
+        // Validate if comment is present (if required)
+        if (modelExists?.options.forceComment === true) {
           if (!createConfigurationDto.comment) {
             throw new BadRequestException(
               `Configuration validation failed. No comment provided`,
@@ -541,11 +576,12 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * find
+   * Finds configurations based on user roles and applied filters.
    *
-   * @param userRoles
-   * @param filter
-   * @param populate
+   * @param {string[]} userRoles - An array of roles assigned to the user.
+   * @param {Statement} [filter] - An optional filter object to refine the search query.
+   * @param {boolean} [populate=true] - Indicates whether to populate certain fields in the results.
+   * @return {Promise<Array<Configuration>>} A promise that resolves to an array of resulting configurations.
    */
   async find(
     userRoles: string[],
@@ -559,7 +595,7 @@ export class ConfigurationsService implements OnModuleInit {
     if (userRoles.includes('admin')) {
       const all = this.configurationModel.find(
         newFilter.where,
-        newFilter.fields,
+        newFilter.fields as ProjectionType<any>,
         {
           sort: newFilter.order,
           limit: newFilter.limit,
@@ -629,11 +665,12 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * find
+   * Finds the latest configuration information based on user roles, filters, and whether to populate related data.
    *
-   * @param userRoles
-   * @param filter
-   * @param populate
+   * @param {string[]} userRoles - An array of user roles determining the access level of the user.
+   * @param {Statement} [filter] - Optional filtering criteria to narrow down the search results.
+   * @param {boolean} [populate=true] - Whether to fetch and include related fields (e.g., createdBy details).
+   * @return {Promise<Object|null>} A Promise that resolves to the latest configuration object, or null if no matching result is found.
    */
   async findLatest(
     userRoles: string[],
@@ -721,10 +758,12 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * count
+   * Counts the number of documents in the configuration model based on the specified user roles and optional filter criteria.
+   * If the user has an "admin" role, the count is unrestricted. Otherwise, permissions are checked against user roles.
    *
-   * @param userRoles
-   * @param filter
+   * @param {string[]} userRoles - An array of roles assigned to the user, which determine access restrictions.
+   * @param {Statement} [filter] - An optional filter object used to specify search conditions, sorting, limits, and skips.
+   * @return {Promise<number>} The total count of documents that match the specified criteria and role restrictions.
    */
   async count(userRoles: string[], filter?: Statement): Promise<number> {
     const newFilter = filterTranslator(filter);
@@ -779,10 +818,11 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * findById
+   * Retrieves a single document by its identifier if it exists.
    *
-   * @param userRoles
-   * @param id
+   * @param {string[]} userRoles - The roles of the user requesting the data, used for authorization purposes.
+   * @param {string} id - The unique identifier of the document to find.
+   * @return {Promise<Object|null>} A promise that resolves to the found document object if it exists, or null if not found.
    */
   async findById(userRoles: string[], id: string) {
     const found = await this.find(userRoles, {
@@ -799,9 +839,10 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * remove (for test purposes only)
+   * Removes a document from the database by its unique identifier.
    *
-   * @param id
+   * @param {string} id - The unique identifier of the document to be removed.
+   * @return {Promise<Object|null>} A promise that resolves to the deleted document if found and removed, or null if no document was found with the given ID.
    */
   async remove(id: string) {
     return this.configurationModel.findOneAndDelete({
@@ -811,11 +852,12 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * findByDate
+   * Retrieves a configuration by filtering based on effective date and user roles.
    *
-   * @param userRoles
-   * @param filter
-   * @param date
+   * @param {string[]} userRoles - An array of user roles to determine applicable configurations.
+   * @param {BaseModelStatement} filter - The base filter object for constructing the query.
+   * @param {Date} date - The reference date to filter the configurations by effective date.
+   * @return {Promise<any|null>} A promise that resolves to the processed configuration or null if no configuration matches.
    */
   async findByDate(
     userRoles: string[],
@@ -849,10 +891,11 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * promoteConfiguration
+   * Promotes a specific configuration by setting its promoted status to true.
    *
-   * @param id
-   * @param userRoles
+   * @param {string} id - The unique identifier of the configuration to be promoted.
+   * @param {string[]} userRoles - The roles of the user performing the operation, used to verify access permissions.
+   * @return {Promise<void>} Resolves when the configuration is successfully promoted, or does nothing if not found.
    */
   async promoteConfiguration(id: string, userRoles: string[]) {
     const configuration = await this.findById(userRoles, id);
@@ -867,10 +910,11 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * findPromotionCandidates
+   * Finds promotion candidates based on the provided filter and user roles.
    *
-   * @param filter
-   * @param userRoles
+   * @param {BaseModelStatement} filter - The filter criteria used to identify potential promotion candidates.
+   * @param {string[]} userRoles - An array of user roles that will determine access permissions and applicable configurations.
+   * @return {Promise<Configuration[]>} A promise that resolves to an array of configurations that match the criteria for promotion candidates.
    */
   async findPromotionCandidates(
     filter: BaseModelStatement,
@@ -967,12 +1011,13 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * findVariable
+   * Finds variables based on user roles, search criteria, and specific conditions.
    *
-   * @param userRoles
-   * @param searchText
-   * @param valueOrName
-   * @param isRegex
+   * @param {string[]} userRoles - Array of roles assigned to the user, used to filter accessible data.
+   * @param {string} searchText - The text to search for within the variables, either in their values or names.
+   * @param {boolean} valueOrName - A boolean indicating whether to search in the variable's value (true) or name (false).
+   * @param {boolean} isRegex - A boolean indicating whether the searchText should be interpreted as a regular expression.
+   * @return {Promise<{variables: any[], constantVariables: any[]}>} An object containing two arrays: `variables` with configuration variables and `constantVariables` with constant variables matching the search criteria.
    */
   async findVariable(
     userRoles: string[],

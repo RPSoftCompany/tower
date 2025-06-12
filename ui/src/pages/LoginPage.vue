@@ -112,6 +112,11 @@ onMounted(async () => {
 // Methods
 //====================================================
 
+/**
+ * Initializes the login page by resetting user state, removing access token cookie,
+ * and checking SSO availability. This method is called when the component is mounted
+ * and when the route changes.
+ */
 const mounted = async () => {
 	if (userSt) {
 		userSt.$reset();
@@ -131,7 +136,11 @@ const mounted = async () => {
 };
 
 /**
- * loginMethod
+ * Handles user authentication by sending login credentials to the server.
+ * If successful, it sets user details and roles in the store.
+ * For new users, redirects to the password change page.
+ * For existing users, redirects to either stored destination or configuration page.
+ * Displays error notification for invalid credentials or blocked users.
  */
 const loginMethod = async () => {
 	try {
@@ -178,8 +187,8 @@ const loginMethod = async () => {
 		let message = 'Invalid username or password';
 
 		if (e instanceof AxiosError) {
-			if (e.response && e.response.status && e.response.status === 403) {
-				message = 'User is blocked';
+			if (e.response && e.response.status) {
+				message = e.response.data.message;
 			}
 		}
 		$q.notify({
@@ -206,7 +215,8 @@ const loginMethod = async () => {
 };
 
 /**
- * redirectToSSO
+ * Redirects user to SSO login page.
+ * Uses different URLs based on development or production environment.
  */
 const redirectToSSO = () => {
 	if (process.env.NODE_ENV === 'development') {
@@ -216,6 +226,10 @@ const redirectToSSO = () => {
 	}
 };
 
+/**
+ * Watches for route changes and reinitializes the login page
+ * by calling the mounted method when the route changes
+ */
 watch(
 	() => router.currentRoute,
 	async () => {

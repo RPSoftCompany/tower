@@ -30,7 +30,7 @@ export class V1Controller {
     @Inject(REQUEST) private readonly request: Request,
   ) {}
 
-  @Get('/**')
+  @Get('/*')
   @Roles(['configuration.view'])
   async v1(@Res() response: Response) {
     return CRUDExceptionWrapper(async () => {

@@ -16,7 +16,7 @@
  * along with Tower. If not, see http:www.gnu.org/licenses/gpl-3.0.html.
  */
 
-import { boot } from 'quasar/wrappers';
+import { defineBoot } from '#q-app/wrappers';
 import axios, { AxiosInstance } from 'axios';
 import { TowerAxios } from 'boot/classes/TowerAxios';
 import { userStore } from 'stores/user';
@@ -44,7 +44,7 @@ if (process.env.NODE_ENV === 'production') {
 
 let towerAxios: TowerAxios;
 
-export default boot(({ app, router }) => {
+export default defineBoot(({ app, router }) => {
 	// for use inside Vue files (Options API) through this.$axios and this.$api
 
 	const userSt = userStore();

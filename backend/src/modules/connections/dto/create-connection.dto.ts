@@ -1,4 +1,5 @@
 import { IsArray, IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { VaultConnectionToken } from '../VaultConnection.schema';
 
 export class CreateLDAPConnectionDto {
   _id?: string;
@@ -96,13 +97,7 @@ export class CreateVaultConnectionDto {
   useGlobalToken: boolean;
   globalToken?: string;
   url: string;
-  tokens: VaultConnectionTokenDto[];
-}
-
-class VaultConnectionTokenDto {
-  name: string;
-  base: string;
-  token?: string;
+  tokens: VaultConnectionToken[];
 }
 
 export class CreateKubernetesConnectionDto {
