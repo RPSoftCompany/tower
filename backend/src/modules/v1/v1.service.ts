@@ -50,12 +50,14 @@ export class V1Service {
   ) {}
 
   /**
-   * matchUrl
+   * Matches the given URL against a set of configurations based on user roles and additional parameters.
    *
-   * @param userRoles
-   * @param url
-   * @param type
-   * @param params
+   * @param {string[]} userRoles - An array of roles associated with the current user.
+   * @param {string} url - The URL to be matched against the configuration rules.
+   * @param {string} [type] - The type of configuration to be used. Defaults to 'v1' if not provided.
+   * @param {any} [params] - Additional parameters, which may include optional version information.
+   * @return {Promise<any>} A promise that resolves to the compiled configuration result if a match is found.
+   * @throws {NotFoundException} If no matching configuration is found.
    */
   async matchUrl(
     userRoles: string[],
@@ -115,12 +117,13 @@ export class V1Service {
   }
 
   /**
-   * compileConfiguration
+   * Compiles a configuration object by incorporating base configurations and rendering a template.
    *
-   * @param userRoles
-   * @param configuration
-   * @param allBases
-   * @param template
+   * @param {string[]} userRoles - List of user roles to consider during the configuration compilation.
+   * @param {Configuration} configuration - The initial configuration object to be processed.
+   * @param {BaseConfiguration[]} allBases - Array of base configurations to merge with the initial configuration.
+   * @param {RestConfiguration} template - Template and metadata used for rendering the final configuration.
+   * @return {Promise<{template: string, contentType: string}>} An object containing the rendered template and its corresponding content type.
    */
   async compileConfiguration(
     userRoles: string[],
@@ -152,11 +155,12 @@ export class V1Service {
   }
 
   /**
-   * incorporateAll
+   * Asynchronously incorporates various configurations and variables into the provided configuration object.
    *
-   * @param userRoles
-   * @param allBases
-   * @param configuration
+   * @param {string[]} userRoles - Array of user roles utilized during the incorporation process.
+   * @param {BaseConfiguration[]} allBases - Array of base configurations to be used.
+   * @param {Configuration} configuration - The initial configuration object to be augmented.
+   * @return {Promise<Configuration>} A promise that resolves to the updated configuration object.
    */
   async incorporateAll(
     userRoles: string[],
@@ -183,13 +187,16 @@ export class V1Service {
   }
 
   /**
-   * matchFirstConfiguration
+   * Matches the first valid configuration for the given URL and user roles
+   * against a list of REST configurations and base configurations.
    *
-   * @param userRoles
-   * @param restConfigurations
-   * @param url
-   * @param allBases
-   * @param version
+   * @param {string[]} userRoles - An array of user roles to filter configurations by access.
+   * @param {RestConfiguration[]} restConfigurations - An array of REST configurations to match against.
+   * @param {string} url - The URL to match against the REST configurations.
+   * @param {BaseConfiguration[]} allBases - An array of base configurations to validate the data models.
+   * @param {string} [version] - Optional version string to fetch a specific configuration version.
+   * @return {Promise<{ configuration: Configuration, template: RestConfiguration }>} Returns an object containing
+   *         the matching configuration and its related template if found. Otherwise, throws an exception.
    */
   async matchFirstConfiguration(
     userRoles: string[],
@@ -292,11 +299,13 @@ export class V1Service {
   }
 
   /**
-   * renderTemplate
+   * Renders a given template string using the Liquid templating engine and a provided configuration object.
+   * This method supports various custom filters and adjusts configuration data based on the specified content type.
    *
-   * @param template
-   * @param contentType
-   * @param configuration
+   * @param {string} template - The template string to be rendered.
+   * @param {string} contentType - The MIME type of the content, such as 'application/json'.
+   * @param {any} configuration - An object containing the dynamic variables to be used in the template.
+   * @return {Promise<string>} The rendered template as a string.
    */
   async renderTemplate(
     template: string,
@@ -344,13 +353,13 @@ export class V1Service {
   }
 
   /**
-   * incorporateConstantVariables
+   * Incorporates constant variables into the provided configuration based on user roles, base configurations, and an optional date.
    *
-   * @param userRoles
-   * @param allBases
-   * @param configuration
-   * @param date
-   * @private
+   * @param {string[]} userRoles - An array of user roles used to determine the applicable constant variables.
+   * @param {BaseConfiguration[]} allBases - An array of all available base configurations.
+   * @param {Configuration} configuration - The configuration object to be modified and updated with constant variables.
+   * @param {Date} [date] - An optional date to filter which constant variables are applicable. Defaults to the current date if not provided.
+   * @return {Configuration} The updated configuration object with incorporated constant variables.
    */
   async incorporateConstantVariables(
     userRoles: string[],
@@ -401,21 +410,21 @@ export class V1Service {
   }
 
   /**
-   * towerToString
+   * Converts the given input to a string representation.
    *
-   * @param str any value
-   * @return value as string
+   * @param {any} str - The input to be converted to a string.
+   * @return {string} The string representation of the input.
    */
   towerToString(str: any) {
     return `${str}`;
   }
 
   /**
-   * towerGetVariableByName
+   * Retrieves a configuration variable by its name from an array of variables.
    *
-   * @param variables
-   * @param name
-   * @return
+   * @param {ConfigurationVariable[]} variables - The array of configuration variables to search through.
+   * @param {string} name - The name of the variable to retrieve.
+   * @return {ConfigurationVariable | null} The found configuration variable, or null if no match is found.
    */
   towerGetVariableByName(variables: ConfigurationVariable[], name: string) {
     const found = variables.find((el) => {
@@ -430,11 +439,12 @@ export class V1Service {
   }
 
   /**
-   * incorporateVaultVariables
+   * Incorporates Vault variables into the given configuration by updating variable values
+   * based on data retrieved from Vault.
    *
-   * @param allBases
-   * @param configuration
-   * @private
+   * @param {BaseConfiguration[]} allBases - An array of base configurations to check against the current configuration.
+   * @param {Configuration} configuration - The main configuration object containing variables to be updated and their associated base configurations.
+   * @return {Variable[]} Returns an updated array of configuration variables with Vault variables resolved to their actual values.
    */
   private async incorporateVaultVariables(
     allBases: BaseConfiguration[],
@@ -461,11 +471,12 @@ export class V1Service {
   }
 
   /**
-   * incorporateAWSSecretManagerVariables
+   * Incorporates AWS Secret Manager variables into the current configuration by retrieving
+   * and replacing the specified configuration variables that are sourced from AWS Secret Manager.
    *
-   * @param allBases
-   * @param configuration
-   * @private
+   * @param {BaseConfiguration[]} allBases - An array of base configurations that define the available base settings.
+   * @param {Configuration} configuration - The current configuration object to be updated, containing variables and references to be resolved.
+   * @return {Promise<ConfigurationVariable[]>} - Returns a Promise resolving to the updated array of configuration variables.
    */
   private async incorporateAWSSecretManagerVariables(
     allBases: BaseConfiguration[],
@@ -523,10 +534,12 @@ export class V1Service {
   }
 
   /**
-   * incorporateAzureKeyVaultVariables
-   * @param allBases
-   * @param configuration
-   * @private
+   * Incorporates Azure Key Vault variables into the given configuration. This method retrieves secrets from Azure Key Vault
+   * based on the specified configuration and updates the configuration variables with the retrieved secret values.
+   *
+   * @param {BaseConfiguration[]} allBases - An array of base configuration objects that define the structure and type of configurations.
+   * @param {Configuration} configuration - The current configuration object containing variables that may need to fetch values from Azure Key Vault.
+   * @return {Promise<Variable[]>} A promise that resolves to an updated array of configuration variables with retrieved values from Azure Key Vault.
    */
   private async incorporateAzureKeyVaultVariables(
     allBases: BaseConfiguration[],
@@ -581,24 +594,23 @@ export class V1Service {
   }
 
   /**
-   * towerToString
+   * Converts the provided string to a Base64 encoded string.
    *
-   * @param {string} str any value
-   * @return {string} value as string
+   * @param {string} str - The input string to be encoded.
+   * @return {string} The Base64 encoded representation of the input string.
    */
   private towerToBase64(str: string): string {
     return btoa(str);
   }
 
   /**
-   * towerRandom
+   * Generates a random number within a given range or defaults to a random number between 1 and 100.
    *
-   * @param {number} from minimum value of the generated number
-   * @param {number} to maximum value of the generated number
-   *
-   * @return {number} random number
+   * @param {number} from - The lower bound of the range (inclusive).
+   * @param {number} to - The upper bound of the range (exclusive).
+   * @return {number} A random integer within the specified range if both `from` and `to` are provided, or a random integer between 1 and 100 if they are not.
    */
-  private towerRandom(from, to) {
+  private towerRandom(from: number, to: number) {
     if (from && to) {
       const min = Math.ceil(from);
       const max = Math.floor(to);

@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { UpdateHookDto } from './dto/update-hook.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, ProjectionType, Types } from 'mongoose';
 import { Hook, HookDocument, HookObject } from './hooks.schema';
 import { Statement } from '../../helpers/clauses';
 import { filterTranslator } from '../../helpers/filterTranslator';
@@ -21,7 +21,13 @@ export class HooksService implements OnModuleInit {
   constructor(@InjectModel(Hook.name) private hookModel: Model<HookDocument>) {}
 
   /**
-   * onModuleInit
+   * Initializes module-specific configurations by setting up model hooks.
+   * The method checks for predefined hooks for various models and their associated methods
+   * (e.g., beforeCreate, afterCreate, beforeUpdate, afterUpdate). If the hooks do not already
+   * exist in the database, they are created and persisted.
+   * Additionally, a debug log is generated to report the completion of the hook setup process.
+   *
+   * @return {Promise<void>} A promise that resolves when the initialization routine is complete.
    */
   async onModuleInit() {
     const allHooks: Hook[] = [];
@@ -82,24 +88,30 @@ export class HooksService implements OnModuleInit {
   }
 
   /**
-   * find
+   * Finds and retrieves an array of hooks based on the provided filter criteria.
    *
-   * @param filter
+   * @param {Statement} [filter] - An optional filter object specifying the query criteria, fields to project, sorting, and pagination.
+   * @return {Promise<Array<Hook>>} A promise resolving to an array of hooks matching the filter criteria.
    */
   find(filter?: Statement): Promise<Array<Hook>> {
     const newFilter = filterTranslator(filter);
 
-    return this.hookModel.find(newFilter.where, newFilter.fields, {
-      sort: newFilter.order,
-      limit: newFilter.limit,
-      skip: newFilter.skip,
-    });
+    return this.hookModel.find(
+      newFilter.where,
+      newFilter.fields as ProjectionType<any>,
+      {
+        sort: newFilter.order,
+        limit: newFilter.limit,
+        skip: newFilter.skip,
+      },
+    );
   }
 
   /**
-   * findById
+   * Finds a document by its unique identifier.
    *
-   * @param id
+   * @param {string} id - The unique identifier of the document to find.
+   * @return {Promise<Object|null>} A promise that resolves to the found document or null if no document is found.
    */
   async findById(id: string) {
     const array = await this.find({
@@ -115,6 +127,12 @@ export class HooksService implements OnModuleInit {
     }
   }
 
+  /**
+   * Counts the number of documents that match the given filter criteria.
+   *
+   * @param {Statement} [filter] - Optional filter criteria for counting documents. If not provided, all documents are counted.
+   * @return {Promise<number>} A promise that resolves with the count of matching documents.
+   */
   async count(filter?: Statement) {
     const newFilter = filterTranslator(filter);
 
@@ -122,10 +140,14 @@ export class HooksService implements OnModuleInit {
   }
 
   /**
-   * updateHookObject
+   * Updates an existing hook object in the database.
+   * Searches for a hook object by its ID, updates its properties with the given data, and saves the changes.
    *
-   * @param id
-   * @param updateHookDto
+   * @param {string} id - The ID of the parent hook object to update.
+   * @param {UpdateHookDto} updateHookDto - The data transfer object containing the updated hook information.
+   * @return {Promise<HookObject>} A promise that resolves to the updated hook object if found and updated successfully.
+   * @throws {BadRequestException} If the given hook object ID is invalid.
+   * @throws {null} If the parent hook object is not found.
    */
   async updateHookObject(
     id: string,
@@ -153,10 +175,11 @@ export class HooksService implements OnModuleInit {
   }
 
   /**
-   * addHookObject
+   * Adds a hook object to an existing hook model identified by the given ID.
    *
-   * @param id
-   * @param addHookDto
+   * @param {string} id - The unique identifier of the hook model to which the hook object should be added.
+   * @param {AddHookDto} addHookDto - Data Transfer Object (DTO) containing the details of the hook object to be added.
+   * @return {Promise<HookObject>} A promise that resolves to the newly added hook object if successful, or null if the hook model does not exist.
    */
   async addHookObject(id: string, addHookDto: AddHookDto): Promise<HookObject> {
     const hook = await this.hookModel.findOne({
@@ -175,10 +198,11 @@ export class HooksService implements OnModuleInit {
   }
 
   /**
-   * removeHookObject
+   * Removes a specific hook object from the hooks array of a given document.
    *
-   * @param id
-   * @param fk
+   * @param {string} id - The ID of the document from which the hook object will be removed.
+   * @param {string} fk - The ID of the hook object to be removed from the hooks array.
+   * @return {Promise<Object|null>} Returns the updated document after removing the hook object, or null if the document was not found.
    */
   async removeHookObject(id: string, fk: string) {
     const hook = await this.hookModel.findOne({
@@ -197,11 +221,13 @@ export class HooksService implements OnModuleInit {
   }
 
   /**
-   * executeHook
+   * Executes a specified hook for a given method and model with the provided variables.
    *
-   * @param method
-   * @param model
-   * @param objectVariables
+   * @param {string} method - The method name for which the hook is triggered (e.g., 'create', 'update').
+   * @param {string} model - The name of the model associated with the hook.
+   * @param {any} objectVariables - The set of variables used to parse templates and configure the hook execution.
+   * @return {Promise<void>} A promise that resolves when the hook has been executed.
+   * @throws {BadRequestException} If there is an error while executing the hook in the `before` phase.
    */
   async executeHook(method: string, model: string, objectVariables: any) {
     const hook = await this.hookModel.findOne({

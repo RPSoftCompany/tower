@@ -92,6 +92,7 @@ import TowerSelect from 'components/basic/towerSelect.vue';
 import { ConfigurationModel } from 'components/configurationModel/configurationModel';
 import { useRoute, useRouter } from 'vue-router';
 import { navigationStore } from 'stores/navigation';
+import { useQuasar } from 'quasar';
 
 //====================================================
 // Const
@@ -100,6 +101,7 @@ const baseSt = basesStore();
 const router = useRouter();
 const route = useRoute();
 const navigationSt = navigationStore();
+const $q = useQuasar();
 
 //====================================================
 // Emits
@@ -131,9 +133,14 @@ onBeforeMount(async () => {
 //====================================================
 // Computed
 //====================================================
-// /**
-//  * allBases
-//  */
+/**
+ * A computed property that determines the list of bases to be used based on specific conditions.
+ * If the first value in the `bases.value.values` array exists and the `templateEnabled` option of its
+ * corresponding `ConfigurationModel` is true, it filters the bases by checking against the `template` property
+ * in the model. If the conditions are not met, it falls back to returning the default list of bases.
+ *
+ * @type {import('vue').ComputedRef<Array<Base>>}
+ */
 const allBases = computed(() => {
 	if (bases.value.values[0]) {
 		const baseModel = bases.value.values[0] as ConfigurationModel;
@@ -153,14 +160,24 @@ const allBases = computed(() => {
 });
 
 /**
- * basesClasses
+ * A computed property that dynamically generates a Tailwind CSS class string
+ * for defining the number of grid columns based on the length of the `allBases` array.
+ *
+ * @constant {import('vue').ComputedRef<string>} basesClasses
+ * @returns {string} A Tailwind CSS class in the format `tw-grid-cols-X`,
+ * where `X` is the length of `allBases.value`.
  */
 const basesClasses = computed(() => {
 	return `tw-grid-cols-${allBases.value.length}`;
 });
 
 /**
- * currentPath
+ * A computed variable that generates the current hierarchical configuration path
+ * as a string by concatenating the names of the configuration models contained in `bases.value.values`.
+ * Each name is separated by a "/" delimiter.
+ * Returns an empty string if no valid configuration models are present in the array.
+ *
+ * @type {ComputedRef<string>}
  */
 const currentPath = computed(() => {
 	let path = '';
@@ -178,7 +195,13 @@ const currentPath = computed(() => {
 });
 
 /**
- * allowRouteChange
+ * A computed property that determines whether route changes are allowed.
+ *
+ * This variable depends on the state of `navigationSt.getCanNavigate` and dynamically updates its value
+ * based on the current state. If the associated state allows navigation, this property will evaluate to true,
+ * otherwise, it will evaluate to false.
+ *
+ * It is typically used to control or restrict navigation actions within the application.
  */
 const allowRouteChange = computed(() => {
 	return navigationSt.getCanNavigate;
@@ -188,8 +211,24 @@ const allowRouteChange = computed(() => {
 // Methods
 //====================================================
 /**
- * setBases
- * @param sequenceNumber
+ * Asynchronously sets the base options for a given sequence number, taking into
+ * account restrictions and dependencies between bases.
+ *
+ * This function retrieves and populates the base data for the specified sequence number
+ * from a configuration API. If restrictions are present on the results, it validates
+ * them against previously selected bases. The result is used to update the `bases` state
+ * for the provided sequence number.
+ *
+ * - If the `sequenceNumber` is out of bounds of the `allBases` array, the function
+ *   returns immediately.
+ * - While performing the operation, it sets loading indicators to true for both
+ *   the global loading state and the specific base being processed.
+ * - In case of API response errors, a notification is displayed to the user.
+ *
+ * @param {number} sequenceNumber - The index of the base to be processed, corresponding
+ *                                  to the `allBases` array.
+ * @returns {Promise<void>} A promise that resolves once the base data is successfully
+ *                          retrieved, processed, and updated in the state.
  */
 const setBases = async (sequenceNumber: number) => {
 	if (sequenceNumber >= allBases.value.length) {
@@ -201,54 +240,64 @@ const setBases = async (sequenceNumber: number) => {
 
 	const filter = {
 		where: {
-			base: allBases.value[sequenceNumber].name,
+			base: allBases.value[sequenceNumber]?.name,
 		},
 		order: 'name ASC',
 	};
 
-	const response = await towerAxios.get(
-		`configurationModels?filter=${JSON.stringify(filter, null, '')}`,
-	);
+	try {
+		const response = await towerAxios.get(
+			`configurationModels?filter=${JSON.stringify(filter, null, '')}`,
+		);
 
-	if (response.status === 200) {
-		let tempBases = [
-			{
-				base: allBases.value[sequenceNumber].name,
-				name: '__NONE__',
-				options: { hasRestrictions: false },
-			},
-			...response.data,
-		];
-		if (sequenceNumber === 0) {
-			bases.value.items[sequenceNumber] = tempBases;
-		} else {
-			// Gather previous bases
-			const currentBases: any = {};
+		if (response.status === 200) {
+			let tempBases = [
+				{
+					base: allBases.value[sequenceNumber]?.name,
+					name: '__NONE__',
+					options: { hasRestrictions: false },
+				},
+				...response.data,
+			];
+			if (sequenceNumber === 0) {
+				bases.value.items[sequenceNumber] = tempBases;
+			} else {
+				// Gather previous bases
+				const currentBases: any = {};
 
-			for (let i = 0; i < sequenceNumber; i++) {
-				const tempBase = bases.value.values[i] as ConfigurationModel;
-				currentBases[tempBase.base] = tempBase.name;
-			}
-
-			// check for restrictions
-			tempBases = tempBases.filter((el: ConfigurationModel) => {
-				if (!el.options.hasRestrictions) {
-					return true;
-				} else {
-					return el.restrictions.some((restriction: any) => {
-						for (const key in restriction) {
-							if (key !== '__id' && currentBases[key] !== restriction[key]) {
-								return false;
-							}
-						}
-
-						return true;
-					});
+				for (let i = 0; i < sequenceNumber; i++) {
+					const tempBase = bases.value.values[i] as ConfigurationModel;
+					currentBases[tempBase.base] = tempBase.name;
 				}
-			});
 
-			bases.value.items[sequenceNumber] = tempBases;
+				// check for restrictions
+				tempBases = tempBases.filter((el: ConfigurationModel) => {
+					if (!el.options.hasRestrictions) {
+						return true;
+					} else {
+						return el.restrictions.some((restriction: any) => {
+							for (const key in restriction) {
+								if (key !== '__id' && currentBases[key] !== restriction[key]) {
+									return false;
+								}
+							}
+
+							return true;
+						});
+					}
+				});
+
+				bases.value.items[sequenceNumber] = tempBases;
+			}
 		}
+	} catch (e) {
+		$q.notify({
+			color: 'negative',
+			position: 'top',
+			textColor: 'secondary',
+			icon: 'sym_o_error',
+			message: 'Error collecting base details',
+		});
 	}
 
 	bases.value.loading[sequenceNumber] = false;
@@ -256,8 +305,16 @@ const setBases = async (sequenceNumber: number) => {
 };
 
 /**
- * baseChanged
- * @param value
+ * Handles changes to the base configuration model and updates the associated states and paths accordingly.
+ *
+ * @param {ConfigurationModel} value - The new configuration model to process.
+ *
+ * The function performs the following:
+ * - Prevents navigation if route changes are disallowed and prompts the user if needed.
+ * - Updates base-related data structures (`bases`, `baseModels`, etc.) based on the provided configuration model.
+ * - Calculates and sets a new navigation path derived from the given base configuration.
+ * - Emits events to notify listeners about updates to base counts and models.
+ * - Ensures values and states are properly reset when no configuration model is provided.
  */
 const baseChanged = async (value: ConfigurationModel) => {
 	if (!allowRouteChange.value) {
@@ -321,7 +378,7 @@ const baseChanged = async (value: ConfigurationModel) => {
 		}
 	}
 
-	//set current path
+	//set the current path
 	let path = '';
 	for (let el of bases.value.values) {
 		if (el && typeof el === 'object') {
@@ -345,8 +402,10 @@ const baseChanged = async (value: ConfigurationModel) => {
 };
 
 /**
- * isSelectDisabled
- * @param index
+ * Determines whether a select option should be disabled based on the provided index.
+ *
+ * @param {number} index - The index of the item to evaluate.
+ * @returns {boolean} - Returns `true` if the select option should be disabled, otherwise `false`.
  */
 const isSelectDisabled = (index: number) => {
 	if (index === 0) {
@@ -357,8 +416,17 @@ const isSelectDisabled = (index: number) => {
 };
 
 /**
- * forceBasesUpdate
- * @param baseObj
+ * Asynchronously updates the base configuration based on the provided base object.
+ *
+ * This function iterates through a list of base configurations and compares
+ * each base's name to the keys in the provided `baseObj`. If a match is found,
+ * it updates the base configuration. The updates involve finding the specific
+ * configuration model in `bases.value.items`, updating the corresponding value
+ * in `bases.value.values`, and triggering subsequent actions like setting
+ * bases and notifying about the last base change.
+ *
+ * @param {any} baseObj - An object containing updated base information, where
+ * keys represent base names and values correspond to new configuration states.
  */
 const forceBasesUpdate = async (baseObj: any) => {
 	let lastBaseChanged = null;
@@ -387,7 +455,15 @@ const forceBasesUpdate = async (baseObj: any) => {
 };
 
 /**
+ * An asynchronous function that recalculates the state of bases and updates them.
  *
+ * The function iterates over all existing bases, resetting their associated items, values,
+ * and loading states. It then initializes the bases with a default index of 0. If a configuration
+ * path exists in the route parameters, it processes the path, maps it to the corresponding base
+ * names, and forces an update of the bases with the new mapping.
+ *
+ * This function relies on external dependencies such as the current route parameters,
+ * base state data, and utility methods for setting and updating bases.
  */
 const recalculateBases = async () => {
 	allBases.value.forEach((_: Base, index: number) => {
@@ -417,7 +493,16 @@ const recalculateBases = async () => {
 };
 
 /**
- * leavePage
+ * Handles the process of leaving the current page.
+ *
+ * This function checks whether navigation prevention is active by evaluating
+ * the `navigationPreventModel.value`. If active, it allows navigation to proceed
+ * by invoking the `allowNavigation` method on `navigationSt`. After permitting
+ * navigation, it calls the `baseChanged` method with the value of
+ * `navigationPreventModel.value`.
+ *
+ * The primary purpose of this function is to manage navigation state and execute
+ * the necessary logic when transitioning away from the current page.
  */
 const leavePage = () => {
 	if (navigationPreventModel.value) {
@@ -427,7 +512,14 @@ const leavePage = () => {
 };
 
 /**
- * cancelNavigation
+ * Cancel the current navigation and revert to the previously stored base values.
+ *
+ * This function restores the `bases.value.values` array to its state prior to
+ * the current navigation by replacing it with the `previousBases.value` array.
+ * Use this function to roll back changes made during navigation.
+ *
+ * Note: Ensure that `bases.value` and `previousBases.value` are properly initialized
+ * and contain the appropriate data structures before calling this method.
  */
 const cancelNavigation = () => {
 	bases.value.values = [...previousBases.value];

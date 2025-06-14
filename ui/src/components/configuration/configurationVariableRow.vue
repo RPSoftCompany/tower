@@ -504,7 +504,6 @@ import { ConfigurationVariable } from 'components/configuration/configuration';
 //====================================================
 const props = defineProps<{
 	grid: number;
-
 	name: string;
 	type: ConfigurationVariableType;
 	value?: string | number | Array<string> | boolean | null | undefined;
@@ -522,201 +521,7 @@ const props = defineProps<{
 }>();
 
 //====================================================
-// Methods
-//====================================================
-/**
- * getTypeIcon
- * @param type
- */
-const getTypeIcon = (type: string) => {
-	const found = typeOptions.find((el) => {
-		return el.value === type;
-	});
-
-	if (found) {
-		return found.icon;
-	}
-
-	return '';
-};
-
-/**
- * removeVariable
- */
-const removeVariable = () => {
-	emit('removeVariable', localName.value);
-};
-
-/**
- * revert
- */
-const revert = () => {
-	if (props.deleted) {
-		const variable: any = {
-			name: localName.value,
-			type: props.currentArchive?.type,
-			value: props.currentArchive?.value,
-		};
-
-		if (props.currentArchive?.type === ConfigurationVariableType.AWS) {
-			variable.valueKey = props.currentArchive?.valueKey;
-		}
-
-		emit('addVariable', variable);
-		return;
-	}
-
-	if (
-		props.currentArchive?.type &&
-		localType.value !== props.currentArchive?.type
-	) {
-		const value = typeOptions.find((el: typeInterface) => {
-			return el.value === props.currentArchive?.type;
-		});
-		if (value !== undefined) {
-			localType.value = value;
-		}
-	}
-
-	if (
-		props.currentArchive?.value !== undefined &&
-		localValue.value !== props.currentArchive?.value
-	) {
-		localValue.value = props.currentArchive?.value;
-	}
-
-	if (!isNil(props.currentArchive?.valueKey)) {
-		localKey.value = props.currentArchive?.valueKey;
-	}
-};
-
-/**
- * diffStrings
- * @param current
- * @param archive
- */
-const diffStrings = (current: string, archive: string) => {
-	if (props.deleted) {
-		return diffChars(archive, '');
-	}
-	return diffChars(archive, current);
-};
-//====================================================
-// Data
-//====================================================
-const localName = ref(props.name);
-
-let localChanges = true;
-const localType: Ref<typeInterface | string> = ref('');
-
-localChanges = true;
-if (typeof props.type === 'string') {
-	localType.value = {
-		label: '',
-		value: props.type,
-		valueKey: '',
-		icon: getTypeIcon(props.type),
-	};
-} else {
-	localType.value = ref(props.type as typeInterface);
-}
-localChanges = true;
-const localValue = ref(props.value);
-const localKey = ref(props.valueKey);
-
-const deleteDialog = ref(false);
-const deleteButtonColor: Ref<string | undefined> = ref(undefined);
-
-const passwordVisible = ref(false);
-
-//====================================================
-// Computed
-//====================================================
-/**
- * currentArchiveTypeIcon
- */
-const currentArchiveTypeIcon = computed(() => {
-	if (props.currentArchive) {
-		const found = typeOptions.find((el) => {
-			return el.value === props.currentArchive?.type;
-		});
-
-		if (found) {
-			return found.icon;
-		}
-	}
-
-	return undefined;
-});
-
-/**
- * revertEnabled
- */
-const revertEnabled = computed(() => {
-	if (props.deleted) {
-		return true;
-	}
-
-	if (!props.currentArchive) {
-		return false;
-	} else {
-		const localTypeValue =
-			typeof localType.value === 'string'
-				? localType.value
-				: localType.value.value;
-
-		if (localTypeValue === 'AWS SM') {
-			if (localKey.value !== props.currentArchive.valueKey) {
-				return true;
-			}
-		}
-
-		const archive = props.currentArchive;
-		return (
-			archive.type !== localTypeValue ||
-			valueAsString(archive.value) !== valueAsString(localValue.value)
-		);
-	}
-});
-
-/**
- * wasModified
- */
-const wasModified = computed(() => {
-	if (props.deleted) {
-		return true;
-	}
-
-	if (!props.currentArchive && !props.isConstantVariable) {
-		return true;
-	} else if (props.currentArchive) {
-		const localTypeValue =
-			typeof localType.value === 'string'
-				? localType.value
-				: localType.value.value;
-
-		const archive = props.currentArchive;
-		return (
-			archive.type !== localTypeValue ||
-			valueConverter(archive.value, ConfigurationVariableType.STRING) !==
-				valueConverter(localValue.value, ConfigurationVariableType.STRING)
-		);
-	}
-
-	return false;
-});
-
-/**
- * localTypeComputed
- */
-const localTypeComputed = computed(() => {
-	return typeof localType.value === 'string'
-		? localType.value
-		: localType.value.value;
-});
-
-//====================================================
-// Emit
+// Emits
 //====================================================
 const emit = defineEmits([
 	'removeVariable',
@@ -727,65 +532,244 @@ const emit = defineEmits([
 ]);
 
 //====================================================
-// Watch
+// Data
 //====================================================
+const localName = ref(props.name);
+const localType: Ref<typeInterface | string> = ref('');
+const localValue = ref(props.value);
+const localKey = ref(props.valueKey);
+const deleteDialog = ref(false);
+const deleteButtonColor: Ref<string | undefined> = ref(undefined);
+const passwordVisible = ref(false);
+
+//====================================================
+// Methods
+//====================================================
+/**
+ * Retrieves the corresponding icon for the given type.
+ * @param {string} type - The type for which the icon should be retrieved.
+ * @returns {string} The icon associated with the given type. If the type is not found, an empty string is returned.
+ */
+const getTypeIcon = (type: string): string => {
+	const found = typeOptions.find((el) => el.value === type);
+	return found ? found.icon : '';
+};
+
+/**
+ * Initializes the localType ref based on the prop type.
+ * @param {ConfigurationVariableType | typeInterface} typeProp - The type from props.
+ */
+const initializeLocalType = (
+	typeProp: ConfigurationVariableType | typeInterface,
+) => {
+	if (typeof typeProp === 'string') {
+		localType.value = {
+			label: '',
+			value: typeProp,
+			valueKey: '',
+			icon: getTypeIcon(typeProp),
+		};
+	} else {
+		localType.value = typeProp;
+	}
+};
+
+/**
+ * Removes a variable by emitting a 'removeVariable' event.
+ */
+const removeVariable = () => {
+	emit('removeVariable', localName.value);
+};
+
+/**
+ * Adds a variable, typically used when a deleted variable is "reverted" back.
+ * @param {ConfigurationVariable} variable - The variable to add.
+ */
+const addVariable = (variable: ConfigurationVariable) => {
+	emit('addVariable', variable);
+};
+
+/**
+ * Reverts the local state or configuration to align with current archive or deleted properties.
+ */
+const revert = () => {
+	if (props.deleted) {
+		const variable: ConfigurationVariable = {
+			name: localName.value,
+			type: props.currentArchive?.type ?? ConfigurationVariableType.STRING,
+			value: props.currentArchive?.value,
+		};
+		if (props.currentArchive?.type === ConfigurationVariableType.AWS) {
+			variable.valueKey = props.currentArchive?.valueKey;
+		}
+		addVariable(variable);
+		return;
+	}
+
+	if (props.currentArchive) {
+		if (
+			props.currentArchive.type &&
+			localTypeComputed.value !== props.currentArchive.type
+		) {
+			const foundType = typeOptions.find((el: typeInterface) => {
+				return el.value === props.currentArchive?.type;
+			});
+			if (foundType) {
+				localType.value = foundType;
+			}
+		}
+
+		if (
+			props.currentArchive.value !== undefined &&
+			localValue.value !== props.currentArchive.value
+		) {
+			localValue.value = props.currentArchive.value;
+		}
+
+		if (!isNil(props.currentArchive.valueKey)) {
+			localKey.value = props.currentArchive.valueKey;
+		}
+	}
+};
+
+/**
+ * Calculates the difference between two strings.
+ * @param current - The current string.
+ * @param archive - The archive string.
+ */
+const diffStrings = (current: string, archive: string) => {
+	return props.deleted ? diffChars(archive, '') : diffChars(archive, current);
+};
+
+//====================================================
+// Computed
+//====================================================
+/**
+ * Computed property for the icon of the current archive type.
+ */
+const currentArchiveTypeIcon = computed(() => {
+	if (props.currentArchive?.type) {
+		return getTypeIcon(props.currentArchive.type);
+	}
+	return undefined;
+});
+
+/**
+ * Computed property indicating if revert functionality is enabled.
+ */
+const revertEnabled = computed(() => {
+	if (props.deleted) {
+		return true;
+	}
+	if (!props.currentArchive) {
+		return false;
+	}
+
+	const archive = props.currentArchive;
+	const currentLocalTypeValue = localTypeComputed.value;
+
+	if (currentLocalTypeValue === ConfigurationVariableType.AWS) {
+		if (localKey.value !== archive.valueKey) {
+			return true;
+		}
+	}
+
+	return (
+		archive.type !== currentLocalTypeValue ||
+		valueAsString(archive.value) !== valueAsString(localValue.value)
+	);
+});
+
+/**
+ * Computed property indicating if the variable was modified.
+ */
+const wasModified = computed(() => {
+	if (props.deleted) {
+		return true;
+	}
+	if (!props.currentArchive && !props.isConstantVariable) {
+		return true;
+	} else if (props.currentArchive) {
+		const archive = props.currentArchive;
+		const currentLocalTypeValue = localTypeComputed.value;
+
+		return (
+			archive.type !== currentLocalTypeValue ||
+			valueConverter(archive.value, ConfigurationVariableType.STRING) !==
+				valueConverter(localValue.value, ConfigurationVariableType.STRING)
+		);
+	}
+	return false;
+});
+
+/**
+ * Computed property for the actual string value of localType.
+ */
+const localTypeComputed = computed(() => {
+	return typeof localType.value === 'string'
+		? localType.value
+		: localType.value.value;
+});
+
+//====================================================
+// Watchers
+//====================================================
+// Initialize localType on component setup
+initializeLocalType(props.type);
+
 watch(
 	localType,
-	() => {
-		const localTypeValue =
-			typeof localType.value === 'string'
-				? localType.value
-				: localType.value.value;
-
+	(newValue, oldValue) => {
+		const currentLocalTypeValue = localTypeComputed.value;
 		localValue.value = valueConverter(
 			localValue.value,
-			localTypeValue as ConfigurationVariableType,
+			currentLocalTypeValue as ConfigurationVariableType,
 		);
-		emit('update:type', localTypeValue);
+		emit('update:type', currentLocalTypeValue);
 		emit('update:value', localValue.value);
 
-		if (props.isConstantVariable && !props.forced && !localChanges) {
+		// Only add variable if it's a constant variable and not forced, and it's not the initial setup.
+		// The initial setup is handled by calling initializeLocalType and the immediate watch.
+		if (
+			props.isConstantVariable &&
+			!props.forced &&
+			oldValue !== undefined // Check to ensure it's not the initial immediate run
+		) {
 			emit('addVariable', {
 				name: localName.value,
-				type: localTypeValue,
+				type: currentLocalTypeValue,
 				value: localValue.value,
 			});
 		}
-
-		localChanges = false;
 	},
 	{
 		immediate: true,
 	},
 );
 
-watch(localValue, () => {
-	emit('update:value', localValue.value);
-	if (props.isConstantVariable && !props.forced && !localChanges) {
-		const localTypeValue =
-			typeof localType.value === 'string'
-				? localType.value
-				: localType.value.value;
-
+watch(localValue, (newValue, oldValue) => {
+	emit('update:value', newValue);
+	if (
+		props.isConstantVariable &&
+		!props.forced &&
+		oldValue !== undefined // Check to ensure it's not the initial immediate run
+	) {
 		emit('addVariable', {
 			name: localName.value,
-			type: localTypeValue,
-			value: localValue.value,
+			type: localTypeComputed.value,
+			value: newValue,
 		});
 	}
-
-	localChanges = false;
 });
 
-watch(localKey, () => {
-	emit('update:valueKey', localKey.value);
+watch(localKey, (newValue) => {
+	emit('update:valueKey', newValue);
 });
 
 watch(
 	() => props.value,
 	(current) => {
 		if (current !== localValue.value) {
-			localChanges = true;
 			localValue.value = current;
 		}
 	},
@@ -795,12 +779,7 @@ watch(
 	() => props.type,
 	(current) => {
 		if (current !== localType.value) {
-			localChanges = true;
-			localType.value = {
-				label: '',
-				value: current,
-				icon: getTypeIcon(current),
-			};
+			initializeLocalType(current);
 		}
 	},
 );

@@ -179,11 +179,21 @@ const loadingFile = ref(false);
 //====================================================
 // Computed
 //====================================================
+/**
+ * Two-way computed property for the filter value.
+ * Gets the value from props and emits an update event when set.
+ * Used to manage the text filter input for searching/filtering items.
+ */
 const localFilter = computed({
 	get: () => props.filter,
 	set: (value) => emits('update:filter', value),
 });
 
+/**
+ * Two-way computed property for the diff display toggle.
+ * Gets the value from props and emits an update event when set.
+ * Controls whether differences are shown in the component.
+ */
 const localDiff = computed({
 	get: () => props.showDiff,
 	set: (value) => emits('update:showDiff', value),
@@ -192,7 +202,9 @@ const localDiff = computed({
 // Methods
 //====================================================
 /**
- * onRejected
+ * Handles file upload rejection events.
+ * Displays a notification when an uploaded file fails validation checks,
+ * such as incorrect file type or size.
  */
 const onRejected = () => {
 	$q.notify({
@@ -202,8 +214,11 @@ const onRejected = () => {
 };
 
 /**
- * closeExportDialog
- * @param emit
+ * Closes the import dialog and handles the import action if needed.
+ * When emit is true, sends the import file details to the parent component.
+ * Resets the import form state after dialog is closed.
+ *
+ * @param emit - Boolean flag indicating whether to emit the import event
  */
 const closeImportDialog = (emit: boolean) => {
 	if (emit) {
@@ -219,7 +234,11 @@ const closeImportDialog = (emit: boolean) => {
 };
 
 /**
- * uploadFileData
+ * Reads and processes the selected import file.
+ * Sets the loading state while file is being read.
+ * Handles successful file reading by storing the file content.
+ * Handles file reading errors with appropriate error notifications.
+ * Uses FileReader API to read the file as text.
  */
 const uploadFileData = () => {
 	loadingFile.value = true;

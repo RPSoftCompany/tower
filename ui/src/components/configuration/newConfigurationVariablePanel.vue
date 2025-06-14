@@ -46,7 +46,7 @@
 			<div class="tw-flex">
 				<div class="tw-flex-grow tw-mx-2">
 					<!-- String -->
-					<template v-if="type.value === ConfigurationVariableType.STRING">
+					<template v-if="type?.value === ConfigurationVariableType.STRING">
 						<q-input
 							v-model="value as string"
 							color="secondary"
@@ -56,7 +56,7 @@
 						/>
 					</template>
 					<!-- Password -->
-					<template v-if="type.value === ConfigurationVariableType.PASSWORD">
+					<template v-if="type?.value === ConfigurationVariableType.PASSWORD">
 						<q-input
 							v-model="value as string"
 							:type="passwordVisible ? 'text' : 'password'"
@@ -76,7 +76,7 @@
 						</q-input>
 					</template>
 					<!-- Number -->
-					<template v-if="type.value === ConfigurationVariableType.NUMBER">
+					<template v-if="type?.value === ConfigurationVariableType.NUMBER">
 						<q-input
 							v-model="value as number"
 							color="secondary"
@@ -87,7 +87,7 @@
 						/>
 					</template>
 					<!-- Boolean -->
-					<template v-if="type.value === ConfigurationVariableType.BOOLEAN">
+					<template v-if="type?.value === ConfigurationVariableType.BOOLEAN">
 						<q-btn-toggle
 							v-model="value"
 							:options="[
@@ -101,7 +101,7 @@
 						/>
 					</template>
 					<!-- Text -->
-					<template v-if="type.value === ConfigurationVariableType.TEXT">
+					<template v-if="type?.value === ConfigurationVariableType.TEXT">
 						<q-input
 							v-model="value as string"
 							color="secondary"
@@ -112,7 +112,7 @@
 						/>
 					</template>
 					<!-- List -->
-					<template v-if="type.value === ConfigurationVariableType.LIST">
+					<template v-if="type?.value === ConfigurationVariableType.LIST">
 						<q-select
 							v-model="value as Array<string>"
 							color="secondary"
@@ -127,7 +127,7 @@
 						/>
 					</template>
 					<!-- Vault -->
-					<template v-if="type.value === ConfigurationVariableType.VAULT">
+					<template v-if="type?.value === ConfigurationVariableType.VAULT">
 						<q-input
 							v-model="value as string"
 							color="secondary"
@@ -137,7 +137,7 @@
 						/>
 					</template>
 					<!-- AWS -->
-					<template v-if="type.value === ConfigurationVariableType.AWS">
+					<template v-if="type?.value === ConfigurationVariableType.AWS">
 						<div class="flex tw-gap-1">
 							<q-input
 								v-model="value as string"
@@ -158,7 +158,7 @@
 						</div>
 					</template>
 					<!-- Azure -->
-					<template v-if="type.value === ConfigurationVariableType.AZURE">
+					<template v-if="type?.value === ConfigurationVariableType.AZURE">
 						<div class="flex tw-gap-1">
 							<q-input
 								v-model="value as string"
@@ -211,15 +211,39 @@ withDefaults(
 	},
 );
 
+/**
+ * Reactive variable to store the name of the new variable.
+ * @type {Ref<string | null>}
+ */
 const name: Ref<string | null> = ref(null);
+/**
+ * Reactive variable to store the selected type of the new variable, initialized to the first option.
+ * @type {Ref<any>}
+ */
 const type = ref(typeOptions[0]);
+/**
+ * Reactive variable to store the value of the new variable. Its type can vary based on `ConfigurationVariableType`.
+ * @type {Ref<string | number | boolean | string[] | null | undefined | unknown>}
+ */
 const value: Ref<
 	string | number | boolean | string[] | null | undefined | unknown
 > = ref('');
+/**
+ * Reactive variable to store the key for the new variable, used specifically for AWS secret values.
+ * @type {Ref<string>}
+ */
 const valueKey = ref('');
 
+/**
+ * Reactive variable to control the visibility of the password input field.
+ * @type {Ref<boolean>}
+ */
 const passwordVisible = ref(false);
 
+/**
+ * Reference to the QInput component for the name field, used to access its properties like `hasError`.
+ * @type {Ref<QInput | null>}
+ */
 const nameRef: Ref<QInput | null> = ref(null);
 
 //====================================================
@@ -232,12 +256,13 @@ const emit = defineEmits(['addNewVariable']);
 //====================================================
 
 /**
- * addNewVariable
+ * Adds a new configuration variable by emitting an event with the variable's details.
+ * Resets the form fields after emission.
  */
 const addNewVariable = () => {
 	emit('addNewVariable', {
 		name: name.value,
-		type: type.value.value,
+		type: type?.value?.value,
 		value: value.value,
 		valueKey: valueKey.value,
 	});
@@ -251,10 +276,19 @@ const addNewVariable = () => {
 //====================================================
 // Watch
 //====================================================
+/**
+ * Watches for changes in the `type` variable.
+ * When the type changes, it converts the `value` to the appropriate type
+ * using the `valueConverter` function.
+ * The `immediate: true` option ensures the watcher runs immediately on component mount.
+ */
 watch(
 	type,
 	() => {
-		value.value = valueConverter(value.value, type.value.value);
+		value.value = valueConverter(
+			value.value,
+			type?.value?.value ?? ConfigurationVariableType.STRING,
+		);
 	},
 	{
 		immediate: true,

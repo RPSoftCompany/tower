@@ -16,6 +16,12 @@ export class AuditsService implements OnModuleInit {
     @InjectModel(Audit.name) private auditModel: Model<AuditDocument>,
   ) {}
 
+  /**
+   * Initializes the module by setting up indexing and handling TTL (Time-To-Live) configurations
+   * for the audit model schema. Ensures necessary index synchronization and logs the status of the operation.
+   *
+   * @return {Promise<void>} A promise that resolves when the module initialization is completed.
+   */
   async onModuleInit() {
     this.auditModel.schema.index(
       { date: 1 },
@@ -26,6 +32,12 @@ export class AuditsService implements OnModuleInit {
     this.logger.debug('Audit ttl check finished');
   }
 
+  /**
+   * Finds audit entries based on the provided filter criteria.
+   *
+   * @param {Statement} [filter] - The filter criteria to apply when retrieving audit records.
+   * @return {Promise<Array<Audit>>} A promise resolving to an array of audit records that match the filter criteria.
+   */
   find(filter?: Statement): Promise<Array<Audit>> {
     const newFilter = filterTranslator(filter);
 
@@ -83,6 +95,12 @@ export class AuditsService implements OnModuleInit {
     return this.auditModel.aggregate(aggregation).exec();
   }
 
+  /**
+   * Counts the number of documents in the database based on the given filter criteria.
+   *
+   * @param {Statement} [filter] - Optional filter criteria used to count the documents.
+   * @return {Promise<number>} A promise that resolves to the count of documents matching the filter criteria.
+   */
   async count(filter?: Statement) {
     const newFilter = filterTranslator(filter);
 

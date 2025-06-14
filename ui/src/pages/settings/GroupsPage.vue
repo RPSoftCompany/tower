@@ -17,7 +17,7 @@
   -->
 
 <template>
-	<div class="tw-flex tw-flex-col tw-h-full">
+	<div class="tw-flex tw-flex-col justify-between tw-h-full">
 		<q-dialog v-model="deleteGroupDialog">
 			<q-card class="tw-min-w-[30%]">
 				<q-card-section class="tw-bg-negative">
@@ -97,7 +97,7 @@
 				</q-item>
 			</q-virtual-scroll>
 		</div>
-		<div v-if="currentGroup" class="tw-justify-self-end">
+		<div v-if="currentGroup">
 			<save-panel
 				:save-enabled="isDifferent"
 				@save-clicked="saveChanges"

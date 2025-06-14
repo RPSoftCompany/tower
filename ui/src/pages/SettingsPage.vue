@@ -18,169 +18,174 @@
 
 <template>
 	<div class="tw-h-full tw-flex tw-flex-col">
-		<q-tabs
-			v-model="groupTab"
-			active-class="towerActiveFolderTab"
-			active-color="secondary"
-			animated
-			class="tw-text-gray-500 towerFolderTabs"
-			dense
-			indicator-color="transparent"
-			keep-alive
-			narrow-indicator
-		>
-			<q-tab
-				class="towerFolderTab"
-				icon="sym_o_manage_accounts"
-				label="Users and permissions"
-				name="usersAndPermissions"
-			/>
-			<q-tab
-				class="towerFolderTab"
-				icon="sym_o_settings"
-				label="Configuration settings"
-				name="configurationSettings"
-			/>
-			<q-tab class="towerFolderTab" icon="sym_o_api" label="API" name="api" />
-			<q-tab
-				class="towerFolderTab"
-				icon="sym_o_link"
-				label="Connections"
-				name="connections"
-			/>
-			<q-tab
-				class="towerFolderTab"
-				icon="sym_o_quick_reference"
-				label="Audit"
-				name="audit"
-			/>
-		</q-tabs>
-		<q-tab-panels
-			v-model="groupTab"
-			animated
-			class="tw-bg-darkPage tw-text-sm tw-overflow-visible"
-			transition-next="jump-down"
-			transition-prev="jump-down"
-		>
-			<q-tab-panel class="tw-p-0 tw-overflow-hidden" name="usersAndPermissions">
-				<q-tabs
-					v-model="selectedNode"
-					active-class="towerActiveFolderTab"
-					active-color="secondary"
-					animated
-					class="tw-text-gray-500"
-					dense
-					indicator-color="transparent"
-					inline-label
-					keep-alive
-					narrow-indicator
-				>
-					<q-tab
-						v-for="tab of usersAndPermissions"
-						:key="tab.label"
-						:icon="tab.icon"
-						:label="tab.label"
-						:name="tab.url"
-						class="towerSubFolderTab"
-					/>
-				</q-tabs>
-			</q-tab-panel>
-			<q-tab-panel
-				class="tw-p-0 tw-overflow-hidden"
-				name="configurationSettings"
+		<div>
+			<q-tabs
+				v-model="groupTab"
+				active-class="towerActiveFolderTab"
+				active-color="secondary"
+				animated
+				class="tw-text-gray-500 towerFolderTabs"
+				dense
+				indicator-color="transparent"
+				keep-alive
+				narrow-indicator
 			>
-				<q-tabs
-					v-model="selectedNode"
-					active-class="towerActiveFolderTab"
-					active-color="secondary"
-					animated
-					class="tw-text-gray-500 tw-overflow-hidden"
-					dense
-					indicator-color="secondary"
-					inline-label
-					keep-alive
-					narrow-indicator
+				<q-tab
+					class="towerFolderTab"
+					icon="sym_o_manage_accounts"
+					label="Users and permissions"
+					name="usersAndPermissions"
+				/>
+				<q-tab
+					class="towerFolderTab"
+					icon="sym_o_settings"
+					label="Configuration settings"
+					name="configurationSettings"
+				/>
+				<q-tab class="towerFolderTab" icon="sym_o_api" label="API" name="api" />
+				<q-tab
+					class="towerFolderTab"
+					icon="sym_o_link"
+					label="Connections"
+					name="connections"
+				/>
+				<q-tab
+					class="towerFolderTab"
+					icon="sym_o_quick_reference"
+					label="Audit"
+					name="audit"
+				/>
+			</q-tabs>
+			<q-tab-panels
+				v-model="groupTab"
+				animated
+				class="tw-bg-darkPage tw-text-sm tw-overflow-visible"
+				transition-next="jump-down"
+				transition-prev="jump-down"
+			>
+				<q-tab-panel
+					class="tw-p-0 tw-overflow-hidden"
+					name="usersAndPermissions"
 				>
-					<q-tab
-						v-for="tab of configurationSettings"
-						:key="tab.label"
-						:icon="tab.icon"
-						:label="tab.label"
-						:name="tab.url"
-						class="towerSubFolderTab"
-					/>
-				</q-tabs>
-			</q-tab-panel>
-			<q-tab-panel class="tw-p-0 tw-overflow-hidden" name="api">
-				<q-tabs
-					v-model="selectedNode"
-					active-class="towerActiveFolderTab"
-					active-color="secondary"
-					animated
-					class="tw-text-gray-500"
-					dense
-					indicator-color="secondary"
-					inline-label
-					keep-alive
-					narrow-indicator
+					<q-tabs
+						v-model="selectedNode"
+						active-class="towerActiveFolderTab"
+						active-color="secondary"
+						animated
+						class="tw-text-gray-500"
+						dense
+						indicator-color="transparent"
+						inline-label
+						keep-alive
+						narrow-indicator
+					>
+						<q-tab
+							v-for="tab of usersAndPermissions"
+							:key="tab.label"
+							:icon="tab.icon"
+							:label="tab.label"
+							:name="tab.url"
+							class="towerSubFolderTab"
+						/>
+					</q-tabs>
+				</q-tab-panel>
+				<q-tab-panel
+					class="tw-p-0 tw-overflow-hidden"
+					name="configurationSettings"
 				>
-					<q-tab
-						v-for="tab of api"
-						:key="tab.label"
-						:icon="tab.icon"
-						:label="tab.label"
-						:name="tab.url"
-						class="towerSubFolderTab"
-					/>
-				</q-tabs>
-			</q-tab-panel>
-			<q-tab-panel class="tw-p-0 tw-overflow-hidden" name="audit">
-				<q-tabs
-					v-model="selectedNode"
-					active-class="towerActiveFolderTab"
-					active-color="secondary"
-					animated
-					class="tw-text-gray-500"
-					dense
-					indicator-color="secondary"
-					inline-label
-					keep-alive
-					narrow-indicator
-				>
-					<q-tab
-						v-for="tab of audit"
-						:key="tab.label"
-						:icon="tab.icon"
-						:label="tab.label"
-						:name="tab.url"
-						class="towerSubFolderTab"
-					/>
-				</q-tabs>
-			</q-tab-panel>
-			<q-tab-panel class="tw-p-0 tw-overflow-hidden" name="connections">
-				<q-tabs
-					v-model="selectedNode"
-					active-class="towerActiveFolderTab"
-					active-color="secondary"
-					animated
-					class="tw-text-gray-500"
-					dense
-					indicator-color="secondary"
-					inline-label
-					keep-alive
-					narrow-indicator
-				>
-					<q-tab
-						v-for="tab of connections"
-						:key="tab.label"
-						:icon="tab.icon"
-						:label="tab.label"
-						:name="tab.url"
-						class="towerSubFolderTab"
-					/>
-				</q-tabs>
-			</q-tab-panel>
-		</q-tab-panels>
+					<q-tabs
+						v-model="selectedNode"
+						active-class="towerActiveFolderTab"
+						active-color="secondary"
+						animated
+						class="tw-text-gray-500 tw-overflow-hidden"
+						dense
+						indicator-color="secondary"
+						inline-label
+						keep-alive
+						narrow-indicator
+					>
+						<q-tab
+							v-for="tab of configurationSettings"
+							:key="tab.label"
+							:icon="tab.icon"
+							:label="tab.label"
+							:name="tab.url"
+							class="towerSubFolderTab"
+						/>
+					</q-tabs>
+				</q-tab-panel>
+				<q-tab-panel class="tw-p-0 tw-overflow-hidden" name="api">
+					<q-tabs
+						v-model="selectedNode"
+						active-class="towerActiveFolderTab"
+						active-color="secondary"
+						animated
+						class="tw-text-gray-500"
+						dense
+						indicator-color="secondary"
+						inline-label
+						keep-alive
+						narrow-indicator
+					>
+						<q-tab
+							v-for="tab of api"
+							:key="tab.label"
+							:icon="tab.icon"
+							:label="tab.label"
+							:name="tab.url"
+							class="towerSubFolderTab"
+						/>
+					</q-tabs>
+				</q-tab-panel>
+				<q-tab-panel class="tw-p-0 tw-overflow-hidden" name="audit">
+					<q-tabs
+						v-model="selectedNode"
+						active-class="towerActiveFolderTab"
+						active-color="secondary"
+						animated
+						class="tw-text-gray-500"
+						dense
+						indicator-color="secondary"
+						inline-label
+						keep-alive
+						narrow-indicator
+					>
+						<q-tab
+							v-for="tab of audit"
+							:key="tab.label"
+							:icon="tab.icon"
+							:label="tab.label"
+							:name="tab.url"
+							class="towerSubFolderTab"
+						/>
+					</q-tabs>
+				</q-tab-panel>
+				<q-tab-panel class="tw-p-0 tw-overflow-hidden" name="connections">
+					<q-tabs
+						v-model="selectedNode"
+						active-class="towerActiveFolderTab"
+						active-color="secondary"
+						animated
+						class="tw-text-gray-500"
+						dense
+						indicator-color="secondary"
+						inline-label
+						keep-alive
+						narrow-indicator
+					>
+						<q-tab
+							v-for="tab of connections"
+							:key="tab.label"
+							:icon="tab.icon"
+							:label="tab.label"
+							:name="tab.url"
+							class="towerSubFolderTab"
+						/>
+					</q-tabs>
+				</q-tab-panel>
+			</q-tab-panels>
+		</div>
 		<div class="tw-w-full tw-h-full tw-px-3 tw-pt-6">
 			<router-view v-slot="{ Component }">
 				<transition
@@ -400,25 +405,25 @@ watch(
 		if (current && previous && current !== previous) {
 			if (current === 'usersAndPermissions') {
 				if (!usersAndPermissions.some((el) => el.url === selectedNode.value)) {
-					selectedNode.value = usersAndPermissions[0].url;
+					selectedNode.value = usersAndPermissions[0]?.url ?? '';
 				}
 			} else if (current === 'configurationSettings') {
 				if (
 					!configurationSettings.some((el) => el.url === selectedNode.value)
 				) {
-					selectedNode.value = configurationSettings[0].url;
+					selectedNode.value = configurationSettings[0]?.url ?? '';
 				}
 			} else if (current === 'api') {
 				if (!api.some((el) => el.url === selectedNode.value)) {
-					selectedNode.value = api[0].url;
+					selectedNode.value = api[0]?.url ?? '';
 				}
 			} else if (current === 'audit') {
 				if (!audit.some((el) => el.url === selectedNode.value)) {
-					selectedNode.value = audit[0].url;
+					selectedNode.value = audit[0]?.url ?? '';
 				}
 			} else if (current === 'connections') {
 				if (!connections.some((el) => el.url === selectedNode.value)) {
-					selectedNode.value = connections[0].url;
+					selectedNode.value = connections[0]?.url ?? '';
 				}
 			}
 		}
@@ -439,10 +444,6 @@ watch(
 </script>
 
 <style scoped>
-.towerActiveFolderTab {
-	background-color: var(--q-dark);
-}
-
 .towerFolderTabs {
 	border-bottom: solid 1px var(--q-dark);
 }

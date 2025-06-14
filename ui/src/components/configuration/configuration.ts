@@ -28,6 +28,7 @@ export interface Configuration {
 	draft: boolean;
 	comment?: string;
 	id: string;
+	_id?: string | undefined;
 	createdBy?: Member | undefined;
 }
 
@@ -43,7 +44,7 @@ export interface ConfigurationVariableToDisplay extends ConfigurationVariable {
 	constantVariable?: boolean;
 	forced?: boolean;
 	addIfAbsent?: boolean;
-	error?: string;
+	error?: string | undefined;
 	sourceBase?: string;
 	sourceModel?: string;
 }

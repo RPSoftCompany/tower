@@ -390,6 +390,10 @@
 	</div>
 </template>
 
+/** * Component that represents a single row in the constant variables table. *
+It allows viewing and editing of variable properties like type, value, forced
+state etc. * Also provides comparison functionality between different versions
+of the same variable. */
 <script lang="ts" setup>
 import { computed, Ref, ref, watch } from 'vue';
 import {
@@ -406,6 +410,22 @@ import { diffChars } from 'diff';
 //====================================================
 // Props
 //====================================================
+/**
+ * Props interface for the ConstantVariableRow component
+ * @property {number} grid - Number of grid columns (2 or 3)
+ * @property {string} name - Name of the variable
+ * @property {ConfigurationVariableType} type - Type of the variable
+ * @property {string|number|Array<string>|boolean|null|undefined} value - Value of the variable
+ * @property {string} [valueKey] - Key for AWS secret type variables
+ * @property {boolean} forced - Whether the variable is forced (not editable in configuration)
+ * @property {boolean} addIfAbsent - Whether to add variable if not present in configuration
+ * @property {boolean} [deleted] - Whether the variable is marked as deleted
+ * @property {boolean} [isNew] - Whether the variable is newly added
+ * @property {boolean} [disable] - Whether the variable controls are disabled
+ * @property {boolean} showDiff - Whether to show differences with archive version
+ * @property {Object} [currentArchive] - Archive version of the variable for comparison
+ * @property {Object} [currentVersion] - Current version of the variable
+ */
 const props = defineProps<{
 	grid: number;
 
@@ -532,25 +552,36 @@ const diffStrings = (current: string, archive: string) => {
 //====================================================
 // Data
 //====================================================
+/** Local copy of variable name */
 const localName = ref(props.name);
+/** Local copy of variable type */
 const localType: Ref<typeInterface> = ref({
 	label: '',
 	value: props.type,
 	icon: getTypeIcon(props.type),
 });
+/** Local copy of the variable value */
 const localValue = ref(props.value);
+/** Local copy of the AWS secret key */
 const localKey = ref(props.valueKey);
+/** Local copy of forced state */
 const localForced = ref(props.forced);
+/** Local copy of addIfAbsent state */
 const localAddIfAbsent = ref(props.addIfAbsent);
-
+/** Controls visibility of delete confirmation dialog */
 const deleteDialog = ref(false);
+/** Color of the delete button */
 const deleteButtonColor: Ref<string | undefined> = ref(undefined);
-
+/** Controls password visibility */
 const passwordVisible = ref(false);
 
 //====================================================
 // Computed
 //====================================================
+/**
+ * Icon for the archived version of variable type
+ * @returns {string|undefined} Material icon name
+ */
 const currentArchiveTypeIcon = computed(() => {
 	if (props.currentArchive) {
 		const found = typeOptions.find((el) => {
@@ -608,6 +639,16 @@ const wasModified = computed(() => {
 //====================================================
 // Emit
 //====================================================
+/**
+ * Component events
+ * @event removeVariable - Emitted when variable is deleted
+ * @event update:value - Emitted when value changes
+ * @event update:valueKey - Emitted when AWS key changes
+ * @event update:type - Emitted when type changes
+ * @event update:forced - Emitted when forced state changes
+ * @event update:addIfAbsent - Emitted when addIfAbsent state changes
+ * @event addVariable - Emitted when deleted variable is recreated
+ */
 const emit = defineEmits([
 	'removeVariable',
 	'update:value',

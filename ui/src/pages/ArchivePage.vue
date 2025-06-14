@@ -17,7 +17,7 @@
   -->
 
 <template>
-	<div>
+	<div class="tw-flex tw-flex-col tw-justify-between tw-h-full tw-max-h-full">
 		<div class="tw-flex tw-items-center">
 			<base-toolbar
 				class="tw-flex-grow"
@@ -53,7 +53,10 @@
 			enter-active-class="animated fadeIn"
 			leave-active-class="animated fadeOut"
 		>
-			<div v-if="archiveConfigs.length > 0" class="tw-mt-3 tower-max-height">
+			<div
+				v-if="archiveConfigs.length > 0"
+				class="tw-mt-3 tw-flex-1 tw-max-h-full tw-overflow-auto"
+			>
 				<compare-table
 					:configs="archiveConfigs"
 					:filter="filter"
@@ -63,6 +66,20 @@
 					@switchPlaces="switchPlaces"
 					@versionChanged="versionChanged"
 				></compare-table>
+			</div>
+			<div v-else class="tw-h-full tw-flex-1 tw-flex tw-justify-center">
+				<div
+					class="tw-self-center tw-text-lg tw-tracking-wide tw-italic tw-text-gray-400"
+				>
+					<div>
+						Select configuration bases above and click the '+' button to view
+						archive history and compare different versions
+						<div class="tw-text-center tw-text-xs tw-text-gray-500">
+							Tip: You can add up to four different configurations at the same
+							time
+						</div>
+					</div>
+				</div>
 			</div>
 		</transition>
 	</div>
@@ -84,6 +101,7 @@ import {
 import { valueExists } from 'components/constantVariables/constantVariable';
 import { useQuasar } from 'quasar';
 import { Configuration } from 'components/configuration/configuration';
+import { Base } from 'components/bases/base';
 
 //====================================================
 // Const
@@ -105,15 +123,31 @@ const showDiff = ref(true);
 // Methods
 //====================================================
 /**
- * onBaseModelChange
- * @param value
+ * A callback function that is triggered when the base model changes.
+ *
+ * @param {Array<ConfigurationModel>} value - The new array of configuration models.
  */
 const onBaseModelChange = (value: Array<ConfigurationModel>) => {
 	currentBaseModels.value = value;
 };
 
 /**
- * addArchiveConfig
+ * Adds a new archive configuration to the `archiveConfigs` array.
+ * The function checks if the number of bases matches the currently computed base model count.
+ * If it does, it constructs a filter and retrieves configurations from the server. The retrieved configurations
+ * are then processed and added to the archive. If an error occurs during the process, or if the configuration does not exist,
+ * an error notification is displayed, and the configuration is removed from the array.
+ *
+ * The function performs the following steps:
+ * - Verifies if the `basesCount` matches the length of `baseModelComputed`.
+ * - Constructs a filter object for fetching configuration data.
+ * - Iterates over `allBases` and `currentBaseModels` to update filter conditions and create a path string.
+ * - Adds a loading configuration object to `archiveConfigs` with an ID, path, and loading status.
+ * - Fetches configuration data from the server using `towerAxios`.
+ * - Processes the response data and updates the corresponding configuration in `archiveConfigs`.
+ * - Displays error notifications and cleans up data if the process fails or no configuration exists.
+ *
+ * The function does not return any value.
  */
 const addArchiveConfig = async () => {
 	if (basesCount.value !== Object.keys(baseModelComputed.value).length) {
@@ -170,11 +204,13 @@ const addArchiveConfig = async () => {
 				];
 			}
 
-			archiveConfigs.value[place].configuration = config;
-			archiveConfigs.value[place].version = version - 1;
-			archiveConfigs.value[place].loading = false;
-			archiveConfigs.value[place].comment =
-				response.data[response.data.length - 1].comment;
+			if (archiveConfigs.value[place]) {
+				archiveConfigs.value[place].configuration = config;
+				archiveConfigs.value[place].version = version - 1;
+				archiveConfigs.value[place].loading = false;
+				archiveConfigs.value[place].comment =
+					response.data[response.data.length - 1].comment;
+			}
 		} else {
 			$q.notify({
 				color: 'negative',
@@ -200,7 +236,13 @@ const addArchiveConfig = async () => {
 };
 
 /**
- * removeConfiguration
+ * Removes a configuration from the archive based on the provided configuration ID.
+ *
+ * This function filters the `archiveConfigs` array by removing the entry
+ * that matches the given configuration ID. The `configId` is converted to
+ * a string before comparison to ensure type consistency during the filtering process.
+ *
+ * @param {number} configId - The unique identifier of the configuration to remove.
  */
 const removeConfiguration = (configId: number) => {
 	archiveConfigs.value = archiveConfigs.value.filter((el) => {
@@ -209,8 +251,16 @@ const removeConfiguration = (configId: number) => {
 };
 
 /**
- * versionChanged
- * @param data
+ * Handles the version change for archive configurations.
+ *
+ * Updates the corresponding archive configuration when a version change occurs.
+ * Ensures that the configuration version and comment are updated if the new version is valid.
+ * If the effective date for the new version is unavailable, additional configuration data is fetched,
+ * and the configuration is updated based on the fetched data.
+ * Provides user notifications if configuration data is missing or fetching data fails.
+ *
+ * @param {VersionChangeEvent} data - The event data containing details about the version change,
+ * including the configId, version, and any additional comments.
  */
 const versionChanged = async (data: VersionChangeEvent) => {
 	const configIndex = archiveConfigs.value.findIndex((el) => {
@@ -218,11 +268,13 @@ const versionChanged = async (data: VersionChangeEvent) => {
 	});
 
 	if (configIndex >= 0) {
-		const config = archiveConfigs.value[configIndex].configuration;
-		if (config && config[data.version].effectiveDate) {
-			archiveConfigs.value[configIndex].version = data.version;
-			archiveConfigs.value[configIndex].comment = data.comment;
-		} else {
+		const config = archiveConfigs.value[configIndex]?.configuration;
+		if (config && config[data.version]?.effectiveDate) {
+			if (archiveConfigs.value[configIndex]) {
+				archiveConfigs.value[configIndex].version = data.version;
+				archiveConfigs.value[configIndex].comment = data.comment;
+			}
+		} else if (archiveConfigs.value[configIndex]) {
 			archiveConfigs.value[configIndex].loading = true;
 
 			const filter: any = {
@@ -278,8 +330,18 @@ const versionChanged = async (data: VersionChangeEvent) => {
 };
 
 /**
- * switchPlaces
- * @param data
+ * Function to switch the positions of configurations in the `archiveConfigs` array
+ * based on the source and target IDs provided in the `SwitchPlacesEvent`.
+ *
+ * @param {SwitchPlacesEvent} data - An object containing the source ID and target ID
+ *                                    used to identify the configurations to be moved
+ *                                    and rearranged in the `archiveConfigs` array.
+ *
+ * Description:
+ * - Finds the configuration corresponding to the `sourceId` in the `archiveConfigs` array.
+ * - If found, removes the configuration from its current position.
+ * - Finds the index of the configuration corresponding to the `targetId`.
+ * - Inserts the removed configuration at the position corresponding to the `targetId`.
  */
 const switchPlaces = (data: SwitchPlacesEvent) => {
 	const sourceConfig = archiveConfigs.value.find((el) => {
@@ -304,7 +366,18 @@ const switchPlaces = (data: SwitchPlacesEvent) => {
 // Computed
 //====================================================
 /**
- * baseModelComputed
+ * A computed property that generates an object mapping base model identifiers to their corresponding names.
+ *
+ * The property observes the `currentBaseModels` value and responds reactively to changes. It iterates over the
+ * `currentBaseModels` collection, and for each item with a defined `base` property, it adds an entry to the
+ * resulting object where the `base` value acts as the key and the `name` value acts as the value.
+ *
+ * @constant {import('vue').ComputedRef<Object>} baseModelComputed
+ *    A Vue computed reference representing the constructed base model mapping.
+ *
+ * Returns:
+ * - An empty object if no `currentBaseModels` are available.
+ * - A mapping object if `currentBaseModels` contains entries with valid `base` values.
  */
 const baseModelComputed = computed(() => {
 	if (!currentBaseModels.value) {
@@ -323,7 +396,18 @@ const baseModelComputed = computed(() => {
 });
 
 /**
- * basesCount
+ * A computed property representing the count of bases, optionally filtered by a template
+ * if template support is enabled in the current base model. The count is dynamically
+ * determined based on the current state of the application.
+ *
+ * This property performs the following logic:
+ * - If the first base model in `currentBaseModels` exists and has `templateEnabled` set to `true`:
+ *   - It filters the `baseSt.getBases` array based on the presence of corresponding templates
+ *     defined in the current base model.
+ *   - The count is then set to the length of the filtered array.
+ * - Otherwise, the count simply reflects the total number of bases in `baseSt.getBases`.
+ *
+ * @type {number}
  */
 const basesCount = computed(() => {
 	if (currentBaseModels.value[0]) {
@@ -331,8 +415,8 @@ const basesCount = computed(() => {
 		if (baseModel.options.templateEnabled) {
 			const all: Array<Base> = [];
 			for (let i = 0; i < baseSt.getBases.length; i++) {
-				if (baseModel.template && baseModel.template[i]) {
-					all.push(baseSt.getBases[i]);
+				if (baseModel.template && baseModel.template[i] && baseSt.getBases[i]) {
+					all.push(baseSt.getBases[i] as Base);
 				}
 			}
 
@@ -344,12 +428,28 @@ const basesCount = computed(() => {
 });
 
 /**
- * allBases
+ * A computed property that retrieves all bases using the `baseSt.getBases` function.
+ * It dynamically computes and returns the updated list of bases whenever
+ * the underlying state or dependencies change.
+ *
+ * @constant {ComputedRef<*>} allBases
  */
 const allBases = computed(() => baseSt.getBases);
 
 /**
- * currentVariables
+ * A computed variable that generates a sorted array of unique variable names
+ * extracted from the `archiveConfigs` data structure based on specific conditions.
+ *
+ * The `currentVariables` function iterates through the `archiveConfigs` array
+ * and checks each configuration object for a valid `version`, and associated variables.
+ * If the conditions are met, the variable names are collected into a `Set` to ensure uniqueness.
+ * The unique names are then converted into an array and sorted alphabetically,
+ * with case-insensitive comparison.
+ *
+ * This computed property dynamically updates whenever the `archiveConfigs` reactive
+ * dependency changes.
+ *
+ * @type {import('vue').ComputedRef<string[]>}
  */
 const currentVariables = computed(() => {
 	const all = new Set();
@@ -359,9 +459,9 @@ const currentVariables = computed(() => {
 			valueExists(el.version) &&
 			el.configuration &&
 			el.configuration[el.version as number] &&
-			el.configuration[el.version as number].variables
+			el.configuration[el.version as number]?.variables
 		) {
-			el.configuration[el.version as number].variables.forEach((variable) => {
+			el.configuration[el.version as number]?.variables.forEach((variable) => {
 				all.add(variable.name);
 			});
 		}
@@ -375,9 +475,4 @@ const currentVariables = computed(() => {
 });
 </script>
 
-<style scoped>
-.tower-max-height {
-	overflow: auto;
-	max-height: calc(100vh - 11rem);
-}
-</style>
+<style scoped></style>

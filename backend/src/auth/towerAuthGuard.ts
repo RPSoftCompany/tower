@@ -40,9 +40,12 @@ export class TowerAuthGuard implements CanActivate {
   ) {}
 
   /**
-   * canActivate
+   * Determines whether a request can proceed based on validations such as headers, query parameters, user roles, and other criteria.
    *
-   * @param context
+   * @param {ExecutionContext} context - The execution context of the incoming request. Provides access to request details and handlers.
+   * @return {Promise<boolean>} A promise that resolves to a boolean indicating whether the request is authorized to proceed.
+   * @throws {ServiceUnavailableException} If the system environment is not initialized correctly.
+   * @throws {UnauthorizedException} If the user is blocked or unauthorized based on roles or access tokens.
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -63,6 +66,10 @@ export class TowerAuthGuard implements CanActivate {
 
     if (user && user.blocked) {
       throw new UnauthorizedException('User blocked');
+    }
+
+    if (user && user.temporaryBlocked) {
+      throw new UnauthorizedException('User is temporary blocked');
     }
 
     if (user) {
@@ -108,10 +115,11 @@ export class TowerAuthGuard implements CanActivate {
   }
 
   /**
-   * validateToken
+   * Validates a given authorization token using the specified request and token.
    *
-   * @param req
-   * @param token
+   * @param {Request} req The HTTP request object which may contain token-related metadata.
+   * @param {string} token The authorization token to be validated, which may follow the Bearer or Basic scheme.
+   * @return {Promise<Member>} Returns a promise that resolves to a Member object if the token is valid, or null if validation fails.
    */
   private async validateToken(req: Request, token: string): Promise<Member> {
     if (token.startsWith('Bearer ')) {
@@ -148,8 +156,11 @@ export class TowerAuthGuard implements CanActivate {
   }
 
   /**
-   * validateTowerHeaders
-   * @param req
+   * Validates the headers of the incoming request to ensure required headers are present
+   * and that the token provided is valid.
+   *
+   * @param {Request} req - The incoming HTTP request object containing headers to be validated.
+   * @return {Object|null} The validated user object if the token is valid; otherwise, null.
    */
   private async validateTowerHeaders(req: Request) {
     try {
@@ -188,10 +199,11 @@ export class TowerAuthGuard implements CanActivate {
   }
 
   /**
-   * validateBasicAuth
+   * Validates a Basic Authentication token by decoding it, extracting the username and password,
+   * and attempting a login action using the extracted credentials.
    *
-   * @param token
-   * @private
+   * @param {string} token The Basic Authentication token to be validated, typically in the format "username:password" encoded in Base64.
+   * @return {Promise<any>} A Promise that resolves with the login result if validation succeeds, or undefined in case of an error.
    */
   private async validateBasicAuth(token: string) {
     try {
@@ -212,12 +224,13 @@ export class TowerAuthGuard implements CanActivate {
   }
 
   /**
-   * validateRoles
+   * Validates if the user has the roles necessary to access a resource or perform an operation.
+   * Updates the request object with user roles for further processing.
    *
-   * @param req
-   * @param requiredRoles
-   * @param user
-   * @private
+   * @param {Request} req - The HTTP request object.
+   * @param {Array<string>} requiredRoles - An array of roles required to access the resource or perform the operation.
+   * @param {Member} user - The user object representing the current authenticated user, including their groups and details.
+   * @return {Promise<boolean>} A promise that resolves to true if the user is authorized based on their roles, otherwise false.
    */
   private async validateRoles(
     req: Request,
