@@ -24,13 +24,13 @@ export const options = {
     contacts: {
       executor: 'constant-vus',
       vus: 10,
-      duration: '30s',
+      duration: '600s',
     },
   },
 };
 
 export const setup = () => {
-  const url = 'http://localhost:3000';
+  const url = 'http://localhost:5000';
 
   const temp = http.post(
     `${url}/members/login`,
@@ -47,12 +47,16 @@ export const setup = () => {
 };
 
 export default (data) => {
-  const Environments = ['DEV', 'INT', 'UAT', 'PRD'];
-  const Apps = ['App1', 'App2', 'App3', 'App4'];
+  const Environments = [];
+  const Apps = [];
+  for (let i = 0; i < 100; i++) {
+    Environments.push(`Environment_${i}`);
+    Apps.push(`Apps_${i}`);
+  }
 
   http.get('https://test.k6.io');
 
-  const url = 'http://localhost:3000';
+  const url = 'http://localhost:5000';
 
   const token = data.token;
 
@@ -65,14 +69,8 @@ export default (data) => {
     });
   }
 
-  // const randomEnv = 'oyfr0';
-  // const randomApp = 'jwsw7';
-
-  // const randomApp = Math.random().toString(36).substring(2, 7);
-  // const randomEnv = Math.random().toString(36).substring(2, 7);
-
-  const randomApp = Apps[Math.floor(Math.random() * 4)];
-  const randomEnv = Environments[Math.floor(Math.random() * 4)];
+  const randomApp = Apps[Math.floor(Math.random() * Environments.length)];
+  const randomEnv = Environments[Math.floor(Math.random() * Apps.length)];
 
   // try {
   //   http.post(

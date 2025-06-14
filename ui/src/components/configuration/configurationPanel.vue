@@ -349,7 +349,7 @@
 				:class="{
 					'tw-col-span-2': configurationVariablesArchive.length > 0,
 				}"
-				class="tw-overflow-auto"
+				class="tw-overflow-auto tw-h-full"
 				transition="fade"
 				v-else
 			>

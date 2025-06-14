@@ -339,7 +339,9 @@ export class MembersService implements OnModuleInit {
       if (
         member.lastInvalidLoginAttemptDate &&
         new Date().getTime() - member.lastInvalidLoginAttemptDate.getTime() >=
-          Number(process.env.BLOCK_USER_AFTER_INVALID_PASS_TIMEOUT_SECONDS) *
+          Number(
+            process.env.BLOCK_USER_AFTER_INVALID_PASS_TIMEOUT_SECONDS ?? 900,
+          ) *
             1000
       ) {
         member.temporaryBlocked = false;
@@ -430,7 +432,12 @@ export class MembersService implements OnModuleInit {
    * @return {Promise<boolean>} Returns a promise that resolves to `true` if the user is already temporarily blocked, or `false` otherwise.
    */
   private async temporaryBlockUser(member: MemberDocument) {
-    if (process.env.BLOCK_USER_AFTER_INVALID_PASS !== 'true') {
+    const BLOCK_USER_AFTER_INVALID_PASS =
+      process.env.BLOCK_USER_AFTER_INVALID_PASS ?? 'true';
+    const BLOCK_USER_AFTER_INVALID_PASS_ATTEMPTS_COUNT =
+      process.env.BLOCK_USER_AFTER_INVALID_PASS_ATTEMPTS_COUNT ?? 3;
+
+    if (BLOCK_USER_AFTER_INVALID_PASS !== 'true') {
       return;
     }
 
@@ -444,7 +451,7 @@ export class MembersService implements OnModuleInit {
 
     if (
       member.invalidLoginAttempts >=
-      Number(process.env.BLOCK_USER_AFTER_INVALID_PASS_ATTEMPTS_COUNT)
+      Number(BLOCK_USER_AFTER_INVALID_PASS_ATTEMPTS_COUNT)
     ) {
       member.invalidLoginAttempts++;
       member.temporaryBlocked = true;
