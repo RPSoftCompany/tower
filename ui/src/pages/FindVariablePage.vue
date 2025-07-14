@@ -364,7 +364,7 @@ const createResponseTree = (configs: Array<ConfigurationFindItem>) => {
 			});
 
 			if (parentIndexTemp === -1) {
-				// If node doesn't exist, create and add it.
+				// If a node doesn't exist, create and add it.
 				parent.push({
 					id: uuidv4(), // Unique ID for the tree node.
 					name: name, // Internal name, used for matching.
@@ -373,18 +373,18 @@ const createResponseTree = (configs: Array<ConfigurationFindItem>) => {
 					selectable: false, // Intermediate nodes are not selectable by default.
 					children: [], // Initialize children array.
 				});
-				parentIndex = parent.length - 1; // Update parentIndex to the new node.
+				parentIndex = parent.length - 1; // Update the parentIndex to the new node.
 			} else {
-				// If node exists, use it.
+				// If a node exists, use it.
 				parentIndex = parentIndexTemp;
 			}
 
 			// If this is not the last level of the hierarchy, move to the children of the current node.
 			if (i + 1 < baseSt.getBases.length) {
-				if (!parent[parentIndex].children) {
+				if (!parent[parentIndex]?.children) {
 					parent[parentIndex].children = [] as Array<QTreeNode>;
 				}
-				parent = parent[parentIndex].children as QTreeNode<unknown>[];
+				parent = parent[parentIndex]?.children as QTreeNode<unknown>[];
 			}
 		}
 

@@ -78,7 +78,23 @@ export class ConfigurationsService implements OnModuleInit {
    * @return {Promise<void>} A promise that resolves when the module is successfully initialized, or rejects/logs errors
    * during the process if there are issues with the encryption key or other system checks.
    */
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
+    if (
+      !(
+        this.configurationModel.db as any
+      ).client.topology.description.type.startsWith('ReplicaSet')
+    ) {
+      this.logger.error('================= ERROR ===================');
+      this.logger.error(
+        'Tower is not compatible with a single node MongoDB deployment',
+      );
+      this.logger.error('===========================================');
+
+      throw Error(
+        'Tower is not compatible with a single node MongoDB deployment',
+      );
+    }
+
     if (process.env.SECRET && process.env.SECRET.length !== 32) {
       process.env.SECRET = null;
       this.logger.error('================= ERROR ===================');
@@ -124,7 +140,7 @@ export class ConfigurationsService implements OnModuleInit {
    *                         '#' for digits, and '!' for special characters.
    * @return {string} A random string composed of characters from the specified groups.
    */
-  randomString(length: number, chars: string) {
+  randomString(length: number, chars: string): string {
     let mask = '';
     if (chars.indexOf('a') > -1) mask += 'abcdefghijklmnopqrstuvwxyz';
     if (chars.indexOf('A') > -1) mask += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -135,8 +151,6 @@ export class ConfigurationsService implements OnModuleInit {
       result += mask[Math.floor(Math.random() * mask.length)];
     return result;
   }
-
-  async updateMetadata() {}
 
   /**
    * Creates or updates the 'maxConfiguration' collection in the database based on the existing configurations.
@@ -153,7 +167,7 @@ export class ConfigurationsService implements OnModuleInit {
    *
    * @return {Promise<void>} Returns a promise that resolves once the operation is complete.
    */
-  async createMaxConfigurationsCollection() {
+  async createMaxConfigurationsCollection(): Promise<void> {
     const collections = await this.maxConfiguration.db.listCollections();
     let exists = collections.some((collection) => {
       return collection.name === 'maxConfiguration';
@@ -267,7 +281,7 @@ export class ConfigurationsService implements OnModuleInit {
    *
    * @return {Promise<void>} A promise that resolves when all indexes have been created and synchronized successfully.
    */
-  async createIndexes() {
+  async createIndexes(): Promise<void> {
     const allBases: BaseConfiguration[] =
       await this.baseConfigurationModel.find();
 
@@ -307,9 +321,7 @@ export class ConfigurationsService implements OnModuleInit {
    * @param {string} name - The name of the index to be removed.
    * @return {Promise<void>} A promise that resolves once the index has been removed and the indexes have been updated.
    */
-  async removeIndex(name: string) {
-    // const allIndexes = await this.configurationModel.listIndexes();
-
+  async removeIndex(name: string): Promise<void> {
     (this.configurationModel.schema as any)._indexes = (
       this.configurationModel.schema as any
     )._indexes.filter((el: Array<any>) => {
@@ -327,7 +339,7 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * Retrieves and returns an initialized instance of V1 from the data store.
+   * Retrieves and returns an initialised instance of V1 from the data store.
    *
    * @return {Promise<V1>} A promise that resolves to an instance of V1.
    */
@@ -336,10 +348,10 @@ export class ConfigurationsService implements OnModuleInit {
   }
 
   /**
-   * Initializes the resource using the provided data transfer object.
+   * Initialises the resource using the provided data transfer object.
    *
-   * @param {CreateV1Dto} createV1Dto - The data transfer object containing initialization details.
-   * @return {Promise<any>} A promise that resolves to the created resource if initialization is required, or undefined if already initialized.
+   * @param {CreateV1Dto} createV1Dto - The data transfer object containing initialisation details.
+   * @return {Promise<any>} A promise that resolves to the created resource if initialisation is required, or undefined if already initialised.
    */
   async initialize(createV1Dto: CreateV1Dto) {
     const initialized = await this.getInitialized();
@@ -362,217 +374,244 @@ export class ConfigurationsService implements OnModuleInit {
     createConfigurationDto: CreateConfigurationDto,
     userRoles: string[],
     userId: string,
-  ) {
+  ): Promise<Configuration> {
     await this.hooksService.executeHook(
       'beforeCreate',
       'Configuration',
       createConfigurationDto,
     );
 
-    const allRoles: Array<Role> = await this.rolesModel.find({
-      name: /^configurationModel\.[^.]+\.[^.]+\.view$/,
-    });
+    const session = await this.configurationModel.startSession();
 
-    const allRolesString = [];
-    allRoles.forEach((role) => {
-      allRolesString.push(role.name);
-    });
+    try {
+      return await session.withTransaction(async (transactionSession) => {
+        const allRoles: Array<Role> = await this.rolesModel.find(
+          {
+            name: /^configurationModel\.[^.]+\.[^.]+\.view$/,
+          },
+          null,
+          { session: transactionSession },
+        );
 
-    const allBases: Array<BaseConfiguration> =
-      await this.baseConfigurationModel.find();
+        const allRolesString = [];
+        allRoles.forEach((role) => {
+          allRolesString.push(role.name);
+        });
 
-    const newConfigurationObject: CreateConfigurationDto = {
-      variables: createConfigurationDto.variables,
-      draft: createConfigurationDto.draft
-        ? createConfigurationDto.draft
-        : false,
-    };
-
-    let numberOfModelsUsed = 0;
-
-    let metaData = {};
-    const queryObject = {};
-
-    for (const base of allBases) {
-      if (createConfigurationDto[base.name]) {
-        const modelExists: ConfigurationModel =
-          await this.configurationModelModel.findOne({
-            base: `${base.name}`,
-            name: `${createConfigurationDto[base.name]}`,
+        const allBases: Array<BaseConfiguration> =
+          await this.baseConfigurationModel.find(null, null, {
+            session: transactionSession,
           });
 
-        // Validate if comment is present (if required)
-        if (modelExists?.options.forceComment === true) {
-          if (!createConfigurationDto.comment) {
-            throw new BadRequestException(
-              `Configuration validation failed. No comment provided`,
-            );
-          }
-        }
+        const newConfigurationObject: CreateConfigurationDto = {
+          variables: createConfigurationDto.variables,
+          draft: createConfigurationDto.draft
+            ? createConfigurationDto.draft
+            : false,
+        };
 
-        metaData[`${base.name}`] = `${createConfigurationDto[base.name]}`;
+        let numberOfModelsUsed = 0;
 
-        if (modelExists) {
-          // Validate roles
-          const currentRole = `configurationModel.${base.name}.${
-            createConfigurationDto[base.name]
-          }`;
-          if (allRolesString.includes(`${currentRole}.view`)) {
-            if (
-              !userRoles.includes('admin') &&
-              !userRoles.includes(`${currentRole}.view`)
-            ) {
-              throw new UnauthorizedException();
-            }
-          }
+        let metaData = {};
+        const queryObject = {};
 
-          let validationOk = false;
-
-          // Validate restrictions
-          if (
-            modelExists.restrictions.length > 0 &&
-            modelExists.options.hasRestrictions
-          ) {
-            for (const restriction of modelExists.restrictions) {
-              let isOk = true;
-              for (const key in restriction) {
-                if (key !== '__id' && restriction[key]) {
-                  if (restriction[key] !== createConfigurationDto[key]) {
-                    isOk = false;
-                  }
-                }
-              }
-
-              if (isOk) {
-                validationOk = true;
-                break;
-              }
-            }
-          } else {
-            validationOk = true;
-          }
-
-          if (!validationOk) {
-            throw new BadRequestException(
-              `Configuration validation failed. Provided configuration violates ${
-                createConfigurationDto[base.name]
-              } restrictions`,
-            );
-          }
-
-          if (modelExists.rules) {
-            for (const rule of modelExists.rules) {
-              const findRuleVariables = newConfigurationObject.variables.filter(
-                (variable) => {
-                  if (!rule.targetRegEx) {
-                    return variable[rule.targetType] === rule.targetValue;
-                  } else {
-                    const regex = new RegExp(rule.targetValue);
-                    return regex.test(variable[rule.targetType]);
-                  }
+        for (const base of allBases) {
+          if (createConfigurationDto[base.name]) {
+            const modelExists: ConfigurationModel =
+              await this.configurationModelModel.findOne(
+                {
+                  base: `${base.name}`,
+                  name: `${createConfigurationDto[base.name]}`,
                 },
+                null,
+                { session: transactionSession },
               );
 
-              for (const variable of findRuleVariables) {
-                let valid = true;
-                if (!rule.conditionRegEx) {
-                  valid = variable[rule.conditionType] === rule.conditionValue;
-                } else {
-                  const regex = new RegExp(rule.conditionValue);
-                  valid = regex.test(variable[rule.conditionType]);
-                }
-
-                if (!valid) {
-                  throw new BadRequestException(
-                    `Variable ${variable.name} violates one of ${
-                      createConfigurationDto[base.name]
-                    } rules: ${rule.error}`,
-                  );
-                }
+            // Validate if a comment is present (if required)
+            if (modelExists?.options.forceComment === true) {
+              if (!createConfigurationDto.comment) {
+                throw new BadRequestException(
+                  `Configuration validation failed. No comment provided`,
+                );
               }
             }
-          }
 
-          numberOfModelsUsed++;
-          newConfigurationObject[base.name] = createConfigurationDto[base.name];
-          queryObject[base.name] = createConfigurationDto[base.name];
-        } else {
+            metaData[`${base.name}`] = `${createConfigurationDto[base.name]}`;
+
+            if (modelExists) {
+              // Validate roles
+              const currentRole = `configurationModel.${base.name}.${
+                createConfigurationDto[base.name]
+              }`;
+              if (allRolesString.includes(`${currentRole}.view`)) {
+                if (
+                  !userRoles.includes('admin') &&
+                  !userRoles.includes(`${currentRole}.view`)
+                ) {
+                  throw new UnauthorizedException();
+                }
+              }
+
+              let validationOk = false;
+
+              // Validate restrictions
+              if (
+                modelExists.restrictions.length > 0 &&
+                modelExists.options.hasRestrictions
+              ) {
+                for (const restriction of modelExists.restrictions) {
+                  let isOk = true;
+                  for (const key in restriction) {
+                    if (key !== '__id' && restriction[key]) {
+                      if (restriction[key] !== createConfigurationDto[key]) {
+                        isOk = false;
+                      }
+                    }
+                  }
+
+                  if (isOk) {
+                    validationOk = true;
+                    break;
+                  }
+                }
+              } else {
+                validationOk = true;
+              }
+
+              if (!validationOk) {
+                throw new BadRequestException(
+                  `Configuration validation failed. Provided configuration violates ${
+                    createConfigurationDto[base.name]
+                  } restrictions`,
+                );
+              }
+
+              if (modelExists.rules) {
+                for (const rule of modelExists.rules) {
+                  const findRuleVariables =
+                    newConfigurationObject.variables.filter((variable) => {
+                      if (!rule.targetRegEx) {
+                        return variable[rule.targetType] === rule.targetValue;
+                      } else {
+                        const regex = new RegExp(rule.targetValue);
+                        return regex.test(variable[rule.targetType]);
+                      }
+                    });
+
+                  for (const variable of findRuleVariables) {
+                    let valid = true;
+                    if (!rule.conditionRegEx) {
+                      valid =
+                        variable[rule.conditionType] === rule.conditionValue;
+                    } else {
+                      const regex = new RegExp(rule.conditionValue);
+                      valid = regex.test(variable[rule.conditionType]);
+                    }
+
+                    if (!valid) {
+                      throw new BadRequestException(
+                        `Variable ${variable.name} violates one of ${
+                          createConfigurationDto[base.name]
+                        } rules: ${rule.error}`,
+                      );
+                    }
+                  }
+                }
+              }
+
+              numberOfModelsUsed++;
+              newConfigurationObject[base.name] =
+                createConfigurationDto[base.name];
+              queryObject[base.name] = createConfigurationDto[base.name];
+            } else {
+              throw new BadRequestException(
+                `Invalid base model name: ${base.name}: ${
+                  createConfigurationDto[base.name]
+                }`,
+              );
+            }
+          } else {
+            queryObject[base.name] = null;
+            newConfigurationObject[base.name] = null;
+          }
+        }
+
+        if (numberOfModelsUsed === 0) {
           throw new BadRequestException(
-            `Invalid base model name: ${base.name}: ${
-              createConfigurationDto[base.name]
-            }`,
+            'At least one base model has to be used',
           );
         }
-      } else {
-        queryObject[base.name] = null;
-        newConfigurationObject[base.name] = null;
-      }
+
+        const max = await this.configurationModel.findOne(
+          queryObject,
+          { version: true },
+          {
+            sort: { version: -1 },
+            session: transactionSession,
+          },
+        );
+
+        if (max) {
+          newConfigurationObject.version = max.version + 1;
+        } else {
+          newConfigurationObject.version = 1;
+        }
+
+        newConfigurationObject.createdBy = userId;
+        newConfigurationObject.comment = createConfigurationDto.comment;
+        newConfigurationObject.__metadata = metaData;
+
+        const [retValue] = await this.configurationModel.create(
+          [newConfigurationObject],
+          { session: transactionSession },
+        );
+
+        newConfigurationObject.effectiveDate = retValue.effectiveDate;
+
+        await this.maxConfiguration.updateOne(
+          queryObject,
+          { $set: newConfigurationObject },
+          { upsert: true, session: transactionSession },
+        );
+
+        setTimeout(() => {
+          this.hooksService
+            .executeHook('afterCreate', 'Configuration', retValue)
+            .then(() => {
+              // IGNORE
+            })
+            .catch((e) => {
+              this.logger.error(e);
+            });
+
+          this.connectionsService
+            .executeSCPHook(userRoles, queryObject, retValue)
+            .then(() => {
+              // IGNORE
+            })
+            .catch((e) => {
+              this.logger.error(e);
+            });
+
+          this.connectionsService
+            .executeKubernetesHook(queryObject, retValue)
+            .then(() => {
+              // IGNORE
+            })
+            .catch((e) => {
+              this.logger.error(e);
+            });
+        }, 100);
+
+        await transactionSession.commitTransaction();
+        await transactionSession.endSession();
+
+        return retValue;
+      });
+    } catch (e) {
+      await session.endSession();
+      throw e;
     }
-
-    if (numberOfModelsUsed === 0) {
-      throw new BadRequestException('At least one base model has to be used');
-    }
-
-    const max = await this.configurationModel.findOne(
-      queryObject,
-      { version: true },
-      {
-        sort: { version: -1 },
-      },
-    );
-
-    if (max) {
-      newConfigurationObject.version = max.version + 1;
-    } else {
-      newConfigurationObject.version = 1;
-    }
-
-    newConfigurationObject.createdBy = userId;
-    newConfigurationObject.comment = createConfigurationDto.comment;
-    newConfigurationObject.__metadata = metaData;
-
-    const retValue: Configuration = await this.configurationModel.create(
-      newConfigurationObject,
-    );
-
-    newConfigurationObject.effectiveDate = retValue.effectiveDate;
-
-    await this.maxConfiguration.updateOne(
-      queryObject,
-      { $set: newConfigurationObject },
-      { upsert: true },
-    );
-
-    setTimeout(() => {
-      this.hooksService
-        .executeHook('afterCreate', 'Configuration', retValue)
-        .then(() => {
-          // IGNORE
-        })
-        .catch((e) => {
-          this.logger.error(e);
-        });
-
-      this.connectionsService
-        .executeSCPHook(userRoles, queryObject, retValue)
-        .then(() => {
-          // IGNORE
-        })
-        .catch((e) => {
-          this.logger.error(e);
-        });
-
-      this.connectionsService
-        .executeKubernetesHook(queryObject, retValue)
-        .then(() => {
-          // IGNORE
-        })
-        .catch((e) => {
-          this.logger.error(e);
-        });
-    }, 100);
-
-    return retValue;
   }
 
   /**

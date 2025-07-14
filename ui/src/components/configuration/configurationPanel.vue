@@ -356,6 +356,7 @@
 				<q-intersection
 					v-for="row of configurationWithCurrentArchive"
 					:key="row.name"
+					once
 					class="tower-configuration-row"
 				>
 					<configuration-variable-row
