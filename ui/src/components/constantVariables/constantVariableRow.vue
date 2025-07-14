@@ -261,9 +261,10 @@
 								{ label: 'False', value: false },
 							]"
 							class="tw-mt-1.5"
+							toggle-text-color="primary"
 							dense
 							spread
-							toggle-color="dark"
+							toggle-color="secondary"
 							unelevated
 						/>
 					</template>

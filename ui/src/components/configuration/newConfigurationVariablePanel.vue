@@ -28,7 +28,7 @@
 				v-model="name"
 				:rules="[
 					(val) =>
-						!existingVariableNames.includes(val) ||
+						!existingVariableNames?.includes(val) ||
 						'Variable with this name already exists in the configuration',
 				]"
 				color="secondary"
@@ -44,7 +44,7 @@
 			></type-select>
 			<!-- value -->
 			<div class="tw-flex">
-				<div class="tw-flex-grow tw-mx-2">
+				<div class="tw-flex-grow items-center tw-mx-2">
 					<!-- String -->
 					<template v-if="type?.value === ConfigurationVariableType.STRING">
 						<q-input
@@ -97,7 +97,8 @@
 							class="tw-mt-1.5"
 							dense
 							spread
-							toggle-color="primary"
+							toggle-text-color="primary"
+							toggle-color="secondary"
 						/>
 					</template>
 					<!-- Text -->

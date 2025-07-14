@@ -97,7 +97,8 @@
 							class="tw-mt-1.5"
 							dense
 							spread
-							toggle-color="primary"
+							toggle-color="secondary"
+							toggle-text-color="primary"
 						/>
 					</template>
 					<!-- Text -->

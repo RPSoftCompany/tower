@@ -67,14 +67,19 @@ async function bootstrap() {
   if (
     process.env.OIDC_SECRET_PRIVATE_KEY &&
     process.env.OIDC_SECRET &&
-    process.env.OIDC_CALLBACK_HOST &&
+    (process.env.OIDC_CALLBACK_HOST ||
+      process.env.OIDC_CALLBACK_HOST_OVERWRITE) &&
     process.env.OIDC_CLIENT_ID &&
     process.env.OIDC_ISSUER_BASE_URL
   ) {
+    const baseUrl = process.env.OIDC_CALLBACK_HOST_OVERWRITE
+      ? process.env.OIDC_CALLBACK_HOST_OVERWRITE
+      : `${sslKey && sslCert ? 'https://' : 'http://'}${process.env.OIDC_CALLBACK_HOST}`;
+
     const ssoConfig = {
       authRequired: false,
       secret: process.env.OIDC_SECRET,
-      baseURL: `${sslKey && sslCert ? 'https://' : 'http://'}${process.env.OIDC_CALLBACK_HOST}`,
+      baseURL: baseUrl,
       clientID: process.env.OIDC_CLIENT_ID,
       issuerBaseURL: process.env.OIDC_ISSUER_BASE_URL,
       routes: {
@@ -108,4 +113,5 @@ async function bootstrap() {
   );
   logger.log(`Tower is running on: ${await app.getUrl()}`);
 }
+
 bootstrap().then();
